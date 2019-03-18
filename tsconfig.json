@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es6",
+    "outDir": "./build",
+    "baseUrl": "./src",
+    "rootDir": "./src",
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "**/*.spec.ts"
+  ]
+}
