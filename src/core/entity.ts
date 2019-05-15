@@ -1,4 +1,6 @@
 import { Component } from "./component";
+import { Dispatcher } from "./dispatcher";
+import { Collection, CollectionListener } from "./collection";
 
 /**
  * The listener interface for a listener on an entity.
@@ -21,6 +23,11 @@ export interface EntityListener {
    * @param {Component} component
    */
   onRemovedComponent?(component: Component): void;
+
+  /**
+   * Called as soon as all components got removed from the entity.
+   */
+  onClearedComponents?(): void;
 }
 
 /**
@@ -31,40 +38,25 @@ export interface EntityListener {
  * @abstract
  * @class Entity
  */
-export abstract class Entity {
+export abstract class Entity extends Dispatcher<EntityListener> implements CollectionListener<Component> {
 
   /**
    * The internal list of components.
    *
    * @protected
-   * @type {Component[]}
+   * @type {Collection<Component>}
    */
-  protected _components: Component[];
-
-  /**
-   * The seald list of components which is used to expose it to others.
-   *
-   * @protected
-   * @type {Component[]}
-   */
-  protected _sealedComponents: Component[];
-
-  /**
-   * The list of entity listeners for this entity.
-   *
-   * @protected
-   * @type {EntityListener[]}
-   */
-  protected _listeners: EntityListener[];
+  protected _components: Collection<Component>;
 
   /**
    * Creates an instance of Entity.
+   *
    * @param {string} id The id, you should provide by yourself. Maybe an uuid or a simple number.
    */
   constructor(public readonly id: number | string) {
-    this._components = [];
-    this._listeners = [];
-    this.updatedSealedComponents();
+    super();
+    this._components = new Collection<Component>();
+    this._components.addListener(this);
   }
 
   /**
@@ -74,17 +66,7 @@ export abstract class Entity {
    * @type {Component[]}
    */
   get components(): Component[] {
-    return this._sealedComponents;
-  }
-
-  /**
-   * Updates the internal sealed components list.
-   *
-   * @protected
-   */
-  protected updatedSealedComponents(): void {
-    this._sealedComponents = this._components.slice();
-    Object.seal(this._sealedComponents);
+    return this._components.objects;
   }
 
   /**
@@ -95,14 +77,7 @@ export abstract class Entity {
    *                    It may not be added, if already present in the component list.
    */
   addComponent(component: Component): boolean {
-    if (this._components.indexOf(component) >= 0) return false;
-    this._components.push(component);
-    this.updatedSealedComponents();
-    this._listeners.forEach(listener => {
-      if (typeof listener.onAddedComponent === 'function')
-        listener.onAddedComponent(component)
-    });
-    return true;
+    return this._components.add(component);
   }
 
   /**
@@ -113,46 +88,44 @@ export abstract class Entity {
    *                    It may not have been removed, if it was not in the component list.
    */
   removeComponent(componentOrIndex: Component | number): boolean {
-    const idx = typeof componentOrIndex === 'number' ? componentOrIndex : this._components.indexOf(componentOrIndex);
-    if (idx >= 0 && idx < this._components.length) {
-      const comp = typeof componentOrIndex === 'number' ? this._components[componentOrIndex] : componentOrIndex;
-      this._components.splice(idx);
-      this.updatedSealedComponents();
-      this._listeners.forEach(listener => {
-        if (typeof listener.onRemovedComponent === 'function')
-          listener.onRemovedComponent(comp)
-      });
-      return true;
-    }
-    return false;
+    return this._components.remove(componentOrIndex);
   }
 
   /**
-   * Adds the given listener to this entity.
+   * Clears all components, i.e. removes all components from this entity.
    *
-   * @param {EntityListener} component
-   * @returns {boolean} Whether the listener has been added or not.
-   *                    It may not be added, if already present in the listener list.
+   * @returns {void}
    */
-  addListener(listener: EntityListener): boolean {
-    if (this._listeners.indexOf(listener) >= 0) return false;
-    this._listeners.push(listener);
-    return true;
+  clearComponents(): void {
+    return this._components.clear();
   }
 
   /**
-   * Removes the given listener or the listener at the given index.
+   * Dispatches the `onAdded` event to all listeners as `onAddedComponent`.
    *
-   * @param {(EntityListener | number)} listenerOrIndex
-   * @returns {boolean} Whether the listener has been removed or not.
-   *                    It may not have been removed, if it was not in the listener list.
+   * @param {Component} component
+   * @returns {void}
    */
-  removeListener(listenerOrIndex: EntityListener | number): boolean {
-    const idx = typeof listenerOrIndex === 'number' ? listenerOrIndex : this._listeners.indexOf(listenerOrIndex);
-    if (idx >= 0 && idx < this._listeners.length) {
-      this._listeners.splice(idx);
-      return true;
-    }
-    return false;
+  onAdded(component: Component): void {
+    return this.dispatch('onAddedComponent', component);
+  }
+
+  /**
+   * Dispatches the `onRemoved` event to all listeners as `onRemovedComponent`.
+   *
+   * @param {Component} component
+   * @returns {void}
+   */
+  onRemoved(component: Component): void {
+    return this.dispatch('onRemovedComponent', component);
+  }
+
+  /**
+   * Dispatches the `onCleared` event to all listeners as `onClearedComponents`.
+   *
+   * @returns {void}
+   */
+  onCleared(): void {
+    return this.dispatch('onClearedComponents');
   }
 }
