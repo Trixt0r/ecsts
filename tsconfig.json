@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "target": "es6",
     "outDir": "./build",
     "baseUrl": "./src",

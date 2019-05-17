@@ -13,21 +13,26 @@ export interface EntityListener {
   /**
    * Called as soon as a new component as been added to the entity.
    *
-   * @param {Component} component
+   * @param { Component[]} components The new added components.
    */
-  onAddedComponent?(component: Component): void;
+  onAddedComponents?(...components: Component[]): void;
 
   /**
    * Called as soon as a component got removed from the entity.
    *
-   * @param {Component} component
+   * @param { Component[]} components The removed components
    */
-  onRemovedComponent?(component: Component): void;
+  onRemovedComponents?(...components: Component[]): void;
 
   /**
    * Called as soon as all components got removed from the entity.
    */
   onClearedComponents?(): void;
+
+  /**
+   * Called as soon as the components got sorted.
+   */
+  onSortedComponents?(): void;
 }
 
 /**
@@ -63,61 +68,32 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * A snapshot of all components of this entity.
    *
    * @readonly
-   * @type {Component[]}
+   * @type {Collection<Component>}
    */
-  get components(): Component[] {
-    return this._components.objects;
+  get components(): Collection<Component> {
+    return this._components;
   }
 
   /**
-   * Adds the given component to this entity.
+   * Dispatches the `onAdded` event to all listeners as `onAddedComponents`.
    *
-   * @param {Component} component
-   * @returns {boolean} Whether the component has been added or not.
-   *                    It may not be added, if already present in the component list.
-   */
-  addComponent(component: Component): boolean {
-    return this._components.add(component);
-  }
-
-  /**
-   * Removes the given component or the component at the given index.
-   *
-   * @param {(Component | number)} componentOrIndex
-   * @returns {boolean} Whether the component has been removed or not.
-   *                    It may not have been removed, if it was not in the component list.
-   */
-  removeComponent(componentOrIndex: Component | number): boolean {
-    return this._components.remove(componentOrIndex);
-  }
-
-  /**
-   * Clears all components, i.e. removes all components from this entity.
-   *
+   * @param {Component[]} components
    * @returns {void}
    */
-  clearComponents(): void {
-    return this._components.clear();
+  onAdded(...components: Component[]): void {
+    const args = ['onAddedComponents'].concat(<any[]>components);
+    return this.dispatch.apply(this, args)
   }
 
   /**
-   * Dispatches the `onAdded` event to all listeners as `onAddedComponent`.
+   * Dispatches the `onRemoved` event to all listeners as `onRemovedComponents`.
    *
-   * @param {Component} component
+   * @param {Component[]} components
    * @returns {void}
    */
-  onAdded(component: Component): void {
-    return this.dispatch('onAddedComponent', component);
-  }
-
-  /**
-   * Dispatches the `onRemoved` event to all listeners as `onRemovedComponent`.
-   *
-   * @param {Component} component
-   * @returns {void}
-   */
-  onRemoved(component: Component): void {
-    return this.dispatch('onRemovedComponent', component);
+  onRemoved(...components: Component[]): void {
+    const args = ['onRemovedComponents'].concat(<any[]>components);
+    return this.dispatch.apply(this, args)
   }
 
   /**
@@ -127,5 +103,14 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    */
   onCleared(): void {
     return this.dispatch('onClearedComponents');
+  }
+
+  /**
+   * Dispatches the `onSorted` event to all listeners as `onSortedComponents`.
+   *
+   * @returns {void}
+   */
+  onSorted(): void {
+    return this.dispatch('onSortedComponents');
   }
 }

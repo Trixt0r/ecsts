@@ -5,23 +5,8 @@ interface Type<T> extends Function {
 }
 
 /**
- * Creates an id for the given length.
- *
- * @param {number} [length=8]
- * @returns {string}
- */
-function makeId(length = 8): string {
-  var result = '';
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < length; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-/**
  * A Filter holds a unique id for a certain combination of component types.
+ * Use @see {Filter#get} to obtain a filter for a list of components.
  *
  * @export
  * @class Filter
@@ -35,14 +20,14 @@ export class Filter {
    * @static
    * @type {{ [id: string]: Filter }}
    */
-  protected static cache: { [id: string]: Filter } = { };
+  protected static cache: Filter[];
 
   /**
    * The id of this filter.
    *
-   * @type {string}
+   * @type {number}
    */
-  readonly id: string;
+  readonly id: number;
 
   /**
    * Creates an instance of Filter.
@@ -50,7 +35,7 @@ export class Filter {
    * @param {Type<Component>[]} types
    */
   protected constructor(public readonly types: readonly Type<Component>[]) {
-    this.id = makeId();
+    this.id = Filter.cache.length;
   }
 
   /**
@@ -60,9 +45,7 @@ export class Filter {
    * @returns {Filter}
    */
   static get(...types: Type<Component>[]): Filter {
-    const keys = Object.keys(Filter.cache);
-    const found = keys.find(key => {
-      const filter = Filter.cache[key];
+    const found = Filter.cache.find(filter => {
       if (filter.types.length !== types.length) return false;
       const filtered = types.filter(type => filter.types.indexOf(type) >= 0);
       return filtered.length === types.length;
@@ -72,7 +55,7 @@ export class Filter {
       Filter.cache[filter.id] = filter;
       return filter;
     } else {
-      return Filter.cache[found];
+      return found;
     }
   }
 

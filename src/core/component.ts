@@ -1,9 +1,8 @@
 /**
- * The abstract component class, every component has to extend.
+ * The component interface, every component has to implement.
  *
  * @export
- * @abstract
- * @class Component
+ * @interface Component
  */
-export abstract class Component {
+export interface Component {
 }

@@ -62,7 +62,7 @@ export class Engine extends Dispatcher<EngineListener> {
   protected _systems: Collection<System>;
 
   /**
-   * The sealed list of active systems which is used to iterate during the update.
+   * The frozen list of active systems which is used to iterate during the update.
    *
    * @protected
    * @type {System[]}
@@ -132,20 +132,20 @@ export class Engine extends Dispatcher<EngineListener> {
    * A snapshot of all entities in this engine.
    *
    * @readonly
-   * @type {Entity[]}
+   * @type {Collection<Entity>}
    */
-  get entities(): Entity[] {
-    return this._entites.objects;
+  get entities(): Collection<Entity> {
+    return this._entites;
   }
 
   /**
    * A snapshot of all systems in this engine.
    *
    * @readonly
-   * @type {Entity[]}
+   * @type {Collection<System>}
    */
-  get systems(): System[] {
-    return this._systems.objects;
+  get systems(): Collection<System> {
+    return this._systems;
   }
 
   /**
@@ -154,7 +154,7 @@ export class Engine extends Dispatcher<EngineListener> {
    * @readonly
    * @type {Entity[]}
    */
-  get activeSystems(): System[] {
+  get activeSystems(): readonly System[] {
     return this._activeSystems;
   }
 
@@ -165,7 +165,7 @@ export class Engine extends Dispatcher<EngineListener> {
    */
   protected updatedActiveSystems(): void {
     this._activeSystems = this.systems.filter(system => system.active);
-    Object.seal(this._activeSystems);
+    Object.freeze(this._activeSystems);
   }
 
   /**
@@ -177,68 +177,6 @@ export class Engine extends Dispatcher<EngineListener> {
     const length = this._activeSystems.length;
     for (let i = 0; i < length; i++)
       this._activeSystems[i].update(delta);
-  }
-
-  /**
-   * Adds the given system to this engine.
-   *
-   * @param {System} system
-   * @returns {boolean} Whether the system has been added or not.
-   *                    It may not be added, if already present in the system collection.
-   */
-  addSystem(system: System): boolean {
-    return this._systems.add(system);
-  }
-
-  /**
-   * Removes the given system or the system at the given index from this engine.
-   *
-   * @param {(System | number)} systemOrIndex
-   * @returns {boolean} Whether the system has been removed or not.
-   *                    It may not have been removed, if it was not in the system collection.
-   */
-  removeSystem(systemOrIndex: System | number): boolean {
-    return this._systems.remove(systemOrIndex);
-  }
-
-  /**
-   * Clears all systems from this engine.
-   *
-   * @returns {void}
-   */
-  clearSystems(): void {
-    return this._systems.clear();
-  }
-
-  /**
-   * Adds the given entity to this engine.
-   *
-   * @param {Entity} entity
-   * @returns {boolean} Whether the entity has been added or not.
-   *                    It may not be added, if already present in the entity collection.
-   */
-  addEntity(entity: Entity): boolean {
-    return this._entites.add(entity);
-  }
-
-  /**
-   * Removes the given entity or the entity at the given index from this engine.
-   *
-   * @param {(Entity | number)} entityOrIndex
-   * @returns {boolean} Whether the entity has been removed or not.
-   *                    It may not have been removed, if it was not in the entity collection.
-   */
-  removeEntity(entityOrIndex: Entity | number): boolean {
-    return this._entites.remove(entityOrIndex);
-  }
-
-  /**
-   * Clears all entities from this engine.
-   *
-   * @returns {void}
-   */
-  clearEntities(): void {
-    return this._entites.clear();
   }
 
   /**
