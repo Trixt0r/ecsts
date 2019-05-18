@@ -33,8 +33,25 @@ export interface SystemListener {
    * @param {Engine} engine The engine this system got added to.
    */
   onAddedToEngine?(engine: Engine): void;
+
+  /**
+   * Called as soon an error occurred during update.
+   *
+   * @param {Error} error The error which occurred.
+   */
+  onError?(error: Error): void;
 }
 
+/**
+ * A system processes a list of entities which belong to an engine.
+ * Entities can only be accessed via the assigned engine. @see {Engine}.
+ * The implementation of the specific system has to choose on which components of an entity to operate.
+ *
+ * @export
+ * @abstract
+ * @class System
+ * @extends {Dispatcher<SystemListener>}
+ */
 export abstract class System extends Dispatcher<SystemListener> {
 
   /**
@@ -130,6 +147,8 @@ export abstract class System extends Dispatcher<SystemListener> {
     try {
       this._updating = true;
       await this.process(delta);
+    } catch (e) {
+      this.dispatch('onError', e);
     } finally {
       this._updating = false;
     }
