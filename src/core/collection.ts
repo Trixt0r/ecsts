@@ -173,6 +173,7 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> {
    * Clears this collection, i.e. removes all objects from the internal list.
    */
   clear(): void {
+    if (!this._objects.length) return;
     this._objects = [];
     this.updatedFrozenObjects();
     this.dispatch('onCleared');
@@ -185,6 +186,7 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> {
    * @returns {this}
    */
   sort(compareFn?: (a: T, b: T) => number): this {
+    if (!this._objects.length) return;
     this._objects.sort(compareFn);
     this.updatedFrozenObjects();
     this.dispatch('onSorted');

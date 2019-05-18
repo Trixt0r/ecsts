@@ -252,8 +252,17 @@ describe('Collection', () => {
     it('should notify all listeners that the collection has been cleared', () => {
       let called = false;
       collection.addListener({ onCleared: () => called = true });
+      collection.add(new MyType());
       collection.clear();
       expect(called).toBe(true);
+    });
+
+    it('should not notify any listener that the collection has been cleared if there were no objects', () => {
+      let called = false;
+      collection.addListener({ onCleared: () => called = true });
+      collection.remove(0, 1, 2);
+      collection.clear();
+      expect(called).toBe(false);
     });
   });
 
@@ -273,8 +282,17 @@ describe('Collection', () => {
     it('should notify all listeners that the collection has been sorted', () => {
       let called = false;
       collection.addListener({ onSorted: () => called = true });
+      collection.add(new MySortableType(1));
       collection.sort();
       expect(called).toBe(true);
+    });
+
+    it('should not notify any listener that the collection has been sorted if there were no objects', () => {
+      let called = false;
+      collection.addListener({ onSorted: () => called = true });
+      collection.remove(0, 1, 2);
+      collection.sort();
+      expect(called).toBe(false);
     });
   });
 

@@ -61,7 +61,7 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
   constructor(public readonly id: number | string) {
     super();
     this._components = new Collection<Component>();
-    this._components.addListener(this);
+    this._components.addListener(this, true);
   }
 
   /**

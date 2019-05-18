@@ -99,7 +99,7 @@ export class Engine extends Dispatcher<EngineListener> {
         this.dispatch('onRemovedSystem', system);
       },
       onCleared: () => this.dispatch('onClearedSystems'),
-    });
+    }, true);
 
     this._entites.addListener({
       onAdded: entity => {
@@ -123,7 +123,7 @@ export class Engine extends Dispatcher<EngineListener> {
         this.dispatch('onRemovedEntity', entity)
       },
       onCleared: () => this.dispatch('onClearedEntities'),
-    });
+    }, true);
 
     this.updatedActiveSystems();
   }

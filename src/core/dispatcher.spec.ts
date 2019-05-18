@@ -78,6 +78,12 @@ describe('Dispatcher', () => {
       expect(dispatcher.listeners.length).toBe(0);
       expect(re).toBe(false);
     });
+
+    it('should throw if a locked listener gets removed', () => {
+      const listener = { };
+      dispatcher.addListener(listener, true);
+      expect(() => dispatcher.removeListener(listener)).toThrowError('Listener at index 1 is locked.');
+    });
   });
 
   describe('dispatch', () => {
