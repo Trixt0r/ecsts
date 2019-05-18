@@ -1,5 +1,6 @@
 import { System } from './system';
 import { Engine } from './engine';
+import { Dispatcher } from './dispatcher';
 
 class MySystem extends System {
 
@@ -22,6 +23,10 @@ describe('System', () => {
   beforeEach(() => system = new MySystem());
 
   describe('initial', () => {
+    it('should be a dispatcher', () => {
+      expect(system instanceof Dispatcher).toBe(true);
+    });
+
     it('should be active', () => {
       expect(system.active).toBe(true);
     });

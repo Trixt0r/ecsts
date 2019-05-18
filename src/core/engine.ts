@@ -1,4 +1,4 @@
-import { System } from "./system";
+import { System, SystemListener } from "./system";
 import { Entity } from "./entity";
 import { Dispatcher } from "./dispatcher";
 import { Collection } from "./collection";
@@ -15,16 +15,16 @@ export interface EngineListener {
   /**
    * Called as soon as the given system gets added to the engine.
    *
-   * @param {System} system
+   * @param {System[]} systems
    */
-  onAddedSystem?(system: System): void;
+  onAddedSystems?(...systems: System[]): void;
 
   /**
    * Called as soon as the given system gets removed from the engine.
    *
-   * @param {System} system
+   * @param {System[]} systems
    */
-  onRemovedSystem?(system: System): void;
+  onRemovedSystems?(...systems: System[]): void;
 
   /**
    * Called as soon as all systems got cleared from the engine.
@@ -32,18 +32,26 @@ export interface EngineListener {
   onClearedSystems(): void;
 
   /**
+   * Called as soon as an error occurred on in an active system during update.
+   *
+   * @param {Error} error The error that occurred.
+   * @param {System} system The system on which the error occurred.
+   */
+  onErrorBySystem(error: Error, system: System): void;
+
+  /**
    * Called as soon as the given entity gets added to the engine.
    *
-   * @param {Entity} entity
+   * @param {Entity[]} entities
    */
-  onAddedEntity?(entity: Entity): void;
+  onAddedEntities?(...entities: Entity[]): void;
 
   /**
    * Called as soon as the given entity gets removed from the engine.
    *
-   * @param {Entity} entity
+   * @param {Entity[]} entities
    */
-  onRemovedEntity?(entity: Entity): void;
+  onRemovedEntities?(...entities: Entity[]): void;
 
   /**
    * Called as soon as all entities got cleared from the engine.
@@ -87,40 +95,64 @@ export class Engine extends Dispatcher<EngineListener> {
     this._systems = new Collection<System>();
     this._entites = new Collection<Entity>();
     this._systems.addListener({
-      onAdded: system => {
-        this._systems.sort(sys => sys.priority);
-        system.engine = this;
-        this.updatedActiveSystems();
-        this.dispatch('onAddedSystem', system);
+      onAdded: (...systems: System[]) => {
+        this._systems.sort((a, b) => a.priority - b.priority);
+        systems.forEach(system => {
+          system.engine = this;
+          this.updatedActiveSystems();
+
+          const systemListener: SystemListener = {
+            onActivated: () => this.updatedActiveSystems(),
+            onDeactivated: () => this.updatedActiveSystems(),
+            onError: error => this.dispatch('onErrorBySystem', error, system),
+          };
+          (<any>system).__ecs_engine_listener = systemListener;
+          system.addListener(systemListener, true);
+        });
+      const args = ['onAddedSystems'].concat(<any[]>systems);
+      this.dispatch.apply(this, args);
       },
-      onRemoved: system => {
-        system.engine = null;
-        this.updatedActiveSystems();
-        this.dispatch('onRemovedSystem', system);
+      onRemoved: (...systems: System[]) => {
+        systems.forEach(system => {
+          system.engine = null;
+          this.updatedActiveSystems();
+          const systemListener: SystemListener = (<any>system).__ecs_engine_listener;
+          const locked: SystemListener[] = (<any>system)._lockedListeners;
+          locked.splice(locked.indexOf(systemListener), 1);
+          system.removeListener(systemListener);
+        });
+        const args = ['onRemovedSystems'].concat(<any[]>systems);
+        this.dispatch.apply(this, args);
       },
       onCleared: () => this.dispatch('onClearedSystems'),
     }, true);
 
     this._entites.addListener({
-      onAdded: entity => {
+      onAdded: (...entities: Entity[]) => {
         const cache = this.entityCache;
         const keys = Object.keys(cache);
         // On the next update the filter will be also applied for the new entity
         keys.forEach(key => {
-          const re = cache[key].filter(entity);
-          if (re) cache[key].entities.push(entity);
+          entities.forEach(entity => {
+            const re = cache[key].filter(entity);
+            if (re) cache[key].entities.push(entity);
+          });
         });
-        this.dispatch('onAddedEntity', entity);
+        const args = ['onAddedEntities'].concat(<any[]>entities);
+        this.dispatch.apply(this, args);
       },
-      onRemoved: entity => {
+      onRemoved: (...entities: Entity[]) => {
         const cache = this.entityCache;
         const keys = Object.keys(cache);
-        // On the next update the entity won't be part of filtered system updates, too
+        // On the next update the entity won't be part of filtered system updates
         keys.forEach(key => {
-          const idx = cache[key].entities.indexOf(entity);
-          if (idx >= 0) cache[key].entities.splice(idx, 1);
+          entities.forEach(entity => {
+            const idx = cache[key].entities.indexOf(entity);
+            if (idx >= 0) cache[key].entities.splice(idx, 1);
+          });
         });
-        this.dispatch('onRemovedEntity', entity)
+        const args = ['onRemovedEntities'].concat(<any[]>entities);
+        this.dispatch.apply(this, args);
       },
       onCleared: () => this.dispatch('onClearedEntities'),
     }, true);
@@ -172,11 +204,12 @@ export class Engine extends Dispatcher<EngineListener> {
    * Updates all systems in this engine by the given delta value.
    *
    * @param {number} delta
+   * @returns {Promise<any>}
    */
-  update(delta: number): void {
+  async update(delta: number): Promise<any> {
     const length = this._activeSystems.length;
     for (let i = 0; i < length; i++)
-      this._activeSystems[i].update(delta);
+      await this._activeSystems[i].update(delta);
   }
 
   /**

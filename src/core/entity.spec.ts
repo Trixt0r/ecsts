@@ -1,5 +1,6 @@
 import { Entity } from './entity';
 import { Collection } from './collection';
+import { Dispatcher } from './dispatcher';
 
 class MyEntity extends Entity { }
 
@@ -10,6 +11,10 @@ describe('Entity', () => {
   describe('initial', () => {
     it('should have an id', () => {
       expect(myEntity.id).toBe('randomId');
+    });
+
+    it('should be a dispatcher', () => {
+      expect(myEntity instanceof Dispatcher).toBe(true);
     });
 
     it('should have a collection of components', () => {
