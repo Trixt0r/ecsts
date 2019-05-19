@@ -66,10 +66,12 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> {
 
   /**
    * Creates an instance of Collection.
+   *
+   * @param {T[]} [initial=[]] An optional initial list of elements.
    */
-  constructor() {
+  constructor(initial: T[] = []) {
     super();
-    this._elements = [];
+    this._elements = initial.slice();
     this.updatedFrozenObjects();
   }
 

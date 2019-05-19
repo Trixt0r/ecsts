@@ -18,6 +18,13 @@ describe('Collection', () => {
     it('should have no elements', () => {
       expect(collection.length).toBe(0);
     });
+
+    it('should accept an initial list of elements', () => {
+      const source = [new MyType(), new MyType(), new MyType()];
+      const c = new Collection(source);
+      expect(c.length).toBe(source.length);
+      c.forEach((el, i) => expect(el).toBe(source[i]));
+    });
   });
 
   describe('elements', () => {
@@ -295,5 +302,7 @@ describe('Collection', () => {
       expect(called).toBe(false);
     });
   });
+
+  // TODO: add tests for the array like methods...
 
 });

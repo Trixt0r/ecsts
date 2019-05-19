@@ -1,4 +1,4 @@
-type ArgumentTypes<F> = F extends (...args: infer A) => any ? A : never;
+import { ArgumentTypes } from "./types";
 
 /**
  * A dispatcher is an abstract object which holds a list of listeners

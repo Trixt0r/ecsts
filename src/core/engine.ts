@@ -3,6 +3,8 @@ import { Entity } from "./entity";
 import { Dispatcher } from "./dispatcher";
 import { Collection } from "./collection";
 import { Filter } from "./filter";
+import { Class } from "./types";
+import { Component } from "./component";
 
 /**
  * The listener interface for a listener on an engine.
@@ -85,8 +87,6 @@ export class Engine extends Dispatcher<EngineListener> {
    */
   protected _entites: Collection<Entity>;
 
-  protected entityCache: { [key: string]: { filter: (entity: Entity, idx?: number) => boolean, entities: Entity[] } } = { };
-
   /**
    * Creates an instance of Engine.
    */
@@ -106,7 +106,7 @@ export class Engine extends Dispatcher<EngineListener> {
             onDeactivated: () => this.updatedActiveSystems(),
             onError: error => this.dispatch('onErrorBySystem', error, system),
           };
-          (<any>system).__ecs_engine_listener = systemListener;
+          (<any>system).__ecsEngineListener = systemListener;
           system.addListener(systemListener, true);
         });
       const args = ['onAddedSystems'].concat(<any[]>systems);
@@ -116,7 +116,7 @@ export class Engine extends Dispatcher<EngineListener> {
         systems.forEach(system => {
           system.engine = null;
           this.updatedActiveSystems();
-          const systemListener: SystemListener = (<any>system).__ecs_engine_listener;
+          const systemListener: SystemListener = (<any>system).__ecsEngineListener;
           const locked: SystemListener[] = (<any>system)._lockedListeners;
           locked.splice(locked.indexOf(systemListener), 1);
           system.removeListener(systemListener);
@@ -129,28 +129,10 @@ export class Engine extends Dispatcher<EngineListener> {
 
     this._entites.addListener({
       onAdded: (...entities: Entity[]) => {
-        const cache = this.entityCache;
-        const keys = Object.keys(cache);
-        // On the next update the filter will be also applied for the new entity
-        keys.forEach(key => {
-          entities.forEach(entity => {
-            const re = cache[key].filter(entity);
-            if (re) cache[key].entities.push(entity);
-          });
-        });
         const args = ['onAddedEntities'].concat(<any[]>entities);
         this.dispatch.apply(this, args);
       },
       onRemoved: (...entities: Entity[]) => {
-        const cache = this.entityCache;
-        const keys = Object.keys(cache);
-        // On the next update the entity won't be part of filtered system updates
-        keys.forEach(key => {
-          entities.forEach(entity => {
-            const idx = cache[key].entities.indexOf(entity);
-            if (idx >= 0) cache[key].entities.splice(idx, 1);
-          });
-        });
         const args = ['onRemovedEntities'].concat(<any[]>entities);
         this.dispatch.apply(this, args);
       },
@@ -213,28 +195,14 @@ export class Engine extends Dispatcher<EngineListener> {
   }
 
   /**
-   * Returns a list of entities for the given filter.
+   * Returns a list of entities which have the given types of component.
    *
-   * @param {Filter} filter The filter to apply to the current entities.
+   * @param {Class<Component>[]} types The types of components the entities have to contain.
    * @returns {Entity[]}
    */
-  getEntitiesFor(filter: Filter): Entity[] {
-    const found = this.entityCache[filter.id];
-    if (!found) {
-      const types = filter.types;
-      const filterFn = entity => {
-        const comps = entity.components;
-        return comps.some(comp => types.indexOf(Object.getPrototypeOf(comp)) >= 0);
-      };
-      const entities = this.entities.filter(filterFn);
-      this.entityCache[filter.id] = {
-        filter: filterFn,
-        entities: entities
-      };
-      return entities;
-    } else {
-      return found.entities;
-    }
+  getEntitiesFor(...types: Class<Component>[]): Entity[] {
+    const args = [this].concat(<any>types);
+    return Filter.get.apply(Filter, args);
   }
 
 }

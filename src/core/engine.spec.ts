@@ -3,6 +3,7 @@ import { System } from './system';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
 import { Entity } from './entity';
+import { Filter } from './filter';
 
 class MySystem extends System {
 
@@ -278,5 +279,18 @@ describe('Engine', () => {
       expect(system).toBe(engine.systems.elements[0]);
     });
 
+  });
+
+  describe('getEntitiesFor', () => {
+    it('should call Filter.get with the engine itself as the first argument', () => {
+      const orig = Filter.get;
+      let set = null;
+      (<any>Filter).get = function(...args: any[]) {
+        set = args[0];
+      };
+      engine.getEntitiesFor();
+      expect(set).toBe(engine);
+      Filter.get = orig;
+    });
   });
 });
