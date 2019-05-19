@@ -15,227 +15,227 @@ describe('Collection', () => {
       expect(collection instanceof Dispatcher).toBe(true);
     });
 
-    it('should have no objects', () => {
+    it('should have no elements', () => {
       expect(collection.length).toBe(0);
     });
   });
 
-  describe('objects', () => {
+  describe('elements', () => {
     it('should be frozen initially', () => {
-      expect(() => (<any>collection.objects).push(new MyType())).toThrow();
+      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
     });
 
-    it('should be frozen after an object got added', () => {
+    it('should be frozen after an element got added', () => {
       collection.add(new MyType());
-      expect(() => (<any>collection.objects).push(new MyType())).toThrow();
+      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
     });
 
-    it('should be frozen after an object got removed', () => {
+    it('should be frozen after an element got removed', () => {
       const comp = new MyType();
       collection.add(comp);
       collection.remove(comp);
-      expect(() => (<any>collection.objects).push(new MyType())).toThrow();
+      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
     });
 
     it('should be frozen after the collection got cleared', () => {
       const comp = new MyType();
       collection.add(comp);
       collection.clear();
-      expect(() => (<any>collection.objects).push(new MyType())).toThrow();
+      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
     });
 
     it('should be frozen after the collection got sorted', () => {
       const comp = new MyType();
       collection.add(comp);
       collection.sort();
-      expect(() => (<any>collection.objects).push(new MyType())).toThrow();
+      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
     });
   });
 
   describe('add', () => {
-    let object: MyType;
+    let element: MyType;
 
-    beforeEach(() => object = new MyType());
+    beforeEach(() => element = new MyType());
 
-    it('should add an object', () => {
-      const re = collection.add(object);
+    it('should add an element', () => {
+      const re = collection.add(element);
       expect(re).toBe(true);
       expect(collection.length).toBe(1);
-      expect(collection.objects).toContain(object);
-      expect(collection.objects[0]).toBe(object);
+      expect(collection.elements).toContain(element);
+      expect(collection.elements[0]).toBe(element);
     });
 
-    it('should add multiple objects', () => {
+    it('should add multiple elements', () => {
       const o1 = new MyType();
       const o2 = new MyType();
-      const re = collection.add(object, o1, o2);
+      const re = collection.add(element, o1, o2);
       expect(re).toBe(true);
       expect(collection.length).toBe(3);
-      expect(collection.objects).toContain(object);
-      expect(collection.objects).toContain(o1);
-      expect(collection.objects).toContain(o2);
-      expect(collection.objects[0]).toBe(object);
-      expect(collection.objects[1]).toBe(o1);
-      expect(collection.objects[2]).toBe(o2);
+      expect(collection.elements).toContain(element);
+      expect(collection.elements).toContain(o1);
+      expect(collection.elements).toContain(o2);
+      expect(collection.elements[0]).toBe(element);
+      expect(collection.elements[1]).toBe(o1);
+      expect(collection.elements[2]).toBe(o2);
     });
 
-    it('should not add the same object twice (2 calls)', () => {
-      collection.add(object);
+    it('should not add the same element twice (2 calls)', () => {
+      collection.add(element);
       expect(collection.length).toBe(1);
-      expect(collection.objects).toContain(object);
+      expect(collection.elements).toContain(element);
 
-      const re = collection.add(object);
+      const re = collection.add(element);
       expect(re).toBe(false);
       expect(collection.length).toBe(1);
     });
 
-    it('should not add the same object multiple times (1 call)', () => {
-      collection.add(object, object, object, object);
+    it('should not add the same element multiple times (1 call)', () => {
+      collection.add(element, element, element, element);
       expect(collection.length).toBe(1);
-      expect(collection.objects).toContain(object);
+      expect(collection.elements).toContain(element);
     });
 
-    it('should notify all listeners that an object got added', () => {
+    it('should notify all listeners that an element got added', () => {
       let added: MyType = null;
       const listener: CollectionListener<MyType> = {
-        onAdded: (object: MyType) => added = object
+        onAdded: (element: MyType) => added = element
       };
 
       collection.addListener(listener);
-      collection.add(object);
-      expect(added).toBe(object);
+      collection.add(element);
+      expect(added).toBe(element);
     });
 
-    it('should notify all listeners that objects got added', () => {
+    it('should notify all listeners that elements got added', () => {
       let added: MyType[] = [];
       const listener: CollectionListener<MyType> = {
-        onAdded: (...objects: MyType[]) => added = objects
+        onAdded: (...elements: MyType[]) => added = elements
       };
 
       collection.addListener(listener);
       const o1 = new MyType();
       const o2 = new MyType();
-      collection.add(object, o1, o2);
+      collection.add(element, o1, o2);
       expect(added.length).toBe(3);
-      const objs = [object, o1, o2];
+      const objs = [element, o1, o2];
       objs.forEach((obj, i) => expect(obj).toBe(added[i]));
     });
 
-    it('should not notify any listener that an object has been removed', () => {
+    it('should not notify any listener that an element has been removed', () => {
       let removed: MyType = null;
       const listener: CollectionListener<MyType> = {
-        onRemoved: (object: MyType) => removed = object
+        onRemoved: (element: MyType) => removed = element
       };
 
       collection.addListener(listener);
-      collection.add(object);
+      collection.add(element);
       expect(removed).toBe(null);
     });
   });
 
   describe('remove', () => {
-    let object: MyType;
+    let element: MyType;
 
     beforeEach(() => {
-      object = new MyType();
-      collection.add(object);
+      element = new MyType();
+      collection.add(element);
     });
 
-    it('should remove a previously added object', () => {
-      const re = collection.remove(object);
+    it('should remove a previously added element', () => {
+      const re = collection.remove(element);
       expect(re).toBe(true);
       expect(collection.length).toBe(0);
-      expect(collection.objects).not.toContain(object);
+      expect(collection.elements).not.toContain(element);
     });
 
-    it('should remove multiple previously added objects', () => {
+    it('should remove multiple previously added elements', () => {
       const o1 = new MyType();
       const o2 = new MyType();
       collection.add(o1, o2);
-      const re = collection.remove(object, o1, o2);
+      const re = collection.remove(element, o1, o2);
       expect(re).toBe(true);
       expect(collection.length).toBe(0);
-      expect(collection.objects).not.toContain(object);
-      expect(collection.objects).not.toContain(o1);
-      expect(collection.objects).not.toContain(o2);
+      expect(collection.elements).not.toContain(element);
+      expect(collection.elements).not.toContain(o1);
+      expect(collection.elements).not.toContain(o2);
     });
 
-    it('should remove an object at the specified index (0)', () => {
+    it('should remove an element at the specified index (0)', () => {
       const re = collection.remove(0);
       expect(re).toBe(true);
       expect(collection.length).toBe(0);
-      expect(collection.objects).not.toContain(object);
+      expect(collection.elements).not.toContain(element);
     });
 
-    it('should remove objects at the specified indices (0, 1, 2)', () => {
+    it('should remove elements at the specified indices (0, 1, 2)', () => {
       const o1 = new MyType();
       const o2 = new MyType();
       collection.add(o1, o2);
       const re = collection.remove(0, 1, 2);
       expect(re).toBe(true);
       expect(collection.length).toBe(0);
-      expect(collection.objects).not.toContain(object);
-      expect(collection.objects).not.toContain(o1);
-      expect(collection.objects).not.toContain(o2);
+      expect(collection.elements).not.toContain(element);
+      expect(collection.elements).not.toContain(o1);
+      expect(collection.elements).not.toContain(o2);
     });
 
-    it('should not remove an object which is not part of the collection', () => {
+    it('should not remove an element which is not part of the collection', () => {
       const re = collection.remove(new MyType());
       expect(re).toBe(false);
       expect(collection.length).toBe(1);
     });
 
-    it('should not remove objects which are not part of the collection', () => {
+    it('should not remove elements which are not part of the collection', () => {
       const re = collection.remove(new MyType(), new MyType(), new MyType());
       expect(re).toBe(false);
       expect(collection.length).toBe(1);
     });
 
-    it('should not remove an object at an out of bounds index', () => {
+    it('should not remove an element at an out of bounds index', () => {
       const re = collection.remove(collection.length);
       expect(re).toBe(false);
     });
 
-    it('should not remove multiple objects at out of bounds indices', () => {
+    it('should not remove multiple elements at out of bounds indices', () => {
       const re = collection.remove(-1, collection.length, collection.length + 1);
       expect(re).toBe(false);
     });
 
-    it('should notify all listeners that an object got removed', () => {
+    it('should notify all listeners that an element got removed', () => {
       let removed: MyType = null;
       const listener: CollectionListener<MyType> = {
-        onRemoved: (object: MyType) => removed = object
+        onRemoved: (element: MyType) => removed = element
       };
 
       collection.addListener(listener);
-      collection.remove(object);
-      expect(removed).toBe(object);
+      collection.remove(element);
+      expect(removed).toBe(element);
     });
 
-    it('should notify all listeners that multiple objects got removed', () => {
+    it('should notify all listeners that multiple elements got removed', () => {
       const o1 = new MyType();
       const o2 = new MyType();
       collection.add(o1, o2);
       let removed: MyType[] = [];
       const listener: CollectionListener<MyType> = {
-        onRemoved: (...objects: MyType[]) => removed = objects
+        onRemoved: (...elements: MyType[]) => removed = elements
       };
 
       collection.addListener(listener);
-      collection.remove(object, o1, o2);
+      collection.remove(element, o1, o2);
       expect(removed.length).toBe(3);
-      const objs = [object, o1, o2];
+      const objs = [element, o1, o2];
       objs.forEach((obj, i) => expect(obj).toBe(removed[i]));
     });
 
-    it('should not notify any listener that a object has been added', () => {
+    it('should not notify any listener that a element has been added', () => {
       let added: MyType = null;
       const listener: CollectionListener<MyType> = {
-        onAdded: (object: MyType) => added = object
+        onAdded: (element: MyType) => added = element
       };
 
       collection.addListener(listener);
-      collection.remove(object);
+      collection.remove(element);
       expect(added).toBe(null);
     });
   });
@@ -244,7 +244,7 @@ describe('Collection', () => {
 
     beforeEach(() => collection.add(new MyType(), new MyType(), new MyType()));
 
-    it('should remove all objects from the collection', () => {
+    it('should remove all elements from the collection', () => {
       collection.clear();
       expect(collection.length).toBe(0);
     });
@@ -257,7 +257,7 @@ describe('Collection', () => {
       expect(called).toBe(true);
     });
 
-    it('should not notify any listener that the collection has been cleared if there were no objects', () => {
+    it('should not notify any listener that the collection has been cleared if there were no elements', () => {
       let called = false;
       collection.addListener({ onCleared: () => called = true });
       collection.remove(0, 1, 2);
@@ -271,12 +271,12 @@ describe('Collection', () => {
     beforeEach(() => collection.add(new MySortableType(3), new MySortableType(2), new MySortableType(1)));
 
     it('should sort the collection', () => {
-      collection.sort((object: MySortableType) => object.position);
+      collection.sort((element: MySortableType) => element.position);
 
-      const objects = <readonly MySortableType[]>collection.objects;
-      expect(objects[0].position).toBe(1);
-      expect(objects[1].position).toBe(2);
-      expect(objects[2].position).toBe(3);
+      const elements = <readonly MySortableType[]>collection.elements;
+      expect(elements[0].position).toBe(1);
+      expect(elements[1].position).toBe(2);
+      expect(elements[2].position).toBe(3);
     });
 
     it('should notify all listeners that the collection has been sorted', () => {
@@ -287,7 +287,7 @@ describe('Collection', () => {
       expect(called).toBe(true);
     });
 
-    it('should not notify any listener that the collection has been sorted if there were no objects', () => {
+    it('should not notify any listener that the collection has been sorted if there were no elements', () => {
       let called = false;
       collection.addListener({ onSorted: () => called = true });
       collection.remove(0, 1, 2);

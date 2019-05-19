@@ -204,9 +204,9 @@ export class Engine extends Dispatcher<EngineListener> {
    * Updates all systems in this engine by the given delta value.
    *
    * @param {number} delta
-   * @returns {Promise<any>}
+   * @returns {Promise<void>}
    */
-  async update(delta: number): Promise<any> {
+  async update(delta: number): Promise<void> {
     const length = this._activeSystems.length;
     for (let i = 0; i < length; i++)
       await this._activeSystems[i].update(delta);

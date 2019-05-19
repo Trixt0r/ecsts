@@ -141,9 +141,9 @@ export abstract class System extends Dispatcher<SystemListener> {
    * Updates starts the system process with the given delta time.
    *
    * @param {number} delta
-   * @returns {Promise<any>}
+   * @returns {Promise<void>}
    */
-  async update(delta: number): Promise<any> {
+  async update(delta: number): Promise<void> {
     try {
       this._updating = true;
       await this.process(delta);

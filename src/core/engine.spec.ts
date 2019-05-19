@@ -73,7 +73,7 @@ describe('Engine', () => {
       let calledRemoved: System = null;
       engine.addListener({ onAddedSystems: sys => called = sys, onRemovedSystems: sys => calledRemoved = sys });
       engine.systems.add(new MySystem());
-      expect(called).toBe(engine.systems.objects[0]);
+      expect(called).toBe(engine.systems.elements[0]);
       expect(calledRemoved).toBeNull();
     });
 
@@ -98,9 +98,9 @@ describe('Engine', () => {
 
     it('should be sorted by priority', () => {
       engine.systems.add(new MySystem(3), new MySystem(2), new MySystem(1));
-      expect(engine.systems.objects[0].priority).toBe(1);
-      expect(engine.systems.objects[1].priority).toBe(2);
-      expect(engine.systems.objects[2].priority).toBe(3);
+      expect(engine.systems.elements[0].priority).toBe(1);
+      expect(engine.systems.elements[1].priority).toBe(2);
+      expect(engine.systems.elements[2].priority).toBe(3);
     });
   });
 
@@ -110,7 +110,7 @@ describe('Engine', () => {
       let calledRemoved: Entity = null;
       engine.addListener({ onAddedEntities: sys => called = sys, onRemovedEntities: sys => calledRemoved = sys });
       engine.entities.add(new MyEntity('id'));
-      expect(called).toBe(engine.entities.objects[0]);
+      expect(called).toBe(engine.entities.elements[0]);
       expect(calledRemoved).toBeNull();
     });
 
@@ -220,7 +220,7 @@ describe('Engine', () => {
     it('should call update on each active system with the correct delta value', async () => {
       let called = 0;
       const dlt = 10;
-      engine.systems.objects.forEach(system => {
+      engine.systems.elements.forEach(system => {
         (<any>system).update = function(delta) { called += delta; };
       });
       await engine.update(dlt);
@@ -230,18 +230,18 @@ describe('Engine', () => {
     it('should not call update on inatcive systems', async () => {
       let called = 0;
       const dlt = 10;
-      engine.systems.objects.forEach(system => {
+      engine.systems.elements.forEach(system => {
         (<any>system).update = function(delta) { called += delta; };
       });
       const toDeactivate = 3;
       for (let i = 0; i < toDeactivate; i++)
-        engine.systems.objects[engine.systems.objects.length - 1 - i].active = false;
+        engine.systems.elements[engine.systems.elements.length - 1 - i].active = false;
       await engine.update(dlt);
       expect(called).toBe(dlt * (max - toDeactivate));
     });
 
     it('should wait for a system before continuing with the next one', async () => {
-      engine.systems.objects.forEach(system => {
+      engine.systems.elements.forEach(system => {
         (<any>system).process = function() {
           const updating = engine.systems.filter(system => system.updating);
           expect(updating.length).toBe(1);
@@ -252,8 +252,8 @@ describe('Engine', () => {
     });
 
     it('should execute each system in the correct order', async () => {
-      const remaining = engine.systems.objects.slice();
-      engine.systems.objects.forEach(system => {
+      const remaining = engine.systems.elements.slice();
+      engine.systems.elements.forEach(system => {
         (<any>system).update = function() {
           expect(remaining.shift()).toBe(system);
           remaining.forEach(s => expect(s.priority).toBeGreaterThanOrEqual(system.priority));
@@ -271,11 +271,11 @@ describe('Engine', () => {
           system = sys;
         }
       });
-      (<any>engine.systems.objects[0]).throw = 'Error';
+      (<any>engine.systems.elements[0]).throw = 'Error';
       await engine.update(0);
       expect(error).not.toBeNull();
-      expect(error.message).toBe((<any>engine.systems.objects[0]).throw);
-      expect(system).toBe(engine.systems.objects[0]);
+      expect(error.message).toBe((<any>engine.systems.elements[0]).throw);
+      expect(system).toBe(engine.systems.elements[0]);
     });
 
   });
