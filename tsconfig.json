@@ -8,6 +8,7 @@
     "skipLibCheck": true
   },
   "exclude": [
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "./build"
   ]
 }
