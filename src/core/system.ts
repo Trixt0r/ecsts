@@ -103,6 +103,11 @@ export abstract class System extends Dispatcher<SystemListener> {
   set active(active: boolean) {
     if (active === this._active) return;
     this._active = active;
+    if (active) {
+      this.onActivated();
+    } else {
+      this.onDeactivated();
+    }
     this.dispatch(active ? 'onActivated' : 'onDeactivated');
   }
 
@@ -120,10 +125,14 @@ export abstract class System extends Dispatcher<SystemListener> {
     if (engine === this._engine) return;
     const oldEngine = this._engine;
     this._engine = engine;
-    if (oldEngine instanceof Engine)
+    if (oldEngine instanceof Engine) {
+      this.onRemovedFromEngine(oldEngine);
       this.dispatch('onRemovedFromEngine', oldEngine);
-    if (engine instanceof Engine)
+    }
+    if (engine instanceof Engine) {
+      this.onAddedToEngine(engine);
       this.dispatch('onAddedToEngine', engine);
+    }
   }
 
   /**
@@ -163,4 +172,46 @@ export abstract class System extends Dispatcher<SystemListener> {
    * @returns {Promise<any>}
    */
   abstract async process(delta: number): Promise<any>;
+
+  /**
+   * Called as soon as the `active` switched to `true`.
+   *
+   * @returns {void}
+   */
+  onActivated(): void { /* NOOP */ }
+
+  /**
+   * Called as soon as the `active` switched to `false`.
+   *
+   * @returns {void}
+   */
+  onDeactivated(): void { /* NOOP */ }
+
+  /**
+   * Called as soon as the system got removed from an engine.
+   *
+   * @param {Engine} engine The engine this system got added to.
+   *
+   * @returns {void}
+   */
+  onRemovedFromEngine(engine: Engine): void { /* NOOP */ }
+
+  /**
+   * Called as soon as the system got added to an engine.
+   * Note that this will be called after @see {SystemListener#onRemovedFromEngine}.
+   *
+   * @param {Engine} engine The engine this system got added to.
+   *
+   * @returns {void}
+   */
+  onAddedToEngine(engine: Engine): void { /* NOOP */ }
+
+  /**
+   * Called as soon an error occurred during update.
+   *
+   * @param {Error} error The error which occurred.
+   *
+   * @returns {void}
+   */
+  onError(error: Error): void { /* NOOP */ }
 }
