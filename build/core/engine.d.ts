@@ -52,6 +52,7 @@ export interface EngineListener {
      */
     onClearedEntities(): void;
 }
+<<<<<<< HEAD
 /**
  * An engine puts entities and systems together.
  * It holds for each type a collection, which can be queried by each system.
@@ -63,6 +64,8 @@ export interface EngineListener {
  * @class Engine
  * @extends {Dispatcher<EngineListener>}
  */
+=======
+>>>>>>> Emit alslo the declaration files.
 export declare class Engine extends Dispatcher<EngineListener> {
     /**
      * The internal list of all systems in this engine.

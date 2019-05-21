@@ -2,7 +2,11 @@ import { Component } from "./component";
 import { Collection, CollectionListener } from "./collection";
 import { Entity } from "./entity";
 import { Engine } from "./engine";
+<<<<<<< HEAD
 import { ComponentClass } from "./types";
+=======
+import { Class } from "./types";
+>>>>>>> Emit alslo the declaration files.
 /**
  * A filter is used to filter a collection of entities by component types.
  *
@@ -16,7 +20,11 @@ import { ComponentClass } from "./types";
  */
 export declare class Filter {
     source: Collection<Entity>;
+<<<<<<< HEAD
     readonly types: readonly ComponentClass<Component>[];
+=======
+    readonly types: readonly Class<Component>[];
+>>>>>>> Emit alslo the declaration files.
     /**
      * The internal cache for filter instances.
      *
@@ -63,9 +71,15 @@ export declare class Filter {
      * Creates an instance of Filter.
      *
      * @param {Collection<Entity>} source The collection of entities to filter.
+<<<<<<< HEAD
      * @param {ComponentClass<Component>[]} types The components for which to filter for.
      */
     protected constructor(source: Collection<Entity>, types: readonly ComponentClass<Component>[]);
+=======
+     * @param {Class<Component>[]} types The components for which to filter for.
+     */
+    protected constructor(source: Collection<Entity>, types: readonly Class<Component>[]);
+>>>>>>> Emit alslo the declaration files.
     /**
      * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
      *
@@ -130,8 +144,15 @@ export declare class Filter {
      * Returns a filter for the given engine or collection of entities and combination of component types.
      *
      * @param {Collection<Entity> | Engine} entitiesOrEngine
+<<<<<<< HEAD
      * @param {ComponentClass<Component>[]} types
      * @returns {Filter}
      */
     static get(entitiesOrEngine: Collection<Entity> | Engine, ...types: ComponentClass<Component>[]): Filter;
+=======
+     * @param {Class<Component>[]} types
+     * @returns {Filter}
+     */
+    static get(entitiesOrEngine: Collection<Entity> | Engine, ...types: Class<Component>[]): Filter;
+>>>>>>> Emit alslo the declaration files.
 }

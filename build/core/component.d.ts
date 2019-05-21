@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Collection } from "./collection";
 import { ComponentClass } from "./types";
 /**
@@ -6,11 +7,17 @@ import { ComponentClass } from "./types";
  * If you want your system to treat differnt Components the same way,
  * you may define a static string variable nameed `type` in your components.
  *
+=======
+/**
+ * The component interface, every component has to implement.
+ *
+>>>>>>> Emit alslo the declaration files.
  * @export
  * @interface Component
  */
 export interface Component {
 }
+<<<<<<< HEAD
 /**
  * A collection for components.
  * Supports accessing components by their class.
@@ -37,3 +44,5 @@ export declare class ComponentCollection extends Collection<Component> {
      */
     getAll(classOrType: ComponentClass<Component> | string): readonly Component[];
 }
+=======
+>>>>>>> Emit alslo the declaration files.
