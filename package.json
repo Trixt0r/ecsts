@@ -2,7 +2,7 @@
   "name": "ecsts",
   "version": "1.0.0",
   "description": "Entity component system for written in TypeScript.",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "test": "jest"
   },
