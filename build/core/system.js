@@ -43,6 +43,12 @@ export class System extends Dispatcher {
         if (active === this._active)
             return;
         this._active = active;
+        if (active) {
+            this.onActivated();
+        }
+        else {
+            this.onDeactivated();
+        }
         this.dispatch(active ? 'onActivated' : 'onDeactivated');
     }
     /**
@@ -59,10 +65,14 @@ export class System extends Dispatcher {
             return;
         const oldEngine = this._engine;
         this._engine = engine;
-        if (oldEngine instanceof Engine)
+        if (oldEngine instanceof Engine) {
+            this.onRemovedFromEngine(oldEngine);
             this.dispatch('onRemovedFromEngine', oldEngine);
-        if (engine instanceof Engine)
+        }
+        if (engine instanceof Engine) {
+            this.onAddedToEngine(engine);
             this.dispatch('onAddedToEngine', engine);
+        }
     }
     /**
      * Determines whether this system is currenlty updating or not.
@@ -94,4 +104,41 @@ export class System extends Dispatcher {
             }
         });
     }
+    /**
+     * Called as soon as the `active` switched to `true`.
+     *
+     * @returns {void}
+     */
+    onActivated() { }
+    /**
+     * Called as soon as the `active` switched to `false`.
+     *
+     * @returns {void}
+     */
+    onDeactivated() { }
+    /**
+     * Called as soon as the system got removed from an engine.
+     *
+     * @param {Engine} engine The engine this system got added to.
+     *
+     * @returns {void}
+     */
+    onRemovedFromEngine(engine) { }
+    /**
+     * Called as soon as the system got added to an engine.
+     * Note that this will be called after @see {SystemListener#onRemovedFromEngine}.
+     *
+     * @param {Engine} engine The engine this system got added to.
+     *
+     * @returns {void}
+     */
+    onAddedToEngine(engine) { }
+    /**
+     * Called as soon an error occurred during update.
+     *
+     * @param {Error} error The error which occurred.
+     *
+     * @returns {void}
+     */
+    onError(error) { }
 }

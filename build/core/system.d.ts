@@ -113,4 +113,41 @@ export declare abstract class System extends Dispatcher<SystemListener> {
      * @returns {Promise<any>}
      */
     abstract process(delta: number): Promise<any>;
+    /**
+     * Called as soon as the `active` switched to `true`.
+     *
+     * @returns {void}
+     */
+    onActivated(): void;
+    /**
+     * Called as soon as the `active` switched to `false`.
+     *
+     * @returns {void}
+     */
+    onDeactivated(): void;
+    /**
+     * Called as soon as the system got removed from an engine.
+     *
+     * @param {Engine} engine The engine this system got added to.
+     *
+     * @returns {void}
+     */
+    onRemovedFromEngine(engine: Engine): void;
+    /**
+     * Called as soon as the system got added to an engine.
+     * Note that this will be called after @see {SystemListener#onRemovedFromEngine}.
+     *
+     * @param {Engine} engine The engine this system got added to.
+     *
+     * @returns {void}
+     */
+    onAddedToEngine(engine: Engine): void;
+    /**
+     * Called as soon an error occurred during update.
+     *
+     * @param {Error} error The error which occurred.
+     *
+     * @returns {void}
+     */
+    onError(error: Error): void;
 }

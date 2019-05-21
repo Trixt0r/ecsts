@@ -1,6 +1,6 @@
-import { Component } from "./component";
+import { Component, ComponentCollection } from "./component";
 import { Dispatcher } from "./dispatcher";
-import { Collection, CollectionListener } from "./collection";
+import { CollectionListener } from "./collection";
 /**
  * The listener interface for a listener on an entity.
  *
@@ -43,9 +43,9 @@ export declare abstract class Entity extends Dispatcher<EntityListener> implemen
      * The internal list of components.
      *
      * @protected
-     * @type {Collection<Component>}
+     * @type {ComponentCollection}
      */
-    protected _components: Collection<Component>;
+    protected _components: ComponentCollection;
     /**
      * Creates an instance of Entity.
      *
@@ -56,9 +56,9 @@ export declare abstract class Entity extends Dispatcher<EntityListener> implemen
      * A snapshot of all components of this entity.
      *
      * @readonly
-     * @type {Collection<Component>}
+     * @type {ComponentCollection}
      */
-    readonly components: Collection<Component>;
+    readonly components: ComponentCollection;
     /**
      * Dispatches the `onAdded` event to all listeners as `onAddedComponents`.
      *

@@ -1,5 +1,5 @@
+import { ComponentCollection } from "./component";
 import { Dispatcher } from "./dispatcher";
-import { Collection } from "./collection";
 /**
  * An Entity holds an id and a list of components attached to it.
  * You can add or remove components from the entity.
@@ -17,14 +17,14 @@ export class Entity extends Dispatcher {
     constructor(id) {
         super();
         this.id = id;
-        this._components = new Collection();
+        this._components = new ComponentCollection();
         this._components.addListener(this, true);
     }
     /**
      * A snapshot of all components of this entity.
      *
      * @readonly
-     * @type {Collection<Component>}
+     * @type {ComponentCollection}
      */
     get components() {
         return this._components;
