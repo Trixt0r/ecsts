@@ -281,14 +281,14 @@ describe('Engine', () => {
 
   });
 
-  describe('getEntitiesFor', () => {
+  describe('getFilter', () => {
     it('should call Filter.get with the engine itself as the first argument', () => {
       const orig = Filter.get;
       let set = null;
       (<any>Filter).get = function(...args: any[]) {
         set = args[0];
       };
-      engine.getEntitiesFor();
+      engine.getFilter();
       expect(set).toBe(engine);
       Filter.get = orig;
     });

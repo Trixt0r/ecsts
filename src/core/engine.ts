@@ -195,12 +195,12 @@ export class Engine extends Dispatcher<EngineListener> {
   }
 
   /**
-   * Returns a list of entities which have the given types of component.
+   * Returns a filter for the given types of components.
    *
-   * @param {Class<Component>[]} types The types of components the entities have to contain.
-   * @returns {Entity[]}
+   * @param {Class<Component>[]} types The types of components the entities have to match.
+   * @returns {Filter}
    */
-  getEntitiesFor(...types: Class<Component>[]): Entity[] {
+  getFilter(...types: Class<Component>[]): Filter {
     const args = [this].concat(<any>types);
     return Filter.get.apply(Filter, args);
   }
