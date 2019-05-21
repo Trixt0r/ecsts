@@ -4,7 +4,8 @@
   "description": "Entity component system for written in TypeScript.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "publish": "tsc && tsc --declaration --emitDeclarationOnly && git push origin npm"
   },
   "author": "",
   "license": "ISC",
