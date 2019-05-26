@@ -2,7 +2,7 @@ import { Component } from "./component";
 import { Collection, CollectionListener } from "./collection";
 import { Entity, EntityListener } from "./entity";
 import { Engine } from "./engine";
-import { Class } from "./types";
+import { ComponentClass } from "./types";
 
 /**
  * A filter is used to filter a collection of entities by component types.
@@ -69,10 +69,10 @@ export class Filter {
    * Creates an instance of Filter.
    *
    * @param {Collection<Entity>} source The collection of entities to filter.
-   * @param {Class<Component>[]} types The components for which to filter for.
+   * @param {ComponentClass<Component>[]} types The components for which to filter for.
    */
   protected constructor(public source: Collection<Entity>,
-                        public readonly types: readonly Class<Component>[]) {
+                        public readonly types: readonly ComponentClass<Component>[]) {
     this.id = Filter.cache.length;
     this.setUp();
   }
@@ -127,7 +127,13 @@ export class Filter {
   protected filterFn(entity: Entity): boolean {
     const comps = entity.components;
     if (comps.length === 0) return false;
-    return comps.some(comp => this.types.indexOf(Object.getPrototypeOf(comp)) >= 0);
+    return comps.some(comp => {
+      const proto = Object.getPrototypeOf(comp);
+      if (proto.constructor && (<ComponentClass<Component>>proto.constructor).type)
+        return this.types.find(comp => (<ComponentClass<Component>>comp.constructor).type === proto.constructor.type);
+      else
+        return this.types.indexOf(proto) >= 0;
+    });
   }
 
   /**
@@ -241,15 +247,20 @@ export class Filter {
    * Returns a filter for the given engine or collection of entities and combination of component types.
    *
    * @param {Collection<Entity> | Engine} entitiesOrEngine
-   * @param {Class<Component>[]} types
+   * @param {ComponentClass<Component>[]} types
    * @returns {Filter}
    */
-  static get(entitiesOrEngine: Collection<Entity> | Engine, ...types: Class<Component>[]): Filter {
+  static get(entitiesOrEngine: Collection<Entity> | Engine, ...types: ComponentClass<Component>[]): Filter {
     const entities = entitiesOrEngine instanceof Engine ? entitiesOrEngine.entities : entitiesOrEngine;
     const mapped = types.map(type => type.prototype).filter((value, index, self) => self.indexOf(value) === index);
     let found = Filter.cache.find(filter => {
       if (filter.types.length !== mapped.length) return false;
-      const filtered = mapped.filter(type => filter.types.indexOf(type) >= 0);
+      const filtered = mapped.filter(type => {
+        if (type.constructor && (<ComponentClass<Component>>type.constructor).type)
+          return filter.types.find(comp => (<ComponentClass<Component>>comp.constructor).type === type.constructor.type);
+        else
+          return filter.types.indexOf(type) >= 0;
+      });
       return filtered.length === mapped.length;
     });
     if (found && found.source !== entities) found = null;

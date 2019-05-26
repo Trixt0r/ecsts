@@ -9,6 +9,10 @@ class MyComponent1 implements Component { }
 class MyComponent2 implements Component { }
 class MyComponent3 implements Component { }
 class MyComponent4 implements Component { }
+class MyTypedComponent1 implements Component { static readonly type = 'my-comp'; }
+class MyTypedComponent2 implements Component { static readonly type = 'my-comp'; }
+class MyTypedComponent3 implements Component { static readonly type = 'my-other-comp'; }
+class MyTypedComponent4 implements Component { static readonly type = 'my-other-comp'; }
 
 describe('Filter', () => {
 
@@ -17,7 +21,7 @@ describe('Filter', () => {
 
   beforeEach(() => {
     collection = new Collection();
-    filter = Filter.get(collection, MyComponent1, MyComponent2, MyComponent3);
+    filter = Filter.get(collection, MyComponent1, MyComponent2, MyComponent3, MyTypedComponent1);
   });
 
   describe('initial', () => {
@@ -42,23 +46,46 @@ describe('Filter', () => {
           expect(filter.entities.length).toBe(0);
         });
 
-        it('should not match entities, if the entities have no matching component', () => {
+        it('should not match entities, if the entities have no matching component(class)', () => {
           entity.components.add(new MyComponent4());
           collection.add(entity);
           expect(filter.entities.length).toBe(0);
         });
 
-        it('should match entities, if the entities have at least one matching component', () => {
+        it('should not match entities, if the entities have no matching component(type)', () => {
+          entity.components.add(new MyTypedComponent3());
+          entity.components.add(new MyTypedComponent4());
+          collection.add(entity);
+          expect(filter.entities.length).toBe(0);
+        });
+
+        it('should match entities, if the entities have at least one matching component(class)', () => {
           entity.components.add(new MyComponent1());
           collection.add(entity);
           expect(filter.entities.length).toBe(1);
           expect(filter.entities[0]).toBe(entity);
         });
 
-        it('should match entities, if the entities have matching components multiple times', () => {
+        it('should match entities, if the entities have at least one matching component(type)', () => {
+          entity.components.add(new MyTypedComponent2());
+          collection.add(entity);
+          expect(filter.entities.length).toBe(1);
+          expect(filter.entities[0]).toBe(entity);
+        });
+
+        it('should match entities, if the entities have matching components multiple times(class)', () => {
           entity.components.add(new MyComponent1());
           entity.components.add(new MyComponent1());
           entity.components.add(new MyComponent1());
+          collection.add(entity);
+          expect(filter.entities.length).toBe(1);
+          expect(filter.entities[0]).toBe(entity);
+        });
+
+        it('should match entities, if the entities have matching components multiple times(type)', () => {
+          entity.components.add(new MyTypedComponent2());
+          entity.components.add(new MyTypedComponent1());
+          entity.components.add(new MyTypedComponent1());
           collection.add(entity);
           expect(filter.entities.length).toBe(1);
           expect(filter.entities[0]).toBe(entity);
@@ -178,34 +205,34 @@ describe('Filter', () => {
 
   describe('static get', () => {
     it('should return a cached filter if the same collection and component types are requested (same order)', () => {
-      const filter2 = Filter.get(collection, MyComponent1, MyComponent2, MyComponent3);
+      const filter2 = Filter.get(collection, MyComponent1, MyComponent2, MyComponent3, MyTypedComponent1);
       expect(filter2).toBe(filter);
     });
 
     it('should return a cached filter if the same collection and component types are requested (different order)', () => {
-      const filter2 = Filter.get(collection, MyComponent2, MyComponent3, MyComponent1);
-      const filter3 = Filter.get(collection, MyComponent2, MyComponent1, MyComponent3);
-      const filter4 = Filter.get(collection, MyComponent3, MyComponent2, MyComponent1);
+      const filter2 = Filter.get(collection, MyComponent2, MyComponent3, MyComponent1, MyTypedComponent2);
+      const filter3 = Filter.get(collection, MyComponent2, MyComponent1, MyComponent3, MyTypedComponent2);
+      const filter4 = Filter.get(collection, MyComponent3, MyComponent2, MyComponent1, MyTypedComponent2);
       expect(filter2).toBe(filter);
       expect(filter3).toBe(filter);
       expect(filter4).toBe(filter);
     });
 
     it('should return a cached filter if the same collection and component types are duplicated', () => {
-      const filter2 = Filter.get(collection, MyComponent2, MyComponent3, MyComponent1);
-      const filter3 = Filter.get(collection, MyComponent2, MyComponent1, MyComponent3);
-      const filter4 = Filter.get(collection, MyComponent3, MyComponent2, MyComponent1);
-      const dup = Filter.get(collection, MyComponent2, MyComponent3, MyComponent1, MyComponent3, MyComponent2, MyComponent1);
+      const filter2 = Filter.get(collection, MyComponent2, MyComponent3, MyComponent1, MyTypedComponent1);
+      const filter3 = Filter.get(collection, MyComponent2, MyComponent1, MyComponent3, MyTypedComponent1);
+      const filter4 = Filter.get(collection, MyComponent3, MyComponent2, MyComponent1, MyTypedComponent1);
+      const dup = Filter.get(collection, MyComponent2, MyComponent3, MyComponent1, MyComponent3, MyComponent2, MyComponent1, MyTypedComponent1);
       expect(filter2).toBe(filter);
       expect(filter3).toBe(filter);
       expect(filter4).toBe(filter);
       expect(dup).toBe(filter);
     });
 
-    it('should not return a cached filter if the sames collection and different components are requested', () => {
+    it('should not return a cached filter if the same collection and different components are requested', () => {
       const filter2 = Filter.get(collection, MyComponent2, MyComponent3);
-      const filter3 = Filter.get(collection, MyComponent2, MyComponent1);
-      const filter4 = Filter.get(collection, MyComponent4);
+      const filter3 = Filter.get(collection, MyComponent2, MyComponent1, MyTypedComponent1);
+      const filter4 = Filter.get(collection, MyComponent4, MyTypedComponent3);
       expect(filter2).not.toBe(filter);
       expect(filter3).not.toBe(filter);
       expect(filter3).not.toBe(filter2);
