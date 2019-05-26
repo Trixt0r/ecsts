@@ -2,7 +2,7 @@ import { Component } from "./component";
 import { Collection, CollectionListener } from "./collection";
 import { Entity } from "./entity";
 import { Engine } from "./engine";
-import { Class } from "./types";
+import { ComponentClass } from "./types";
 /**
  * A filter is used to filter a collection of entities by component types.
  *
@@ -16,7 +16,7 @@ import { Class } from "./types";
  */
 export declare class Filter {
     source: Collection<Entity>;
-    readonly types: readonly Class<Component>[];
+    readonly types: readonly ComponentClass<Component>[];
     /**
      * The internal cache for filter instances.
      *
@@ -63,9 +63,9 @@ export declare class Filter {
      * Creates an instance of Filter.
      *
      * @param {Collection<Entity>} source The collection of entities to filter.
-     * @param {Class<Component>[]} types The components for which to filter for.
+     * @param {ComponentClass<Component>[]} types The components for which to filter for.
      */
-    protected constructor(source: Collection<Entity>, types: readonly Class<Component>[]);
+    protected constructor(source: Collection<Entity>, types: readonly ComponentClass<Component>[]);
     /**
      * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
      *
@@ -130,8 +130,8 @@ export declare class Filter {
      * Returns a filter for the given engine or collection of entities and combination of component types.
      *
      * @param {Collection<Entity> | Engine} entitiesOrEngine
-     * @param {Class<Component>[]} types
+     * @param {ComponentClass<Component>[]} types
      * @returns {Filter}
      */
-    static get(entitiesOrEngine: Collection<Entity> | Engine, ...types: Class<Component>[]): Filter;
+    static get(entitiesOrEngine: Collection<Entity> | Engine, ...types: ComponentClass<Component>[]): Filter;
 }

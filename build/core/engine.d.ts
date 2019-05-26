@@ -52,6 +52,17 @@ export interface EngineListener {
      */
     onClearedEntities(): void;
 }
+/**
+ * An engine puts entities and systems together.
+ * It holds for each type a collection, which can be queried by each system.
+ *
+ * The @see {Engine#update} method has to be called in order to perform updates on each system in a certain order.
+ * The engine takes care of updating only active systems in any point of time.
+ *
+ * @export
+ * @class Engine
+ * @extends {Dispatcher<EngineListener>}
+ */
 export declare class Engine extends Dispatcher<EngineListener> {
     /**
      * The internal list of all systems in this engine.

@@ -15,7 +15,7 @@ export class Filter {
      * Creates an instance of Filter.
      *
      * @param {Collection<Entity>} source The collection of entities to filter.
-     * @param {Class<Component>[]} types The components for which to filter for.
+     * @param {ComponentClass<Component>[]} types The components for which to filter for.
      */
     constructor(source, types) {
         this.source = source;
@@ -84,7 +84,13 @@ export class Filter {
         const comps = entity.components;
         if (comps.length === 0)
             return false;
-        return comps.some(comp => this.types.indexOf(Object.getPrototypeOf(comp)) >= 0);
+        return comps.some(comp => {
+            const proto = Object.getPrototypeOf(comp);
+            if (proto.constructor && proto.constructor.type)
+                return this.types.find(comp => comp.constructor.type === proto.constructor.type);
+            else
+                return this.types.indexOf(proto) >= 0;
+        });
     }
     /**
      * Updates the frozen entities.
@@ -195,7 +201,7 @@ export class Filter {
      * Returns a filter for the given engine or collection of entities and combination of component types.
      *
      * @param {Collection<Entity> | Engine} entitiesOrEngine
-     * @param {Class<Component>[]} types
+     * @param {ComponentClass<Component>[]} types
      * @returns {Filter}
      */
     static get(entitiesOrEngine, ...types) {
@@ -204,7 +210,12 @@ export class Filter {
         let found = Filter.cache.find(filter => {
             if (filter.types.length !== mapped.length)
                 return false;
-            const filtered = mapped.filter(type => filter.types.indexOf(type) >= 0);
+            const filtered = mapped.filter(type => {
+                if (type.constructor && type.constructor.type)
+                    return filter.types.find(comp => comp.constructor.type === type.constructor.type);
+                else
+                    return filter.types.indexOf(type) >= 0;
+            });
             return filtered.length === mapped.length;
         });
         if (found && found.source !== entities)
