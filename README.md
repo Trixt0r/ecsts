@@ -98,7 +98,7 @@ class MySystem extends System {
   async process(): Promise<any> {
     const entities = this.filter.entities;
     entities.forEach(entity => {
-      const position = entity.components.find(comp => comp instanceof Position);
+      const position = entity.components.get(Position);
       //... do your logic here
     });
   }

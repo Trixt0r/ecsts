@@ -1,4 +1,4 @@
-import { Component } from "./component";
+import { Component, ComponentCollection } from "./component";
 import { Dispatcher } from "./dispatcher";
 import { Collection, CollectionListener } from "./collection";
 
@@ -49,9 +49,9 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * The internal list of components.
    *
    * @protected
-   * @type {Collection<Component>}
+   * @type {ComponentCollection}
    */
-  protected _components: Collection<Component>;
+  protected _components: ComponentCollection;
 
   /**
    * Creates an instance of Entity.
@@ -60,7 +60,7 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    */
   constructor(public readonly id: number | string) {
     super();
-    this._components = new Collection<Component>();
+    this._components = new ComponentCollection();
     this._components.addListener(this, true);
   }
 
@@ -68,9 +68,9 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * A snapshot of all components of this entity.
    *
    * @readonly
-   * @type {Collection<Component>}
+   * @type {ComponentCollection}
    */
-  get components(): Collection<Component> {
+  get components(): ComponentCollection {
     return this._components;
   }
 

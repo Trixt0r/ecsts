@@ -1,6 +1,6 @@
 import { Entity } from './entity';
-import { Collection } from './collection';
 import { Dispatcher } from './dispatcher';
+import { ComponentCollection } from './component';
 
 class MyEntity extends Entity { }
 
@@ -17,8 +17,8 @@ describe('Entity', () => {
       expect(myEntity instanceof Dispatcher).toBe(true);
     });
 
-    it('should have a collection of components', () => {
-      expect(myEntity.components instanceof Collection).toBe(true);
+    it('should have a component collection', () => {
+      expect(myEntity.components instanceof ComponentCollection).toBe(true);
     });
 
     it('should have no components', () => {
