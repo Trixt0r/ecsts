@@ -8,10 +8,10 @@ So you will not find any game specific logic in this library.
 ## Install
 
 ```
-npm install git://github.com/Trixt0r/ecsts.git#npm
+npm install @trixt0r/ecsts
 ```
 
-Browser builds and support for installs directly from the npm registry are on the way.
+Browser builds are on the way.
 
 ## Usage
 
