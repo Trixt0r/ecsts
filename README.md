@@ -8,7 +8,7 @@ So you will not find any game specific logic in this library.
 ## Install
 
 ```
-npm install @trixt0r/ecsts
+npm install @trixt0r/ecs
 ```
 
 Browser builds are on the way.
