@@ -30,7 +30,7 @@ I highly suggest you to implement your components as classes, since the systems 
 For example, you could define a position like this:
 
 ```ts
-import { Component } from 'ecsts';
+import { Component } from '@trixt0r/ecsts';
 
 class Position implements Component {
   constructor(public x = 0, public y = 0) { }
@@ -47,7 +47,7 @@ This means your entity implementation should extend [`Entity`](https://github.co
 For example, you could do something like this:
 
 ```ts
-import { Entity } from 'ecsts';
+import { Entity } from '@trixt0r/ecsts';
 
 class MyEntity extends Entity {
   constructor() {
@@ -80,7 +80,7 @@ A system is also a [`Dispatcher`](https://github.com/Trixt0r/ecsts/blob/master/s
 Here is a minimal example of a system, which obtains a list of entities with the component type `Position`.
 
 ```ts
-import { System, Filter } from 'ecsts';
+import { System, Filter } from '@trixt0r/ecsts';
 
 class MySystem extends System {
 
@@ -114,7 +114,7 @@ It holds collections of both types, to which you can register listeners. But you
 Here is a minimal example on how to initialize an engine and add systems and/or entities to it:
 
 ```ts
-import { Engine } from 'ecsts';
+import { Engine } from '@trixt0r/ecsts';
 
 // Init the engine
 const engine = new Engine();
