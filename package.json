@@ -6,7 +6,7 @@
   "types": "build/index.d.ts",
   "scripts": {
     "test": "jest",
-    "publish": "tsc && tsc --declaration --emitDeclarationOnly"
+    "build": "tsc && tsc --declaration --emitDeclarationOnly"
   },
   "author": "",
   "license": "ISC",
