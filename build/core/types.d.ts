@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { Component } from "./component";
 /**
  * A type for the arguments of `F`.
@@ -34,9 +33,3 @@ export interface ComponentClass<T extends Component> extends Class<T> {
      */
     readonly type?: string;
 }
-=======
-export declare type ArgumentTypes<F> = F extends (...args: infer A) => any ? A : never;
-export interface Class<T> extends Function {
-    new (...args: any[]): T;
-}
->>>>>>> Emit alslo the declaration files.

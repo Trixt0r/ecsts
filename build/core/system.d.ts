@@ -113,7 +113,6 @@ export declare abstract class System extends Dispatcher<SystemListener> {
      * @returns {Promise<any>}
      */
     abstract process(delta: number): Promise<any>;
-<<<<<<< HEAD
     /**
      * Called as soon as the `active` switched to `true`.
      *
@@ -151,6 +150,4 @@ export declare abstract class System extends Dispatcher<SystemListener> {
      * @returns {void}
      */
     onError(error: Error): void;
-=======
->>>>>>> Emit alslo the declaration files.
 }
