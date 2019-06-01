@@ -1,8 +1,18 @@
-import { System } from './system';
+import { System, SystemMode } from './system';
 import { Engine } from './engine';
 import { Dispatcher } from './dispatcher';
 
-class MySystem extends System {
+class MySyncSystem extends System {
+
+  public throw: string;
+
+  process(delta: number): void {
+    if (this.throw)
+      throw new Error(this.throw);
+  }
+}
+
+class MyAsyncSystem extends System {
 
   public throw: string;
   public timer: number = 10;
@@ -13,14 +23,13 @@ class MySystem extends System {
     else
       return new Promise(resolve => setTimeout(resolve, this.timer));
   }
-
 }
 
 describe('System', () => {
 
-  let system: MySystem;
+  let system: MySyncSystem;
 
-  beforeEach(() => system = new MySystem());
+  beforeEach(() => system = new MySyncSystem());
 
   describe('initial', () => {
     it('should be a dispatcher', () => {
@@ -141,9 +150,39 @@ describe('System', () => {
     });
   });
 
-  describe('update', () => {
+  describe('run (sync)', () => {
+
+    it('should call the process method with the correct delta', () => {
+      let called = false;
+      const dlt = 5;
+      (<any>system).process = function(delta) { called = delta };
+      system.run(5);
+      expect(called).toBe(dlt);
+    });
+
+    it('should notify all listeners if an exception occurred', () => {
+      system.throw = 'Error system.spec';
+      let called: Error = null;
+      system.addListener({ onError: error => called = error });
+      try {
+        system.run(0);
+      } finally {
+        expect(called).not.toBe(null);
+        expect(called.message).toBe(system.throw);
+      }
+    });
+
+    it('should convert the result of the system into a promise, if forced', () => {
+      expect(system.run(5, SystemMode.ASYNC) instanceof Promise).toBe(true);
+    });
+  });
+
+  describe('run (async)', () => {
+
+    beforeEach(() => system = new MyAsyncSystem());
+
     it('should turn the system into the updating state', async () => {
-      const re = system.update(0);
+      const re = system.run(0, SystemMode.ASYNC);
       expect(system.updating).toBe(true);
       await re;
     });
@@ -152,31 +191,31 @@ describe('System', () => {
       let called = false;
       const dlt = 5;
       (<any>system).process = function(delta) { called = delta };
-      const re = system.update(5);
+      const re = system.run(5, SystemMode.ASYNC);
       await re;
       expect(called).toBe(dlt);
     });
 
     it('should return the system from the updating state', async () => {
-      await system.update(0);
+      await system.run(0, SystemMode.ASYNC);
       expect(system.updating).toBe(false);
     });
 
     it('should return the system from the updating state if an exception occurred', async () => {
-      system.throw = 'Error';
+      system.throw = 'Error system.spec';
       try {
-        await system.update(0);
+        await system.run(0, SystemMode.ASYNC);
       } finally {
         expect(system.updating).toBe(false);
       }
     });
 
     it('should notify all listeners if an exception occurred', async () => {
-      system.throw = 'Error';
+      system.throw = 'Error system.spec';
       let called: Error = null;
       system.addListener({ onError: error => called = error });
       try {
-        await system.update(0);
+        await system.run(0, SystemMode.ASYNC);
       } finally {
         expect(called).not.toBe(null);
         expect(called.message).toBe(system.throw);

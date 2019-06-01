@@ -26,12 +26,12 @@ describe('Entity', () => {
     });
 
     it('should have the entity as the first listener on the components collection', () => {
-      expect(myEntity.components.listeners.length).toBe(1);
-      expect(myEntity.components.listeners[0]).toBe(myEntity);
+      expect(myEntity.components.listeners.length).toBe(2);
+      expect(myEntity.components.listeners[1]).toBe(myEntity);
     });
 
     it('should throw if someone tries to remove the entity from the components listeners', () => {
-      expect(() => myEntity.components.removeListener(myEntity)).toThrowError('Listener at index 0 is locked.');
+      expect(() => myEntity.components.removeListener(myEntity)).toThrowError('Listener at index 1 is locked.');
     });
   });
 

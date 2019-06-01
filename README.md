@@ -104,7 +104,10 @@ class MySystem extends System {
   }
 }
 ```
-Note that `process` can be `async`. So a system can potentially block successive systems as long as it did not resolve or reject.
+Note that `process` can be `async`.<br>
+If your systems need to do asynchronous tasks, you can implement them as those.
+Your engine can then run them as such.<br>
+This might be useful, if you do not have data which needs to be processed every frame.
 
 ### Engine
 
@@ -114,7 +117,7 @@ It holds collections of both types, to which you can register listeners. But you
 Here is a minimal example on how to initialize an engine and add systems and/or entities to it:
 
 ```ts
-import { Engine } from '@trixt0r/ecs';
+import { Engine, EngineMode } from '@trixt0r/ecs';
 
 // Init the engine
 const engine = new Engine();
@@ -123,5 +126,10 @@ engine.systems.add(new MySytem());
 engine.entities.add(new MyEntity());
 
 // anywhere in your business logic or main loop
-engine.update(delta);
+engine.run(delta);
+
+// if you want to perform your tasks asynchronously
+engine.run(delta, EngineMode.SUCCESSIVE); // Wait for a task to finish
+// or...
+engine.run(delta, EngineMode.PARALLEL); // Run all systems asynchronously in parallel
 ```

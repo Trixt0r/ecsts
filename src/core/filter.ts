@@ -128,11 +128,11 @@ export class Filter {
     const comps = entity.components;
     if (comps.length === 0) return false;
     return comps.some(comp => {
-      const proto = Object.getPrototypeOf(comp);
-      if (proto.constructor && (<ComponentClass<Component>>proto.constructor).type)
-        return this.types.find(comp => (<ComponentClass<Component>>comp.constructor).type === proto.constructor.type);
+      const clazz = <ComponentClass<Component>>comp.constructor;
+      if (clazz.type)
+        return this.types.find(comp => comp.type === clazz.type);
       else
-        return this.types.indexOf(proto) >= 0;
+        return this.types.indexOf(clazz) >= 0;
     });
   }
 
@@ -244,28 +244,28 @@ export class Filter {
   }
 
   /**
-   * Returns a filter for the given engine or collection of entities and combination of component types.
+   * Returns a filter for the given engine or collection of entities and combination of component classes.
    *
    * @param {Collection<Entity> | Engine} entitiesOrEngine
-   * @param {ComponentClass<Component>[]} types
+   * @param {ComponentClass<Component>[]} classes
    * @returns {Filter}
    */
-  static get(entitiesOrEngine: Collection<Entity> | Engine, ...types: ComponentClass<Component>[]): Filter {
+  static get(entitiesOrEngine: Collection<Entity> | Engine, ...classes: ComponentClass<Component>[]): Filter {
     const entities = entitiesOrEngine instanceof Engine ? entitiesOrEngine.entities : entitiesOrEngine;
-    const mapped = types.map(type => type.prototype).filter((value, index, self) => self.indexOf(value) === index);
+    const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
     let found = Filter.cache.find(filter => {
-      if (filter.types.length !== mapped.length) return false;
-      const filtered = mapped.filter(type => {
-        if (type.constructor && (<ComponentClass<Component>>type.constructor).type)
-          return filter.types.find(comp => (<ComponentClass<Component>>comp.constructor).type === type.constructor.type);
+      if (filter.types.length !== unique.length) return false;
+      const filtered = unique.filter((clazz: ComponentClass<Component>) => {
+        if (clazz.type)
+          return filter.types.find(comp => comp.type === clazz.type);
         else
-          return filter.types.indexOf(type) >= 0;
+          return filter.types.indexOf(clazz) >= 0;
       });
-      return filtered.length === mapped.length;
+      return filtered.length === unique.length;
     });
     if (found && found.source !== entities) found = null;
     if (!found) {
-      const filter = new Filter(entities, mapped);
+      const filter = new Filter(entities, unique);
       Filter.cache[filter.id] = filter;
       return filter;
     } else {

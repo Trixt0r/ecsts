@@ -1,16 +1,26 @@
-import { Engine } from './engine';
+import { Engine, EngineMode } from './engine';
 import { System } from './system';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
 import { Entity } from './entity';
 import { Filter } from './filter';
 
-class MySystem extends System {
+class MySyncSystem extends System {
+
+  public throw: string;
+
+  process(delta: number): void {
+    if (this.throw)
+      throw new Error(this.throw);
+  }
+}
+
+class MyAsyncSystem extends System {
 
   public throw: string;
   public timer: number = 10;
 
-  async process(delta: number): Promise<any> {
+  process(delta: number): Promise<void> {
     if (this.throw)
       throw new Error(this.throw);
     else
@@ -73,7 +83,7 @@ describe('Engine', () => {
       let called: System = null;
       let calledRemoved: System = null;
       engine.addListener({ onAddedSystems: sys => called = sys, onRemovedSystems: sys => calledRemoved = sys });
-      engine.systems.add(new MySystem());
+      engine.systems.add(new MySyncSystem());
       expect(called).toBe(engine.systems.elements[0]);
       expect(calledRemoved).toBeNull();
     });
@@ -81,7 +91,7 @@ describe('Engine', () => {
     it('should call onRemovedSystems on each listener if a system got removed', () => {
       let called: System = null;
       let calledAdded: System = null;
-      const system = new MySystem();
+      const system = new MySyncSystem();
       engine.systems.add(system);
       engine.addListener({ onRemovedSystems: sys => called = sys, onAddedSystems: sys => calledAdded = sys });
       engine.systems.remove(system);
@@ -91,14 +101,14 @@ describe('Engine', () => {
 
     it('should call onClearedSystems on each listener if the systems got cleared', () => {
       let called = false;
-      engine.systems.add(new MySystem());
+      engine.systems.add(new MySyncSystem());
       engine.addListener({ onClearedSystems: () => called = true });
       engine.systems.clear();
       expect(called).toBe(true);
     });
 
     it('should be sorted by priority', () => {
-      engine.systems.add(new MySystem(3), new MySystem(2), new MySystem(1));
+      engine.systems.add(new MySyncSystem(3), new MySyncSystem(2), new MySyncSystem(1));
       expect(engine.systems.elements[0].priority).toBe(1);
       expect(engine.systems.elements[1].priority).toBe(2);
       expect(engine.systems.elements[2].priority).toBe(3);
@@ -137,62 +147,62 @@ describe('Engine', () => {
 
   describe('activeSystems', () => {
     it('should be frozen initially', () => {
-      expect(() => (<any>engine.activeSystems).push(new MySystem())).toThrow();
+      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
     });
 
     it('should be frozen after a system got added', () => {
-      engine.systems.add(new MySystem());
-      expect(() => (<any>engine.activeSystems).push(new MySystem())).toThrow();
+      engine.systems.add(new MySyncSystem());
+      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
     });
 
     it('should be frozen after a system got removed', () => {
-      const comp = new MySystem();
+      const comp = new MySyncSystem();
       engine.systems.add(comp);
       engine.systems.remove(comp);
-      expect(() => (<any>engine.activeSystems).push(new MySystem())).toThrow();
+      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
     });
 
     it('should be frozen after the systems got cleared', () => {
-      const comp = new MySystem();
+      const comp = new MySyncSystem();
       engine.systems.add(comp);
       engine.systems.clear();
-      expect(() => (<any>engine.activeSystems).push(new MySystem())).toThrow();
+      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
     });
 
     it('should be frozen after the systems got sorted', () => {
-      const comp = new MySystem();
+      const comp = new MySyncSystem();
       engine.systems.add(comp);
       engine.systems.sort();
-      expect(() => (<any>engine.activeSystems).push(new MySystem())).toThrow();
+      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
     });
 
     it('should update if a new active system got added', () => {
-      engine.systems.add(new MySystem());
+      engine.systems.add(new MySyncSystem());
       expect(engine.activeSystems.length).toBe(1);
     });
 
     it('should update if a new active system got removed', () => {
-      engine.systems.add(new MySystem());
+      engine.systems.add(new MySyncSystem());
       engine.systems.remove(0);
       expect(engine.activeSystems.length).toBe(0);
     });
 
     it('should not add an inactive system to the list', () => {
-      const system = new MySystem();
+      const system = new MySyncSystem();
       system.active = false;
       engine.systems.add(system);
       expect(engine.activeSystems.length).toBe(0);
     });
 
     it('should update if a previously added active system got inactive', () => {
-      const system = new MySystem();
+      const system = new MySyncSystem();
       engine.systems.add(system);
       system.active = false;
       expect(engine.activeSystems.length).toBe(0);
     });
 
     it('should update if a previously added inactive system got active', () => {
-      const system = new MySystem();
+      const system = new MySyncSystem();
       system.active = false;
       engine.systems.add(system);
       system.active = true;
@@ -200,83 +210,207 @@ describe('Engine', () => {
     });
 
     it('should be sorted by priority', () => {
-      engine.systems.add(new MySystem(3), new MySystem(2), new MySystem(1));
+      engine.systems.add(new MySyncSystem(3), new MySyncSystem(2), new MySyncSystem(1));
       expect(engine.activeSystems[0].priority).toBe(1);
       expect(engine.activeSystems[1].priority).toBe(2);
       expect(engine.activeSystems[2].priority).toBe(3);
     });
   });
 
-  describe('update', () => {
+  describe('run', () => {
     const max = 10;
 
-    beforeEach(() => {
-      for (let i = 0; i < max; i++) {
-        const system = new MySystem(Math.ceil(Math.random() * max));
-        system.timer = Math.ceil(Math.random() * 20);
-        engine.systems.add(system);
-      }
-    });
+    describe('DEFAULT', () => {
 
-    it('should call update on each active system with the correct delta value', async () => {
-      let called = 0;
-      const dlt = 10;
-      engine.systems.elements.forEach(system => {
-        (<any>system).update = function(delta) { called += delta; };
-      });
-      await engine.update(dlt);
-      expect(called).toBe(dlt * max);
-    });
-
-    it('should not call update on inatcive systems', async () => {
-      let called = 0;
-      const dlt = 10;
-      engine.systems.elements.forEach(system => {
-        (<any>system).update = function(delta) { called += delta; };
-      });
-      const toDeactivate = 3;
-      for (let i = 0; i < toDeactivate; i++)
-        engine.systems.elements[engine.systems.elements.length - 1 - i].active = false;
-      await engine.update(dlt);
-      expect(called).toBe(dlt * (max - toDeactivate));
-    });
-
-    it('should wait for a system before continuing with the next one', async () => {
-      engine.systems.elements.forEach(system => {
-        (<any>system).process = function() {
-          const updating = engine.systems.filter(system => system.updating);
-          expect(updating.length).toBe(1);
-          expect(updating[0]).toBe(system);
-        };
-      });
-      await engine.update(0);
-    });
-
-    it('should execute each system in the correct order', async () => {
-      const remaining = engine.systems.elements.slice();
-      engine.systems.elements.forEach(system => {
-        (<any>system).update = function() {
-          expect(remaining.shift()).toBe(system);
-          remaining.forEach(s => expect(s.priority).toBeGreaterThanOrEqual(system.priority));
-        };
-      });
-      await engine.update(0);
-    });
-
-    it('should call onErrorBySystem on each listener if an error occurred in a system', async () => {
-      let error: Error = null;
-      let system: System = null;
-      engine.addListener({
-        onErrorBySystem: (err, sys) => {
-          error = err;
-          system = sys;
+      beforeEach(() => {
+        for (let i = 0; i < max; i++) {
+          const system = new MySyncSystem(Math.ceil(Math.random() * max));
+          engine.systems.add(system);
         }
       });
-      (<any>engine.systems.elements[0]).throw = 'Error';
-      await engine.update(0);
-      expect(error).not.toBeNull();
-      expect(error.message).toBe((<any>engine.systems.elements[0]).throw);
-      expect(system).toBe(engine.systems.elements[0]);
+
+      it('should call run on each active system with the correct delta value', () => {
+        let called = 0;
+        const dlt = 10;
+        engine.systems.elements.forEach(system => {
+          (<any>system).run = function(delta) { called += delta; };
+        });
+        engine.run(dlt);
+        expect(called).toBe(dlt * max);
+      });
+
+      it('should not call run on inatcive systems', () => {
+        let called = 0;
+        const dlt = 10;
+        engine.systems.elements.forEach(system => {
+          (<any>system).run = function(delta) { called += delta; };
+        });
+        const toDeactivate = 3;
+        for (let i = 0; i < toDeactivate; i++)
+          engine.systems.elements[engine.systems.elements.length - 1 - i].active = false;
+        engine.run(dlt);
+        expect(called).toBe(dlt * (max - toDeactivate));
+      });
+
+      it('should execute each system in the correct order', () => {
+        const remaining = engine.systems.elements.slice();
+        engine.systems.elements.forEach(system => {
+          (<any>system).run = function() {
+            expect(remaining.shift()).toBe(system);
+            remaining.forEach(s => expect(s.priority).toBeGreaterThanOrEqual(system.priority));
+          };
+        });
+        engine.run(0);
+      });
+
+      it('should call onErrorBySystem on each listener if an error occurred in a system', () => {
+        let error: Error = null;
+        let system: System = null;
+        engine.addListener({
+          onErrorBySystem: (err, sys) => {
+            error = err;
+            system = sys;
+          }
+        });
+        (<any>engine.systems.elements[0]).throw = 'Error sync engine.spec';
+        engine.run(0);
+        expect(error).not.toBeNull();
+        expect(error.message).toBe((<any>engine.systems.elements[0]).throw);
+        expect(system).toBe(engine.systems.elements[0]);
+      });
+    });
+
+    describe('async', () => {
+
+      beforeEach(() => {
+        for (let i = 0; i < max; i++) {
+          const system = new MyAsyncSystem(Math.ceil(Math.random() * max));
+          system.timer = Math.ceil(Math.random() * 20);
+          engine.systems.add(system);
+        }
+      });
+
+      describe('SUCCESSIVE', () => {
+        it('should call run on each active system with the correct delta value', async () => {
+          let called = 0;
+          const dlt = 10;
+          engine.systems.elements.forEach(system => {
+            (<any>system).run = function(delta) { called += delta; };
+          });
+          await engine.run(dlt, EngineMode.SUCCESSIVE);
+          expect(called).toBe(dlt * max);
+        });
+
+        it('should not call run on inatcive systems', async () => {
+          let called = 0;
+          const dlt = 10;
+          engine.systems.elements.forEach(system => {
+            (<any>system).run = function(delta) { called += delta; };
+          });
+          const toDeactivate = 3;
+          for (let i = 0; i < toDeactivate; i++)
+            engine.systems.elements[engine.systems.elements.length - 1 - i].active = false;
+          await engine.run(dlt, EngineMode.SUCCESSIVE);
+          expect(called).toBe(dlt * (max - toDeactivate));
+        });
+
+        it('should wait for a system before continuing with the next one', async () => {
+          engine.systems.elements.forEach(system => {
+            (<any>system).process = function() {
+              const updating = engine.systems.filter(system => system.updating);
+              expect(updating.length).toBe(1);
+              expect(updating[0]).toBe(system);
+            };
+          });
+          await engine.run(0, EngineMode.SUCCESSIVE);
+        });
+
+        it('should execute each system in the correct order', async () => {
+          const remaining = engine.systems.elements.slice();
+          engine.systems.elements.forEach(system => {
+            (<any>system).run = function() {
+              expect(remaining.shift()).toBe(system);
+              remaining.forEach(s => expect(s.priority).toBeGreaterThanOrEqual(system.priority));
+            };
+          });
+          await engine.run(0, EngineMode.SUCCESSIVE);
+        });
+
+        it('should call onErrorBySystem on each listener if an error occurred in a system', async () => {
+          let error: Error = null;
+          let system: System = null;
+          engine.addListener({
+            onErrorBySystem: (err, sys) => {
+              error = err;
+              system = sys;
+            }
+          });
+          (<any>engine.systems.elements[0]).throw = 'Error successive engine.spec';
+          await engine.run(0, EngineMode.SUCCESSIVE);
+          expect(error).not.toBeNull();
+          expect(error.message).toBe((<any>engine.systems.elements[0]).throw);
+          expect(system).toBe(engine.systems.elements[0]);
+        });
+      });
+
+      describe('PARALLEL', () => {
+        it('should call run on each active system with the correct delta value', async () => {
+          let called = 0;
+          const dlt = 10;
+          engine.systems.elements.forEach(system => {
+            (<any>system).run = function(delta) { called += delta; };
+          });
+          await engine.run(dlt, EngineMode.PARALLEL);
+          expect(called).toBe(dlt * max);
+        });
+
+        it('should not call run on inatcive systems', async () => {
+          let called = 0;
+          const dlt = 10;
+          engine.systems.elements.forEach(system => {
+            (<any>system).run = function(delta) { called += delta; };
+          });
+          const toDeactivate = 3;
+          for (let i = 0; i < toDeactivate; i++)
+            engine.systems.elements[engine.systems.elements.length - 1 - i].active = false;
+          await engine.run(dlt, EngineMode.PARALLEL);
+          expect(called).toBe(dlt * (max - toDeactivate));
+        });
+
+        it('should not wait for a system before continuing with the next one', async () => {
+          const re = engine.run(0, EngineMode.PARALLEL);
+          const running = engine.systems.map(system => system.updating);
+          expect(running.filter(updating => updating).length).toBe(engine.systems.length);
+          await re;
+        });
+
+        it('should execute each system in the correct order', async () => {
+          const remaining = engine.systems.elements.slice();
+          engine.systems.elements.forEach(system => {
+            (<any>system).run = function() {
+              expect(remaining.shift()).toBe(system);
+              remaining.forEach(s => expect(s.priority).toBeGreaterThanOrEqual(system.priority));
+            };
+          });
+          await engine.run(0, EngineMode.PARALLEL);
+        });
+
+        it('should call onErrorBySystem on each listener if an error occurred in a system', async () => {
+          let error: Error = null;
+          let system: System = null;
+          engine.addListener({
+            onErrorBySystem: (err, sys) => {
+              error = err;
+              system = sys;
+            }
+          });
+          (<any>engine.systems.elements[0]).throw = 'Error parallel engine.spec';
+          await engine.run(0, EngineMode.PARALLEL);
+          expect(error).not.toBeNull();
+          expect(error.message).toBe((<any>engine.systems.elements[0]).throw);
+          expect(system).toBe(engine.systems.elements[0]);
+        });
+      });
     });
 
   });

@@ -1,4 +1,4 @@
-import { Collection } from "./collection";
+import { Collection, CollectionListener } from "./collection";
 import { ComponentClass } from "./types";
 
 /**
@@ -21,7 +21,51 @@ export interface Component {
  * @class ComponentCollection
  * @extends {Collection<Component>}
  */
-export class ComponentCollection extends Collection<Component> {
+export class ComponentCollection extends Collection<Component> implements CollectionListener<Component> {
+
+  /**
+   * Internal map for faster component access, by class or type.
+   *
+   * @protected
+   */
+  protected cache = new Map<ComponentClass<Component> | string, readonly Component[]>();
+
+  /**
+   * Internal state for updating the components access memory.
+   *
+   * @protected
+   */
+  protected dirty = new Map<ComponentClass<Component> | string, boolean>();
+
+  constructor(initial: Component[] = []) {
+    super(initial);
+    this.addListener(this, true);
+  }
+
+  /**
+   * @inheritdoc
+   * Update the internal cache.
+   */
+  onAdded(...elements: Component[]): void {
+    this.markForCacheUpdate.apply(this, elements);
+  }
+
+  /**
+   * @inheritdoc
+   * Update the internal cache.
+   */
+  onRemoved(...elements: Component[]): void {
+    this.markForCacheUpdate.apply(this, elements);
+  }
+
+  /**
+   * @inheritdoc
+   * Update the internal cache.
+   */
+  onCleared() {
+    this.dirty.clear();
+    this.cache.clear();
+  }
 
   /**
    * Searches for the first component matching the given class or type.
@@ -30,17 +74,8 @@ export class ComponentCollection extends Collection<Component> {
    * @param {ComponentClass<Component> | string} classOrType The class or type a component has to match.
    * @returns {Component} The found component or `null`.
    */
-  get(classOrType: ComponentClass<Component> | string): Component {
-    const type = typeof classOrType === 'string' ? classOrType : classOrType.type;
-    return this.find(element => {
-      const proto = Object.getPrototypeOf(element);
-      if (type && proto.constructor && proto.constructor.type)
-        return type === proto.constructor.type;
-      else if (typeof classOrType !== 'string')
-        return proto === classOrType.prototype;
-      else
-        return false;
-    });
+  get<T extends Component>(classOrType: ComponentClass<T> | string): T {
+    return <T>this.getAll(classOrType)[0];
   }
 
   /**
@@ -50,16 +85,63 @@ export class ComponentCollection extends Collection<Component> {
    * @param {ComponentClass<Component> | string} classOrType The class or type components have to match.
    * @returns {readonly Component[]} A list of all components matching the given class.
    */
-  getAll(classOrType: ComponentClass<Component> | string): readonly Component[] {
+  getAll<T extends Component>(classOrType: ComponentClass<T> | string): readonly T[] {
+    if (this.dirty.get(classOrType)) this.updateCache(classOrType);
+    if (this.cache.has(classOrType)) return <T[]>this.cache.get(classOrType);
+    this.updateCache(classOrType);
+    return<T[]>this.cache.get(classOrType);
+  }
+
+  /**
+   * Updates the cache for the given class or type.
+   *
+   * @param {ComponentClass<Component> | string} classOrType The class or type to update the cache for.
+   * @returns {void}
+   */
+  protected updateCache<T extends Component>(classOrType: ComponentClass<T> | string): void {
+    const keys = this.cache.keys();
     const type = typeof classOrType === 'string' ? classOrType : classOrType.type;
-    return this.filter(element => {
-      const proto = Object.getPrototypeOf(element);
-      if (type && proto.constructor && proto.constructor.type)
-        return type === proto.constructor.type;
-      else if (typeof classOrType !== 'string')
-        return proto === classOrType.prototype;
-      else
-        return false;
+    const filtered = this.filter(element => {
+      const clazz = <ComponentClass<T>>element.constructor;
+      return type && clazz.type ? type === clazz.type : clazz === classOrType;
+    });
+    if (typeof classOrType !== 'string' && classOrType.type) {
+      this.cache.set(classOrType.type, filtered);
+      this.dirty.delete(classOrType.type);
+    } else if (typeof classOrType === 'string') {
+      for (let key of keys) {
+        if (typeof key !== 'string' && key.type === classOrType) {
+          this.cache.set(key, filtered);
+          this.dirty.delete(key);
+        }
+      }
+    }
+    this.cache.set(classOrType, filtered);
+    this.dirty.delete(classOrType);
+  }
+
+  /**
+   * Marks the classes and types of the given elements as dirty,
+   * so their cache gets updated on the next request.
+   *
+   * @param {Component[]} elements
+   * @returns {void}
+   */
+  protected markForCacheUpdate(...elements: Component[]): void {
+    const keys = this.cache.keys();
+    elements.forEach(element => {
+      const clazz = <ComponentClass<Component>>element.constructor;
+      const classOrType = clazz.type ? clazz.type : clazz;
+      if (this.dirty.get(classOrType)) return;
+      if (typeof classOrType !== 'string' && classOrType.type)
+        this.dirty.set(classOrType.type, true);
+      else if (typeof classOrType === 'string') {
+        for (let key of keys) {
+          if (typeof key !== 'string' && key.type === classOrType)
+            this.dirty.set(key, true);
+        }
+      }
+      this.dirty.set(classOrType, true);
     });
   }
 

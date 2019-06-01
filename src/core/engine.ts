@@ -1,4 +1,4 @@
-import { System, SystemListener } from "./system";
+import { System, SystemListener, SystemMode } from "./system";
 import { Entity } from "./entity";
 import { Dispatcher } from "./dispatcher";
 import { Collection } from "./collection";
@@ -59,6 +59,30 @@ export interface EngineListener {
    * Called as soon as all entities got cleared from the engine.
    */
   onClearedEntities(): void;
+}
+
+/**
+ * Defines how an engine executes its active systems.
+ *
+ * @export
+ * @enum {number}
+ */
+export enum EngineMode {
+  /**
+   * Execute all systems by priority without waiting for them to resolve.
+   */
+  DEFAULT = 'runDefault',
+
+  /**
+   * Execute all systems by priority. Successive systems
+   * will wait until the current executing system resolves or rejects.
+   */
+  SUCCESSIVE = 'runSuccessive',
+
+  /**
+   * Start all systems by priority, but run them all in parallel.
+   */
+  PARALLEL = 'runParallel',
 }
 
 /**
@@ -197,12 +221,49 @@ export class Engine extends Dispatcher<EngineListener> {
    * Updates all systems in this engine by the given delta value.
    *
    * @param {number} delta
-   * @returns {Promise<void>}
+   * @param {EngineMode} mode
+   * @returns {void | Promise<void>}
    */
-  async update(delta: number): Promise<void> {
+  run(delta: number, mode: EngineMode = EngineMode.DEFAULT): void | Promise<void> {
+    return this[mode](delta);
+  }
+
+  /**
+   * Updates all systems in this engine by the given delta value,
+   * without waiting for a resolve or reject of each system.
+   *
+   * @param {number} delta
+   * @returns {void}
+   */
+  protected runDefault(delta: number): void {
     const length = this._activeSystems.length;
     for (let i = 0; i < length; i++)
-      await this._activeSystems[i].update(delta);
+      this._activeSystems[i].run(delta, SystemMode.SYNC);
+  }
+
+  /**
+   * Updates all systems in this engine by the given delta value,
+   * by waiting for a system to resolve or reject before continuing with the next one.
+   *
+   * @param {number} delta
+   * @returns {Promise<void>}
+   */
+  protected async runSuccessive(delta: number): Promise<void> {
+    const length = this._activeSystems.length;
+    for (let i = 0; i < length; i++)
+      await this._activeSystems[i].run(delta, SystemMode.SYNC);
+  }
+
+  /**
+   * Updates all systems in this engine by the given delta value,
+   * by running all systems in parallel and waiting for all systems to resolve or reject.
+   *
+   * @param {number} delta
+   * @returns {Promise<void>}
+   */
+  protected async runParallel(delta: number): Promise<void> {
+    const mapped = this._activeSystems.map(system => system.run(delta, SystemMode.ASYNC));
+    await Promise.all(mapped);
   }
 
   /**
