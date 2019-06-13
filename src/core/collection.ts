@@ -46,7 +46,7 @@ export interface CollectionListener<T> {
  * @template T
  * @todo Make this iterable.
  */
-export class Collection<T> extends Dispatcher<CollectionListener<T>> {
+export class Collection<T> extends Dispatcher<CollectionListener<T>> implements IterableIterator<T> {
 
   /**
    * The internal list of elements.
@@ -64,6 +64,9 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> {
    */
   protected _frozenElements: T[];
 
+
+  protected pointer = 0;
+
   /**
    * Creates an instance of Collection.
    *
@@ -73,6 +76,31 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> {
     super();
     this._elements = initial.slice();
     this.updatedFrozenObjects();
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public next(): IteratorResult<T> {
+    if (this.pointer < this._elements.length) {
+      return {
+        done: false,
+        value: this._elements[this.pointer++]
+      }
+    } else {
+      return {
+        done: true,
+        value: null
+      }
+    }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  [Symbol.iterator](): IterableIterator<T> {
+    this.pointer = 0;
+    return this;
   }
 
   /**

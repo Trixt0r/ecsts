@@ -303,6 +303,77 @@ describe('Collection', () => {
     });
   });
 
-  // TODO: add tests for the array like methods...
+  describe('iterable', () => {
+    const amount = 10;
+    beforeEach(() => {
+      for (let i = 0; i < amount; i++)
+        collection.add(new MyType());
+    });
 
+    it('should be iterable', () => {
+      expect(typeof collection[Symbol.iterator] === 'function').toBe(true);
+    });
+
+    it('should iterate over all elements in the collection', () => {
+      let iterations = 0;
+      for (let element of collection) {
+        expect(element).toBe(collection.elements[iterations]);
+        iterations++;
+      }
+      expect(iterations).toBe(collection.length);
+    });
+
+    it('should iterate over all elements in the collection multiple times', () => {
+      let iterations = 0;
+      const times = 5;
+      for (let i = 0; i < 5; i++) {
+        let iteration = 0;
+        for (let element of collection) {
+          expect(element).toBe(collection.elements[iteration++]);
+          iterations++;
+        }
+      }
+      expect(iterations).toBe(collection.length * times);
+    });
+
+    it('should iterate over all remaining elements in the collection', () => {
+      let iterations = 0;
+      collection.remove(amount - 1, amount - 2, amount - 3, amount - 4, amount - 5);
+      for (let element of collection) {
+        expect(element).toBe(collection.elements[iterations]);
+        iterations++;
+      }
+      expect(iterations).toBe(collection.length);
+    });
+  });
+
+  describe('array-like', () => {
+    const amount = 10;
+    beforeEach(() => {
+      for (let i = 0; i < amount; i++)
+        collection.add(new MyType());
+    });
+
+    it('should delegate the array methods to the actual internal array', () => {
+      const fn = (element: MyType, index: number, array: readonly MyType[]) => index === 1;
+      const ctx = this;
+      const methods = {
+        filter: [fn, ctx],
+        forEach: [fn, ctx],
+        find:[fn, ctx],
+        findIndex:[fn, ctx],
+        map: [(element: MyType, index: number, array: readonly MyType[]) => index, ctx],
+        every: [fn, ctx],
+        some: [fn, ctx],
+        reduce: [(prev, elmnt, idx, array) => prev + idx, 0],
+        reduceRight: [(prev, elmnt, idx, array) => prev + idx, 0],
+      };
+      Object.keys(methods).forEach(methodName => {
+        const args = methods[methodName];
+        const actual = collection[methodName].apply(collection, args);
+        const expected = (<any>collection)._elements[methodName].apply((<any>collection)._elements, args);
+        expect(actual).toEqual(expected);
+      });
+    });
+  });
 });
