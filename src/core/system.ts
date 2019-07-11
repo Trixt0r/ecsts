@@ -167,23 +167,23 @@ export abstract class System extends Dispatcher<SystemListener> {
   /**
    * Runs the system process with the given delta time.
    *
-   * @param {number} delta
+   * @param {any} options
    * @param {SystemMode} [mode=SystemMode.SYNC]
    * @returns {void | Promise<void>}
    */
-  run(delta: number, mode: SystemMode = SystemMode.SYNC): void | Promise<void> {
-    return this[mode](delta);
+  run(options: any, mode: SystemMode = SystemMode.SYNC): void | Promise<void> {
+    return this[mode](options);
   }
 
   /**
    * Processes data synchronously.
    *
-   * @param {number} delta
+   * @param {any} options
    * @returns {void}
    */
-  protected runSync(delta: number): void {
+  protected runSync(options: any): void {
     try {
-      this.process(delta);
+      this.process(options);
     } catch (e) {
       this.dispatch('onError', e);
     }
@@ -192,13 +192,13 @@ export abstract class System extends Dispatcher<SystemListener> {
   /**
    * Processes data asynchronously.
    *
-   * @param {number} delta
+   * @param {any} options
    * @returns {void}
    */
-  protected async runAsync(delta: number): Promise<void> {
+  protected async runAsync(options: any): Promise<void> {
     this._updating = true;
     try {
-      await this.process(delta);
+      await this.process(options);
     } catch (e) {
       this.dispatch('onError', e);
     } finally {
@@ -211,10 +211,10 @@ export abstract class System extends Dispatcher<SystemListener> {
    * To be implemented by any concrete system.
    *
    * @abstract
-   * @param {number} delta
+   * @param {any} options
    * @returns {void | Promise<void>}
    */
-  abstract process(delta: number): void | Promise<void>;
+  abstract process(options: any): void | Promise<void>;
 
   /**
    * Called as soon as the `active` switched to `true`.

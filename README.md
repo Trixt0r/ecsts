@@ -11,7 +11,11 @@ So you will not find any game specific logic in this library.
 npm install @trixt0r/ecs
 ```
 
-Browser builds are on the way.
+## Examples
+
+Checkout the [examples](https://github.com/Trixt0r/ecsts/tree/master/examples).
+
+Check the [rectangles example](https://ecs-example-rectangles.stackblitz.io) out, if you do not want to checkout the code.
 
 ## Usage
 
@@ -122,7 +126,7 @@ import { Engine, EngineMode } from '@trixt0r/ecs';
 // Init the engine
 const engine = new Engine();
 
-engine.systems.add(new MySytem());
+engine.systems.add(new MySystem());
 engine.entities.add(new MyEntity());
 
 // anywhere in your business logic or main loop

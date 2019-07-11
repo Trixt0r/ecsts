@@ -120,7 +120,7 @@ export class Engine extends Dispatcher<EngineListener> {
    * @protected
    * @type {Collection<Entity>}
    */
-  protected _entites: Collection<Entity>;
+  protected _entities: Collection<Entity>;
 
   /**
    * Creates an instance of Engine.
@@ -128,7 +128,7 @@ export class Engine extends Dispatcher<EngineListener> {
   constructor() {
     super();
     this._systems = new Collection<System>();
-    this._entites = new Collection<Entity>();
+    this._entities = new Collection<Entity>();
     this._systems.addListener({
       onAdded: (...systems: System[]) => {
         this._systems.sort((a, b) => a.priority - b.priority);
@@ -162,7 +162,7 @@ export class Engine extends Dispatcher<EngineListener> {
       onCleared: () => this.dispatch('onClearedSystems'),
     }, true);
 
-    this._entites.addListener({
+    this._entities.addListener({
       onAdded: (...entities: Entity[]) => {
         const args = ['onAddedEntities'].concat(<any[]>entities);
         this.dispatch.apply(this, args);
@@ -184,7 +184,7 @@ export class Engine extends Dispatcher<EngineListener> {
    * @type {Collection<Entity>}
    */
   get entities(): Collection<Entity> {
-    return this._entites;
+    return this._entities;
   }
 
   /**
@@ -220,49 +220,49 @@ export class Engine extends Dispatcher<EngineListener> {
   /**
    * Updates all systems in this engine by the given delta value.
    *
-   * @param {number} delta
+   * @param {any} options
    * @param {EngineMode} mode
    * @returns {void | Promise<void>}
    */
-  run(delta: number, mode: EngineMode = EngineMode.DEFAULT): void | Promise<void> {
-    return this[mode](delta);
+  run(options: any, mode: EngineMode = EngineMode.DEFAULT): void | Promise<void> {
+    return this[mode](options);
   }
 
   /**
    * Updates all systems in this engine by the given delta value,
    * without waiting for a resolve or reject of each system.
    *
-   * @param {number} delta
+   * @param {any} options
    * @returns {void}
    */
-  protected runDefault(delta: number): void {
+  protected runDefault(options: any): void {
     const length = this._activeSystems.length;
     for (let i = 0; i < length; i++)
-      this._activeSystems[i].run(delta, SystemMode.SYNC);
+      this._activeSystems[i].run(options, SystemMode.SYNC);
   }
 
   /**
    * Updates all systems in this engine by the given delta value,
    * by waiting for a system to resolve or reject before continuing with the next one.
    *
-   * @param {number} delta
+   * @param {any} options
    * @returns {Promise<void>}
    */
-  protected async runSuccessive(delta: number): Promise<void> {
+  protected async runSuccessive(options: any): Promise<void> {
     const length = this._activeSystems.length;
     for (let i = 0; i < length; i++)
-      await this._activeSystems[i].run(delta, SystemMode.SYNC);
+      await this._activeSystems[i].run(options, SystemMode.SYNC);
   }
 
   /**
    * Updates all systems in this engine by the given delta value,
    * by running all systems in parallel and waiting for all systems to resolve or reject.
    *
-   * @param {number} delta
+   * @param {any} options
    * @returns {Promise<void>}
    */
-  protected async runParallel(delta: number): Promise<void> {
-    const mapped = this._activeSystems.map(system => system.run(delta, SystemMode.ASYNC));
+  protected async runParallel(options: any): Promise<void> {
+    const mapped = this._activeSystems.map(system => system.run(options, SystemMode.ASYNC));
     await Promise.all(mapped);
   }
 
