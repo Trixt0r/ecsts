@@ -22,6 +22,7 @@ export class Collection extends Dispatcher {
         super();
         this.pointer = 0;
         this._elements = initial.slice();
+        this._frozenElements = [];
         this.updatedFrozenObjects();
     }
     /**
@@ -100,8 +101,7 @@ export class Collection extends Dispatcher {
         const re = added.length > 0;
         if (re) {
             this.updatedFrozenObjects();
-            added.unshift('onAdded');
-            this.dispatch.apply(this, added);
+            this.dispatch.apply(this, ['onAdded', ...added]);
         }
         return re;
     }
@@ -133,8 +133,7 @@ export class Collection extends Dispatcher {
         const re = removed.length > 0;
         if (re) {
             this.updatedFrozenObjects();
-            removed.unshift('onRemoved');
-            this.dispatch.apply(this, removed);
+            this.dispatch.apply(this, ['onRemoved', ...removed]);
         }
         return re;
     }
@@ -165,7 +164,7 @@ export class Collection extends Dispatcher {
      */
     sort(compareFn) {
         if (!this._elements.length)
-            return;
+            return this;
         this._elements.sort(compareFn);
         this.updatedFrozenObjects();
         this.dispatch('onSorted');
@@ -206,7 +205,7 @@ export class Collection extends Dispatcher {
      * immediately returns that element value. Otherwise, find returns undefined.
      * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
-     * @returns {T}
+     * @returns {T | undefined}
      */
     find(predicate, thisArg) {
         return this._elements.find(predicate, thisArg);

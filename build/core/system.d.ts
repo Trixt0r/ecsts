@@ -84,7 +84,7 @@ export declare abstract class System extends Dispatcher<SystemListener> {
      * @type {Engine}
      * @memberof System
      */
-    protected _engine: Engine;
+    protected _engine: Engine | null;
     /**
      * Creates an instance of System.
      *
@@ -100,11 +100,10 @@ export declare abstract class System extends Dispatcher<SystemListener> {
     active: boolean;
     /**
      * The engine this system is assigned to.
-     * This may be `null`.
      *
-     * @type {Engine}
+     * @type {Engine | null}
      */
-    engine: Engine;
+    engine: Engine | null;
     /**
      * Determines whether this system is currenlty updating or not.
      * The value will stay `true` until @see {System#process} resolves or rejects.

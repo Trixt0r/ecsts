@@ -51,6 +51,7 @@ export class Engine extends Dispatcher {
         super();
         this._systems = new Collection();
         this._entities = new Collection();
+        this._activeSystems = [];
         this._systems.addListener({
             onAdded: (...systems) => {
                 this._systems.sort((a, b) => a.priority - b.priority);
@@ -65,8 +66,7 @@ export class Engine extends Dispatcher {
                     system.__ecsEngineListener = systemListener;
                     system.addListener(systemListener, true);
                 });
-                const args = ['onAddedSystems'].concat(systems);
-                this.dispatch.apply(this, args);
+                this.dispatch.apply(this, ['onAddedSystems', ...systems]);
             },
             onRemoved: (...systems) => {
                 systems.forEach(system => {
@@ -77,19 +77,16 @@ export class Engine extends Dispatcher {
                     locked.splice(locked.indexOf(systemListener), 1);
                     system.removeListener(systemListener);
                 });
-                const args = ['onRemovedSystems'].concat(systems);
-                this.dispatch.apply(this, args);
+                this.dispatch.apply(this, ['onRemovedSystems', ...systems]);
             },
             onCleared: () => this.dispatch('onClearedSystems'),
         }, true);
         this._entities.addListener({
             onAdded: (...entities) => {
-                const args = ['onAddedEntities'].concat(entities);
-                this.dispatch.apply(this, args);
+                this.dispatch.apply(this, ['onAddedEntities', ...entities]);
             },
             onRemoved: (...entities) => {
-                const args = ['onRemovedEntities'].concat(entities);
-                this.dispatch.apply(this, args);
+                this.dispatch.apply(this, ['onRemovedEntities', ...entities]);
             },
             onCleared: () => this.dispatch('onClearedEntities'),
         }, true);
@@ -187,7 +184,6 @@ export class Engine extends Dispatcher {
      * @returns {Filter}
      */
     getFilter(...types) {
-        const args = [this].concat(types);
-        return Filter.get.apply(Filter, args);
+        return Filter.get.apply(Filter, [this, ...types]);
     }
 }

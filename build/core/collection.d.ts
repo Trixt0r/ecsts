@@ -171,9 +171,9 @@ export declare class Collection<T> extends Dispatcher<CollectionListener<T>> imp
      * immediately returns that element value. Otherwise, find returns undefined.
      * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
-     * @returns {T}
+     * @returns {T | undefined}
      */
-    find(predicate: (element: T, index: number, array: readonly T[]) => any, thisArg?: any): T;
+    find(predicate: (element: T, index: number, array: readonly T[]) => any, thisArg?: any): T | undefined;
     /**
      * Returns the index of the first element in the collection where predicate is true, and -1
      * otherwise.

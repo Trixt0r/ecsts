@@ -81,8 +81,7 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * @returns {void}
    */
   onAdded(...components: Component[]): void {
-    const args = ['onAddedComponents'].concat(<any[]>components);
-    return this.dispatch.apply(this, args)
+    return this.dispatch.apply(this, ['onAddedComponents', ...components]);
   }
 
   /**
@@ -92,8 +91,7 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * @returns {void}
    */
   onRemoved(...components: Component[]): void {
-    const args = ['onRemovedComponents'].concat(<any[]>components);
-    return this.dispatch.apply(this, args)
+    return this.dispatch.apply(this, <['onRemovedComponents', ...Component[]]>['onRemovedComponents', ...components]);
   }
 
   /**

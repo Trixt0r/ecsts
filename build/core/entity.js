@@ -36,8 +36,7 @@ export class Entity extends Dispatcher {
      * @returns {void}
      */
     onAdded(...components) {
-        const args = ['onAddedComponents'].concat(components);
-        return this.dispatch.apply(this, args);
+        return this.dispatch.apply(this, ['onAddedComponents', ...components]);
     }
     /**
      * Dispatches the `onRemoved` event to all listeners as `onRemovedComponents`.
@@ -46,8 +45,7 @@ export class Entity extends Dispatcher {
      * @returns {void}
      */
     onRemoved(...components) {
-        const args = ['onRemovedComponents'].concat(components);
-        return this.dispatch.apply(this, args);
+        return this.dispatch.apply(this, ['onRemovedComponents', ...components]);
     }
     /**
      * Dispatches the `onCleared` event to all listeners as `onClearedComponents`.

@@ -74,18 +74,8 @@ export class Filter {
   protected constructor(public source: Collection<Entity>,
                         public readonly types: readonly ComponentClass<Component>[]) {
     this.id = Filter.cache.length;
-    this.setUp();
-  }
-
-  /**
-   * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
-   *
-   * @returns {void}
-   */
-  protected setUp(): void {
-    this.filteredEntities = this.source.filter(this.filterFn, this);
-    this.setupComponentSync(this.filteredEntities);
-    this.updateFrozen();
+    this.filteredEntities = [];
+    this.frozenEntities = [];
     this.listener = {
       onAdded: (...entities: Entity[]) => {
         const before = this.filteredEntities.length;
@@ -114,7 +104,19 @@ export class Filter {
         this.updateFrozen();
       },
     };
-  this.attach();
+    this.setUp();
+  }
+
+  /**
+   * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
+   *
+   * @returns {void}
+   */
+  protected setUp(): void {
+    this.filteredEntities = this.source.filter(this.filterFn, this);
+    this.setupComponentSync(this.filteredEntities);
+    this.updateFrozen();
+    this.attach();
   }
 
   /**
@@ -263,7 +265,7 @@ export class Filter {
       });
       return filtered.length === unique.length;
     });
-    if (found && found.source !== entities) found = null;
+    if (found && found.source !== entities) found = void 0;
     if (!found) {
       const filter = new Filter(entities, unique);
       Filter.cache[filter.id] = filter;

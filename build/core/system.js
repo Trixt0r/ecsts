@@ -46,6 +46,7 @@ export class System extends Dispatcher {
         this.priority = priority;
         this._active = true;
         this._updating = false;
+        this._engine = null;
     }
     /**
      * The active state of this system.
@@ -70,9 +71,8 @@ export class System extends Dispatcher {
     }
     /**
      * The engine this system is assigned to.
-     * This may be `null`.
      *
-     * @type {Engine}
+     * @type {Engine | null}
      */
     get engine() {
         return this._engine;

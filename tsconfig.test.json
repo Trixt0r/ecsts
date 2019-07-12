@@ -5,11 +5,7 @@
     "outDir": "./build",
     "baseUrl": "./src",
     "rootDir": "./src",
-    "skipLibCheck": true,
-    "strict": true,
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "alwaysStrict": true
+    "skipLibCheck": true
   },
   "exclude": [
     "**/*.spec.ts",

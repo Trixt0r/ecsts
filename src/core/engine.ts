@@ -129,6 +129,7 @@ export class Engine extends Dispatcher<EngineListener> {
     super();
     this._systems = new Collection<System>();
     this._entities = new Collection<Entity>();
+    this._activeSystems = [];
     this._systems.addListener({
       onAdded: (...systems: System[]) => {
         this._systems.sort((a, b) => a.priority - b.priority);
@@ -144,8 +145,7 @@ export class Engine extends Dispatcher<EngineListener> {
           (<any>system).__ecsEngineListener = systemListener;
           system.addListener(systemListener, true);
         });
-      const args = ['onAddedSystems'].concat(<any[]>systems);
-      this.dispatch.apply(this, args);
+      this.dispatch.apply(this, <['onAddedSystems', ...System[]]>['onAddedSystems', ...systems]);
       },
       onRemoved: (...systems: System[]) => {
         systems.forEach(system => {
@@ -156,20 +156,17 @@ export class Engine extends Dispatcher<EngineListener> {
           locked.splice(locked.indexOf(systemListener), 1);
           system.removeListener(systemListener);
         });
-        const args = ['onRemovedSystems'].concat(<any[]>systems);
-        this.dispatch.apply(this, args);
+        this.dispatch.apply(this, <['onRemovedSystems', ...System[]]>['onRemovedSystems', ...systems]);
       },
       onCleared: () => this.dispatch('onClearedSystems'),
     }, true);
 
     this._entities.addListener({
       onAdded: (...entities: Entity[]) => {
-        const args = ['onAddedEntities'].concat(<any[]>entities);
-        this.dispatch.apply(this, args);
+        this.dispatch.apply(this, <['onAddedEntities', ...Entity[]]>['onAddedEntities', ...entities]);
       },
       onRemoved: (...entities: Entity[]) => {
-        const args = ['onRemovedEntities'].concat(<any[]>entities);
-        this.dispatch.apply(this, args);
+        this.dispatch.apply(this, <['onRemovedEntities', ...Entity[]]>['onRemovedEntities', ...entities]);
       },
       onCleared: () => this.dispatch('onClearedEntities'),
     }, true);
@@ -273,8 +270,7 @@ export class Engine extends Dispatcher<EngineListener> {
    * @returns {Filter}
    */
   getFilter(...types: Class<Component>[]): Filter {
-    const args = [this].concat(<any>types);
-    return Filter.get.apply(Filter, args);
+    return Filter.get.apply(Filter, [this, ...types]);
   }
 
 }

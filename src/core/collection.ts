@@ -75,6 +75,7 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> implements 
   constructor(initial: T[] = []) {
     super();
     this._elements = initial.slice();
+    this._frozenElements = [];
     this.updatedFrozenObjects();
   }
 
@@ -88,7 +89,7 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> implements 
         value: this._elements[this.pointer++]
       }
     } else {
-      return {
+      return <any>{
         done: true,
         value: null
       }
@@ -154,12 +155,11 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> implements 
    *                    They may not have been added, if they were already present in the element list.
    */
   add(...elements: T[]): boolean {
-    const added: any[] = elements.filter(element => this.addSingle(element));
+    const added: T[] = elements.filter(element => this.addSingle(element));
     const re = added.length > 0;
     if (re) {
       this.updatedFrozenObjects();
-      added.unshift('onAdded');
-      this.dispatch.apply(this, added);
+      this.dispatch.apply(this, <['onAdded', ...T[]]>['onAdded', ...added]);
     }
     return re;
   }
@@ -189,12 +189,11 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> implements 
    */
   remove(...elementsOrIndices: (T | number)[]): boolean {
     const elements = <T[]>elementsOrIndices.map(o => typeof o === 'number' ? this._elements[o] : o);
-    const removed: any[] = elements.filter(element => this.removeSingle(element));
+    const removed: T[] = elements.filter(element => this.removeSingle(element));
     const re = removed.length > 0;
     if (re) {
       this.updatedFrozenObjects();
-      removed.unshift('onRemoved');
-      this.dispatch.apply(this, removed);
+      this.dispatch.apply(this, <['onRemoved', ...T[]]>['onRemoved', ...removed]);
     }
     return re;
   }
@@ -226,7 +225,7 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> implements 
    * @returns {this}
    */
   sort(compareFn?: (a: T, b: T) => number): this {
-    if (!this._elements.length) return;
+    if (!this._elements.length) return this;
     this._elements.sort(compareFn);
     this.updatedFrozenObjects();
     this.dispatch('onSorted');
@@ -270,9 +269,9 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> implements 
    * immediately returns that element value. Otherwise, find returns undefined.
    * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
    * If thisArg is omitted, undefined is used as the this value.
-   * @returns {T}
+   * @returns {T | undefined}
    */
-  find(predicate: (element: T, index: number, array: readonly T[]) => any, thisArg?: any): T {
+  find(predicate: (element: T, index: number, array: readonly T[]) => any, thisArg?: any): T | undefined {
     return this._elements.find(predicate, thisArg);
   }
 

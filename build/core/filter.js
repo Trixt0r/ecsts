@@ -28,17 +28,8 @@ export class Filter {
          */
         this.attached = false;
         this.id = Filter.cache.length;
-        this.setUp();
-    }
-    /**
-     * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
-     *
-     * @returns {void}
-     */
-    setUp() {
-        this.filteredEntities = this.source.filter(this.filterFn, this);
-        this.setupComponentSync(this.filteredEntities);
-        this.updateFrozen();
+        this.filteredEntities = [];
+        this.frozenEntities = [];
         this.listener = {
             onAdded: (...entities) => {
                 const before = this.filteredEntities.length;
@@ -71,6 +62,17 @@ export class Filter {
                 this.updateFrozen();
             },
         };
+        this.setUp();
+    }
+    /**
+     * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
+     *
+     * @returns {void}
+     */
+    setUp() {
+        this.filteredEntities = this.source.filter(this.filterFn, this);
+        this.setupComponentSync(this.filteredEntities);
+        this.updateFrozen();
         this.attach();
     }
     /**
@@ -219,7 +221,7 @@ export class Filter {
             return filtered.length === unique.length;
         });
         if (found && found.source !== entities)
-            found = null;
+            found = void 0;
         if (!found) {
             const filter = new Filter(entities, unique);
             Filter.cache[filter.id] = filter;

@@ -95,7 +95,7 @@ export abstract class System extends Dispatcher<SystemListener> {
    * @type {Engine}
    * @memberof System
    */
-  protected _engine: Engine;
+  protected _engine: Engine | null;
 
   /**
    * Creates an instance of System.
@@ -106,6 +106,7 @@ export abstract class System extends Dispatcher<SystemListener> {
     super();
     this._active = true;
     this._updating = false;
+    this._engine = null;
   }
 
   /**
@@ -131,15 +132,14 @@ export abstract class System extends Dispatcher<SystemListener> {
 
   /**
    * The engine this system is assigned to.
-   * This may be `null`.
    *
-   * @type {Engine}
+   * @type {Engine | null}
    */
-  get engine(): Engine {
+  get engine(): Engine |null {
     return this._engine;
   }
 
-  set engine(engine: Engine) {
+  set engine(engine: Engine | null) {
     if (engine === this._engine) return;
     const oldEngine = this._engine;
     this._engine = engine;
