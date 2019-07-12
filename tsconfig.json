@@ -7,8 +7,6 @@
     "rootDir": "./src",
     "skipLibCheck": true,
     "strict": true,
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
     "alwaysStrict": true
   },
   "exclude": [
