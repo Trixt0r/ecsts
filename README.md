@@ -15,7 +15,7 @@ npm install @trixt0r/ecs
 
 Checkout the [examples](https://github.com/Trixt0r/ecsts/tree/master/examples).
 
-Check the [rectangles example](https://ecs-example-rectangles.stackblitz.io) out, if you do not want to checkout the code.
+Check the [rectangles example](https://stackblitz.com/edit/ecs-example-rectangles) out, if you do not want to checkout the code.
 
 ## Usage
 
