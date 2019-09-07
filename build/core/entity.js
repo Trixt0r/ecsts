@@ -1,12 +1,17 @@
 import { ComponentCollection } from "./component";
 import { Dispatcher } from "./dispatcher";
 /**
+ *
  * An Entity holds an id and a list of components attached to it.
  * You can add or remove components from the entity.
  *
  * @export
  * @abstract
  * @class Entity
+ * @extends {Dispatcher<L>}
+ * @implements {CollectionListener<C>}
+ * @template C The component type.
+ * @template L The listener type.
  */
 export class Entity extends Dispatcher {
     /**
@@ -24,7 +29,7 @@ export class Entity extends Dispatcher {
      * A snapshot of all components of this entity.
      *
      * @readonly
-     * @type {ComponentCollection}
+     * @type {ComponentCollection<C>}
      */
     get components() {
         return this._components;
@@ -32,11 +37,12 @@ export class Entity extends Dispatcher {
     /**
      * Dispatches the `onAdded` event to all listeners as `onAddedComponents`.
      *
-     * @param {Component[]} components
+     * @param {C[]} components
      * @returns {void}
      */
     onAdded(...components) {
-        return this.dispatch.apply(this, ['onAddedComponents', ...components]);
+        return this
+            .dispatch.apply(this, ['onAddedComponents', ...components]);
     }
     /**
      * Dispatches the `onRemoved` event to all listeners as `onRemovedComponents`.
@@ -45,7 +51,8 @@ export class Entity extends Dispatcher {
      * @returns {void}
      */
     onRemoved(...components) {
-        return this.dispatch.apply(this, ['onRemovedComponents', ...components]);
+        return this
+            .dispatch.apply(this, ['onRemovedComponents', ...components]);
     }
     /**
      * Dispatches the `onCleared` event to all listeners as `onClearedComponents`.

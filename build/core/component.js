@@ -50,8 +50,8 @@ export class ComponentCollection extends Collection {
      * Searches for the first component matching the given class or type.
      *
      * @todo Use caching, to increase access speed
-     * @param {ComponentClass<Component> | string} classOrType The class or type a component has to match.
-     * @returns {Component} The found component or `null`.
+     * @param {ComponentClass<T> | string} classOrType The class or type a component has to match.
+     * @returns {T} The found component or `null`.
      */
     get(classOrType) {
         return this.getAll(classOrType)[0];
@@ -60,8 +60,8 @@ export class ComponentCollection extends Collection {
      * Searches for the all components matching the given class or type.
      *
      * @todo Use caching, to increase access speed
-     * @param {ComponentClass<Component> | string} classOrType The class or type components have to match.
-     * @returns {readonly Component[]} A list of all components matching the given class.
+     * @param {ComponentClass<T> | string} classOrType The class or type components have to match.
+     * @returns {readonly T[]} A list of all components matching the given class.
      */
     getAll(classOrType) {
         if (this.dirty.get(classOrType))
@@ -103,7 +103,7 @@ export class ComponentCollection extends Collection {
      * Marks the classes and types of the given elements as dirty,
      * so their cache gets updated on the next request.
      *
-     * @param {Component[]} elements
+     * @param {C[]} elements
      * @returns {void}
      */
     markForCacheUpdate(...elements) {

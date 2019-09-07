@@ -6,20 +6,21 @@ import { CollectionListener } from "./collection";
  *
  * @export
  * @interface EntityListener
+ * @template C The component type.
  */
-export interface EntityListener {
+export interface EntityListener<C extends Component = Component> {
     /**
      * Called as soon as a new component as been added to the entity.
      *
-     * @param { Component[]} components The new added components.
+     * @param {C[]} components The new added components.
      */
-    onAddedComponents?(...components: Component[]): void;
+    onAddedComponents?(...components: C[]): void;
     /**
      * Called as soon as a component got removed from the entity.
      *
-     * @param { Component[]} components The removed components
+     * @param {C[]} components The removed components
      */
-    onRemovedComponents?(...components: Component[]): void;
+    onRemovedComponents?(...components: C[]): void;
     /**
      * Called as soon as all components got removed from the entity.
      */
@@ -30,14 +31,19 @@ export interface EntityListener {
     onSortedComponents?(): void;
 }
 /**
+ *
  * An Entity holds an id and a list of components attached to it.
  * You can add or remove components from the entity.
  *
  * @export
  * @abstract
  * @class Entity
+ * @extends {Dispatcher<L>}
+ * @implements {CollectionListener<C>}
+ * @template C The component type.
+ * @template L The listener type.
  */
-export declare abstract class Entity extends Dispatcher<EntityListener> implements CollectionListener<Component> {
+export declare abstract class Entity<C extends Component = Component, L extends EntityListener = EntityListener<C>> extends Dispatcher<L> implements CollectionListener<C> {
     readonly id: number | string;
     /**
      * The internal list of components.
@@ -45,7 +51,7 @@ export declare abstract class Entity extends Dispatcher<EntityListener> implemen
      * @protected
      * @type {ComponentCollection}
      */
-    protected _components: ComponentCollection;
+    protected _components: ComponentCollection<C>;
     /**
      * Creates an instance of Entity.
      *
@@ -56,23 +62,23 @@ export declare abstract class Entity extends Dispatcher<EntityListener> implemen
      * A snapshot of all components of this entity.
      *
      * @readonly
-     * @type {ComponentCollection}
+     * @type {ComponentCollection<C>}
      */
-    readonly components: ComponentCollection;
+    readonly components: ComponentCollection<C>;
     /**
      * Dispatches the `onAdded` event to all listeners as `onAddedComponents`.
      *
-     * @param {Component[]} components
+     * @param {C[]} components
      * @returns {void}
      */
-    onAdded(...components: Component[]): void;
+    onAdded(...components: C[]): void;
     /**
      * Dispatches the `onRemoved` event to all listeners as `onRemovedComponents`.
      *
      * @param {Component[]} components
      * @returns {void}
      */
-    onRemoved(...components: Component[]): void;
+    onRemoved(...components: C[]): void;
     /**
      * Dispatches the `onCleared` event to all listeners as `onClearedComponents`.
      *

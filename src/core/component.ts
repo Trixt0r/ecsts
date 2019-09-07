@@ -4,8 +4,8 @@ import { ComponentClass } from "./types";
 /**
  * The component interface, every component has to implement.
  *
- * If you want your system to treat differnt Components the same way,
- * you may define a static string variable nameed `type` in your components.
+ * If you want your system to treat different Components the same way,
+ * you may define a static string variable named `type` in your components.
  *
  * @export
  * @interface Component
@@ -21,23 +21,23 @@ export interface Component {
  * @class ComponentCollection
  * @extends {Collection<Component>}
  */
-export class ComponentCollection extends Collection<Component> implements CollectionListener<Component> {
+export class ComponentCollection<C extends Component = Component> extends Collection<C> implements CollectionListener<C> {
 
   /**
    * Internal map for faster component access, by class or type.
    *
    * @protected
    */
-  protected cache = new Map<ComponentClass<Component> | string, readonly Component[]>();
+  protected cache = new Map<ComponentClass<C> | string, readonly C[]>();
 
   /**
    * Internal state for updating the components access memory.
    *
    * @protected
    */
-  protected dirty = new Map<ComponentClass<Component> | string, boolean>();
+  protected dirty = new Map<ComponentClass<C> | string, boolean>();
 
-  constructor(initial: Component[] = []) {
+  constructor(initial: C[] = []) {
     super(initial);
     this.addListener(this, true);
   }
@@ -46,7 +46,7 @@ export class ComponentCollection extends Collection<Component> implements Collec
    * @inheritdoc
    * Update the internal cache.
    */
-  onAdded(...elements: Component[]): void {
+  onAdded(...elements: C[]): void {
     this.markForCacheUpdate.apply(this, elements);
   }
 
@@ -54,7 +54,7 @@ export class ComponentCollection extends Collection<Component> implements Collec
    * @inheritdoc
    * Update the internal cache.
    */
-  onRemoved(...elements: Component[]): void {
+  onRemoved(...elements: C[]): void {
     this.markForCacheUpdate.apply(this, elements);
   }
 
@@ -71,25 +71,25 @@ export class ComponentCollection extends Collection<Component> implements Collec
    * Searches for the first component matching the given class or type.
    *
    * @todo Use caching, to increase access speed
-   * @param {ComponentClass<Component> | string} classOrType The class or type a component has to match.
-   * @returns {Component} The found component or `null`.
+   * @param {ComponentClass<T> | string} classOrType The class or type a component has to match.
+   * @returns {T} The found component or `null`.
    */
-  get<T extends Component>(classOrType: ComponentClass<T> | string): T {
-    return <T>this.getAll(classOrType)[0];
+  get<T extends C>(classOrType: ComponentClass<T> | string): T {
+    return this.getAll(classOrType)[0];
   }
 
   /**
    * Searches for the all components matching the given class or type.
    *
    * @todo Use caching, to increase access speed
-   * @param {ComponentClass<Component> | string} classOrType The class or type components have to match.
-   * @returns {readonly Component[]} A list of all components matching the given class.
+   * @param {ComponentClass<T> | string} classOrType The class or type components have to match.
+   * @returns {readonly T[]} A list of all components matching the given class.
    */
-  getAll<T extends Component>(classOrType: ComponentClass<T> | string): readonly T[] {
+  getAll<T extends C>(classOrType: ComponentClass<T> | string): readonly T[] {
     if (this.dirty.get(classOrType)) this.updateCache(classOrType);
     if (this.cache.has(classOrType)) return <T[]>this.cache.get(classOrType);
     this.updateCache(classOrType);
-    return<T[]>this.cache.get(classOrType);
+    return <T[]>this.cache.get(classOrType);
   }
 
   /**
@@ -98,11 +98,11 @@ export class ComponentCollection extends Collection<Component> implements Collec
    * @param {ComponentClass<Component> | string} classOrType The class or type to update the cache for.
    * @returns {void}
    */
-  protected updateCache<T extends Component>(classOrType: ComponentClass<T> | string): void {
+  protected updateCache(classOrType: ComponentClass<C> | string): void {
     const keys = this.cache.keys();
     const type = typeof classOrType === 'string' ? classOrType : classOrType.type;
     const filtered = this.filter(element => {
-      const clazz = <ComponentClass<T>>element.constructor;
+      const clazz = <ComponentClass<C>>element.constructor;
       return type && clazz.type ? type === clazz.type : clazz === classOrType;
     });
     if (typeof classOrType !== 'string' && classOrType.type) {
@@ -124,13 +124,13 @@ export class ComponentCollection extends Collection<Component> implements Collec
    * Marks the classes and types of the given elements as dirty,
    * so their cache gets updated on the next request.
    *
-   * @param {Component[]} elements
+   * @param {C[]} elements
    * @returns {void}
    */
-  protected markForCacheUpdate(...elements: Component[]): void {
+  protected markForCacheUpdate(...elements: C[]): void {
     const keys = this.cache.keys();
     elements.forEach(element => {
-      const clazz = <ComponentClass<Component>>element.constructor;
+      const clazz = <ComponentClass<C>>element.constructor;
       const classOrType = clazz.type ? clazz.type : clazz;
       if (this.dirty.get(classOrType)) return;
       if (typeof classOrType !== 'string' && classOrType.type)

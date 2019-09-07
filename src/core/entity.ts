@@ -1,28 +1,29 @@
 import { Component, ComponentCollection } from "./component";
 import { Dispatcher } from "./dispatcher";
-import { Collection, CollectionListener } from "./collection";
+import { CollectionListener } from "./collection";
 
 /**
  * The listener interface for a listener on an entity.
  *
  * @export
  * @interface EntityListener
+ * @template C The component type.
  */
-export interface EntityListener {
+export interface EntityListener<C extends Component = Component> {
 
   /**
    * Called as soon as a new component as been added to the entity.
    *
-   * @param { Component[]} components The new added components.
+   * @param {C[]} components The new added components.
    */
-  onAddedComponents?(...components: Component[]): void;
+  onAddedComponents?(...components: C[]): void;
 
   /**
    * Called as soon as a component got removed from the entity.
    *
-   * @param { Component[]} components The removed components
+   * @param {C[]} components The removed components
    */
-  onRemovedComponents?(...components: Component[]): void;
+  onRemovedComponents?(...components: C[]): void;
 
   /**
    * Called as soon as all components got removed from the entity.
@@ -36,14 +37,22 @@ export interface EntityListener {
 }
 
 /**
+ *
  * An Entity holds an id and a list of components attached to it.
  * You can add or remove components from the entity.
  *
  * @export
  * @abstract
  * @class Entity
+ * @extends {Dispatcher<L>}
+ * @implements {CollectionListener<C>}
+ * @template C The component type.
+ * @template L The listener type.
  */
-export abstract class Entity extends Dispatcher<EntityListener> implements CollectionListener<Component> {
+export abstract class Entity<C extends Component = Component,
+                             L extends EntityListener = EntityListener<C>>
+                             extends Dispatcher<L>
+                             implements CollectionListener<C> {
 
   /**
    * The internal list of components.
@@ -51,7 +60,7 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * @protected
    * @type {ComponentCollection}
    */
-  protected _components: ComponentCollection;
+  protected _components: ComponentCollection<C>;
 
   /**
    * Creates an instance of Entity.
@@ -68,20 +77,21 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * A snapshot of all components of this entity.
    *
    * @readonly
-   * @type {ComponentCollection}
+   * @type {ComponentCollection<C>}
    */
-  get components(): ComponentCollection {
+  get components(): ComponentCollection<C> {
     return this._components;
   }
 
   /**
    * Dispatches the `onAdded` event to all listeners as `onAddedComponents`.
    *
-   * @param {Component[]} components
+   * @param {C[]} components
    * @returns {void}
    */
-  onAdded(...components: Component[]): void {
-    return this.dispatch.apply(this, ['onAddedComponents', ...components]);
+  onAdded(...components: C[]): void {
+    return (<Dispatcher<EntityListener>>this)
+              .dispatch.apply(this, ['onAddedComponents', ...components]);
   }
 
   /**
@@ -90,8 +100,9 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * @param {Component[]} components
    * @returns {void}
    */
-  onRemoved(...components: Component[]): void {
-    return this.dispatch.apply(this, <['onRemovedComponents', ...Component[]]>['onRemovedComponents', ...components]);
+  onRemoved(...components: C[]): void {
+    return (<Dispatcher<EntityListener>>this)
+              .dispatch.apply(this, <['onRemovedComponents', ...Component[]]>['onRemovedComponents', ...components]);
   }
 
   /**
@@ -100,7 +111,7 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * @returns {void}
    */
   onCleared(): void {
-    return this.dispatch('onClearedComponents');
+    return (<Dispatcher<EntityListener>>this).dispatch('onClearedComponents');
   }
 
   /**
@@ -109,6 +120,6 @@ export abstract class Entity extends Dispatcher<EntityListener> implements Colle
    * @returns {void}
    */
   onSorted(): void {
-    return this.dispatch('onSortedComponents');
+    return (<Dispatcher<EntityListener>>this).dispatch('onSortedComponents');
   }
 }
