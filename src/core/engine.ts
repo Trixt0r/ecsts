@@ -1,10 +1,10 @@
-import { System, SystemListener, SystemMode } from "./system";
-import { Entity } from "./entity";
-import { Dispatcher } from "./dispatcher";
-import { Collection } from "./collection";
-import { Filter } from "./filter";
-import { Class } from "./types";
-import { Component } from "./component";
+import { System, SystemListener, SystemMode } from './system';
+import { AbstractEntity } from './entity';
+import { Dispatcher } from './dispatcher';
+import { Collection } from './collection';
+import { Filter } from './filter';
+import { Class } from './types';
+import { Component } from './component';
 
 /**
  * The listener interface for a listener on an engine.
@@ -44,16 +44,16 @@ export interface EngineListener {
   /**
    * Called as soon as the given entity gets added to the engine.
    *
-   * @param {Entity[]} entities
+   * @param {AbstractEntity[]} entities
    */
-  onAddedEntities?(...entities: Entity[]): void;
+  onAddedEntities?(...entities: AbstractEntity[]): void;
 
   /**
    * Called as soon as the given entity gets removed from the engine.
    *
-   * @param {Entity[]} entities
+   * @param {AbstractEntity[]} entities
    */
-  onRemovedEntities?(...entities: Entity[]): void;
+  onRemovedEntities?(...entities: AbstractEntity[]): void;
 
   /**
    * Called as soon as all entities got cleared from the engine.
@@ -118,9 +118,9 @@ export class Engine extends Dispatcher<EngineListener> {
    * The internal list of all entities in this engine.
    *
    * @protected
-   * @type {Collection<Entity>}
+   * @type {Collection<AbstractEntity>}
    */
-  protected _entities: Collection<Entity>;
+  protected _entities: Collection<AbstractEntity>;
 
   /**
    * Creates an instance of Engine.
@@ -128,7 +128,7 @@ export class Engine extends Dispatcher<EngineListener> {
   constructor() {
     super();
     this._systems = new Collection<System>();
-    this._entities = new Collection<Entity>();
+    this._entities = new Collection<AbstractEntity>();
     this._activeSystems = [];
     this._systems.addListener({
       onAdded: (...systems: System[]) => {
@@ -162,11 +162,11 @@ export class Engine extends Dispatcher<EngineListener> {
     }, true);
 
     this._entities.addListener({
-      onAdded: (...entities: Entity[]) => {
-        this.dispatch.apply(this, <['onAddedEntities', ...Entity[]]>['onAddedEntities', ...entities]);
+      onAdded: (...entities: AbstractEntity[]) => {
+        this.dispatch.apply(this, <['onAddedEntities', ...AbstractEntity[]]>['onAddedEntities', ...entities]);
       },
-      onRemoved: (...entities: Entity[]) => {
-        this.dispatch.apply(this, <['onRemovedEntities', ...Entity[]]>['onRemovedEntities', ...entities]);
+      onRemoved: (...entities: AbstractEntity[]) => {
+        this.dispatch.apply(this, <['onRemovedEntities', ...AbstractEntity[]]>['onRemovedEntities', ...entities]);
       },
       onCleared: () => this.dispatch('onClearedEntities'),
     }, true);
@@ -178,9 +178,9 @@ export class Engine extends Dispatcher<EngineListener> {
    * A snapshot of all entities in this engine.
    *
    * @readonly
-   * @type {Collection<Entity>}
+   * @type {Collection<AbstractEntity>}
    */
-  get entities(): Collection<Entity> {
+  get entities(): Collection<AbstractEntity> {
     return this._entities;
   }
 
@@ -198,7 +198,7 @@ export class Engine extends Dispatcher<EngineListener> {
    * A snapshot of all active systems in this engine.
    *
    * @readonly
-   * @type {Entity[]}
+   * @type {AbstractEntity[]}
    */
   get activeSystems(): readonly System[] {
     return this._activeSystems;

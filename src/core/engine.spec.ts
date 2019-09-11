@@ -2,7 +2,7 @@ import { Engine, EngineMode } from './engine';
 import { System } from './system';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
-import { Entity } from './entity';
+import { AbstractEntity } from './entity';
 import { Filter } from './filter';
 
 class MySyncSystem extends System {
@@ -28,7 +28,7 @@ class MyAsyncSystem extends System {
   }
 }
 
-class MyEntity extends Entity { }
+class MyEntity extends AbstractEntity { }
 
 describe('Engine', () => {
 
@@ -117,8 +117,8 @@ describe('Engine', () => {
 
   describe('entities', () => {
     it('should call onAddedEntities on each listener if an entity got added', () => {
-      let called: Entity = null;
-      let calledRemoved: Entity = null;
+      let called: AbstractEntity = null;
+      let calledRemoved: AbstractEntity = null;
       engine.addListener({ onAddedEntities: sys => called = sys, onRemovedEntities: sys => calledRemoved = sys });
       engine.entities.add(new MyEntity('id'));
       expect(called).toBe(engine.entities.elements[0]);
@@ -126,8 +126,8 @@ describe('Engine', () => {
     });
 
     it('should call onRemovedEntities on each listener if an entity got removed', () => {
-      let called: Entity = null;
-      let calledAdded: Entity = null;
+      let called: AbstractEntity = null;
+      let calledAdded: AbstractEntity = null;
       const system = new MyEntity('id');
       engine.entities.add(system);
       engine.addListener({ onRemovedEntities: sys => called = sys, onAddedEntities: sys => calledAdded = sys });

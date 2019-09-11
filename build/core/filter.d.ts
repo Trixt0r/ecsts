@@ -1,8 +1,8 @@
-import { Component } from "./component";
-import { Collection, CollectionListener } from "./collection";
-import { Entity } from "./entity";
-import { Engine } from "./engine";
-import { ComponentClass } from "./types";
+import { Component } from './component';
+import { Collection, CollectionListener } from './collection';
+import { AbstractEntity } from './entity';
+import { Engine } from './engine';
+import { ComponentClass } from './types';
 /**
  * A filter is used to filter a collection of entities by component types.
  *
@@ -15,7 +15,7 @@ import { ComponentClass } from "./types";
  * @class Filter
  */
 export declare class Filter {
-    source: Collection<Entity>;
+    source: Collection<AbstractEntity>;
     readonly types: readonly ComponentClass<Component>[];
     /**
      * The internal cache for filter instances.
@@ -35,23 +35,23 @@ export declare class Filter {
      * The entities which meet the filter conditions.
      *
      * @protected
-     * @type {Entity[]}
+     * @type {AbstractEntity[]}
      */
-    protected filteredEntities: Entity[];
+    protected filteredEntities: AbstractEntity[];
     /**
      * A frozen copy of the filtered entities for the public access.
      *
      * @protected
-     * @type {Entity[]}
+     * @type {AbstractEntity[]}
      */
-    protected frozenEntities: Entity[];
+    protected frozenEntities: AbstractEntity[];
     /**
      * The collection listener for syncing data.
      *
      * @protected
-     * @type {CollectionListener<Entity>}
+     * @type {CollectionListener<AbstractEntity>}
      */
-    protected listener: CollectionListener<Entity>;
+    protected listener: CollectionListener<AbstractEntity>;
     /**
      * Whether this filter is currently attched to its collection as a listener or not.
      *
@@ -62,10 +62,10 @@ export declare class Filter {
     /**
      * Creates an instance of Filter.
      *
-     * @param {Collection<Entity>} source The collection of entities to filter.
+     * @param {Collection<AbstractEntity>} source The collection of entities to filter.
      * @param {ComponentClass<Component>[]} types The components for which to filter for.
      */
-    protected constructor(source: Collection<Entity>, types: readonly ComponentClass<Component>[]);
+    protected constructor(source: Collection<AbstractEntity>, types: readonly ComponentClass<Component>[]);
     /**
      * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
      *
@@ -76,10 +76,10 @@ export declare class Filter {
      * Checks whether the given entity contains at least one component
      * whose type matches one of the defined types in this filter.
      *
-     * @param {Entity} entity The entity to check for.
+     * @param {AbstractEntity} entity The entity to check for.
      * @returns {boolean} Whether the given entity has at least one component which matches.
      */
-    protected filterFn(entity: Entity): boolean;
+    protected filterFn(entity: AbstractEntity): boolean;
     /**
      * Updates the frozen entities.
      *
@@ -89,17 +89,17 @@ export declare class Filter {
     /**
      * Sets up the component sync logic.
      *
-     * @param {Entity[]} entities The entities to perform the setup for.
+     * @param {AbstractEntity[]} entities The entities to perform the setup for.
      * @return {void}
      */
-    protected setupComponentSync(entities: Entity[]): void;
+    protected setupComponentSync(entities: AbstractEntity[]): void;
     /**
      * Removes the component sync logic.
      *
-     * @param {Entity[]} entities The entities to remove the setup from.
+     * @param {AbstractEntity[]} entities The entities to remove the setup from.
      * @return {void}
      */
-    protected removeComponentSync(entities: Entity[]): void;
+    protected removeComponentSync(entities: AbstractEntity[]): void;
     /**
      * Attaches this filter to its collection.
      *
@@ -123,15 +123,15 @@ export declare class Filter {
      * The entities which match the criterea of this filter.
      *
      * @readonly
-     * @type {Entity[]}
+     * @type {AbstractEntity[]}
      */
-    readonly entities: readonly Entity[];
+    readonly entities: readonly AbstractEntity[];
     /**
      * Returns a filter for the given engine or collection of entities and combination of component classes.
      *
-     * @param {Collection<Entity> | Engine} entitiesOrEngine
+     * @param {Collection<AbstractEntity> | Engine} entitiesOrEngine
      * @param {ComponentClass<Component>[]} classes
      * @returns {Filter}
      */
-    static get(entitiesOrEngine: Collection<Entity> | Engine, ...classes: ComponentClass<Component>[]): Filter;
+    static get(entitiesOrEngine: Collection<AbstractEntity> | Engine, ...classes: ComponentClass<Component>[]): Filter;
 }

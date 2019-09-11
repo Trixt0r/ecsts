@@ -1,4 +1,4 @@
-import { Dispatcher } from "./dispatcher";
+import { Dispatcher } from './dispatcher';
 /**
  * A collection holds a list of elements of a certain type
  * and allows to add, remove, sort and clear the list.

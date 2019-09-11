@@ -1,4 +1,4 @@
-import { Dispatcher } from "./dispatcher";
+import { Dispatcher } from './dispatcher';
 
 /**
  * The listener interface for a listener on an entity.

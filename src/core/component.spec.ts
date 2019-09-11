@@ -1,4 +1,4 @@
-import { ComponentCollection, Component } from "./component";
+import { ComponentCollection, Component } from './component';
 
 class MyComponent1 implements Component {
 }

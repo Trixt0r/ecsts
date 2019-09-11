@@ -45,15 +45,15 @@ class Position implements Component {
 
 Entities are the elements, your systems will work with and have an unique identifier.
 
-Since this library doesn't want you to tell, how to generate your ids, the base class [`Entity`](https://github.com/Trixt0r/ecsts/blob/master/src/core/entity.ts#L46) is abstract.<br>
-This means your entity implementation should extend [`Entity`](https://github.com/Trixt0r/ecsts/blob/master/src/core/entity.ts#L46).
+Since this library doesn't want you to tell, how to generate your ids, the base class [`AbstractEntity`](https://github.com/Trixt0r/ecsts/blob/master/src/core/entity.ts#L52) is abstract.<br>
+This means your entity implementation should extend [`AbstractEntity`](https://github.com/Trixt0r/ecsts/blob/master/src/core/entity.ts#L52).
 
 For example, you could do something like this:
 
 ```ts
-import { Entity } from '@trixt0r/ecs';
+import { AbstractEntity } from '@trixt0r/ecs';
 
-class MyEntity extends Entity {
+class MyEntity extends AbstractEntity {
   constructor() {
     super(makeId());
   }
@@ -66,13 +66,13 @@ Adding components is just as simple as:
 myComponent.components.add(new Position(10, 20));
 ```
 
-An entity, is a [`Dispatcher`](https://github.com/Trixt0r/ecsts/blob/master/src/core/dispatcher.ts), which means, you can register an [`EntityListener`](https://github.com/Trixt0r/ecsts/blob/master/src/core/entity.ts#L11) on it, to check whether a component has been added, removed, the components have beend sorted or cleared.
+An entity, is a [`Dispatcher`](https://github.com/Trixt0r/ecsts/blob/master/src/core/dispatcher.ts), which means, you can register an [`EntityListener`](https://github.com/Trixt0r/ecsts/blob/master/src/core/entity.ts#L12) on it, to check whether a component has been added, removed, the components have beend sorted or cleared.
 
 ### System
 
-Systems implement the actual behaviour of your entities, based on which components they own.
+Systems implement the actual behavior of your entities, based on which components they own.
 
-For programming your own systems, you should implement the abstract class [`System`](https://github.com/Trixt0r/ecsts/blob/master/src/core/system.ts#L55).<br>
+For programming your own systems, you should implement the abstract class [`System`](https://github.com/Trixt0r/ecsts/blob/master/src/core/system.ts#L73).<br>
 This base class provides basic functionalities, such as
 
   * an `updating` flag, which indicates whether a system is still updating.
@@ -115,7 +115,7 @@ This might be useful, if you do not have data which needs to be processed every 
 
 ### Engine
 
-An [`Engine`](https://github.com/Trixt0r/ecsts/blob/master/src/core/engine.ts#L75) ties systems and entities together.<br>
+An [`Engine`](https://github.com/Trixt0r/ecsts/blob/master/src/core/engine.ts#L99) ties systems and entities together.<br>
 It holds collections of both types, to which you can register listeners. But you could also register an [`EngineListener`](https://github.com/Trixt0r/ecsts/blob/master/src/core/engine.ts#L15), to listen for actions happening inside an engine.
 
 Here is a minimal example on how to initialize an engine and add systems and/or entities to it:

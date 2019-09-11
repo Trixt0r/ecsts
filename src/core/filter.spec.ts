@@ -1,10 +1,10 @@
-import { Filter } from "./filter";
-import { Collection } from "./collection";
-import { Entity } from "./entity";
-import { Component } from "./component";
+import { Filter } from './filter';
+import { Collection } from './collection';
+import { AbstractEntity } from './entity';
+import { Component } from './component';
 
-class MyEntity extends Entity { }
-class MySortableEntity extends Entity { constructor(id: string, public position: number) { super(id); } }
+class MyEntity extends AbstractEntity { }
+class MySortableEntity extends AbstractEntity { constructor(id: string, public position: number) { super(id); } }
 class MyComponent1 implements Component { }
 class MyComponent2 implements Component { }
 class MyComponent3 implements Component { }
@@ -17,7 +17,7 @@ class MyTypedComponent4 implements Component { static readonly type = 'my-other-
 describe('Filter', () => {
 
   let filter: Filter;
-  let collection: Collection<Entity>;
+  let collection: Collection<AbstractEntity>;
 
   beforeEach(() => {
     collection = new Collection();

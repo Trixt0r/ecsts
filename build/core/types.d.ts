@@ -1,4 +1,4 @@
-import { Component } from "./component";
+import { Component } from './component';
 /**
  * A type for the arguments of `F`.
  *

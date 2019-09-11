@@ -1,4 +1,4 @@
-import { Engine } from "./engine";
+import { Engine } from './engine';
 /**
  * A filter is used to filter a collection of entities by component types.
  *
@@ -14,7 +14,7 @@ export class Filter {
     /**
      * Creates an instance of Filter.
      *
-     * @param {Collection<Entity>} source The collection of entities to filter.
+     * @param {Collection<AbstractEntity>} source The collection of entities to filter.
      * @param {ComponentClass<Component>[]} types The components for which to filter for.
      */
     constructor(source, types) {
@@ -79,7 +79,7 @@ export class Filter {
      * Checks whether the given entity contains at least one component
      * whose type matches one of the defined types in this filter.
      *
-     * @param {Entity} entity The entity to check for.
+     * @param {AbstractEntity} entity The entity to check for.
      * @returns {boolean} Whether the given entity has at least one component which matches.
      */
     filterFn(entity) {
@@ -106,7 +106,7 @@ export class Filter {
     /**
      * Sets up the component sync logic.
      *
-     * @param {Entity[]} entities The entities to perform the setup for.
+     * @param {AbstractEntity[]} entities The entities to perform the setup for.
      * @return {void}
      */
     setupComponentSync(entities) {
@@ -148,7 +148,7 @@ export class Filter {
     /**
      * Removes the component sync logic.
      *
-     * @param {Entity[]} entities The entities to remove the setup from.
+     * @param {AbstractEntity[]} entities The entities to remove the setup from.
      * @return {void}
      */
     removeComponentSync(entities) {
@@ -194,7 +194,7 @@ export class Filter {
      * The entities which match the criterea of this filter.
      *
      * @readonly
-     * @type {Entity[]}
+     * @type {AbstractEntity[]}
      */
     get entities() {
         return this.frozenEntities;
@@ -202,7 +202,7 @@ export class Filter {
     /**
      * Returns a filter for the given engine or collection of entities and combination of component classes.
      *
-     * @param {Collection<Entity> | Engine} entitiesOrEngine
+     * @param {Collection<AbstractEntity> | Engine} entitiesOrEngine
      * @param {ComponentClass<Component>[]} classes
      * @returns {Filter}
      */

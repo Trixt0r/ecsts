@@ -1,19 +1,19 @@
-import { ComponentCollection } from "./component";
-import { Dispatcher } from "./dispatcher";
+import { ComponentCollection } from './component';
+import { Dispatcher } from './dispatcher';
 /**
  *
- * An Entity holds an id and a list of components attached to it.
+ * An entity holds an id and a list of components attached to it.
  * You can add or remove components from the entity.
  *
  * @export
  * @abstract
- * @class Entity
+ * @class AbstractEntity
  * @extends {Dispatcher<L>}
  * @implements {CollectionListener<C>}
  * @template C The component type.
  * @template L The listener type.
  */
-export class Entity extends Dispatcher {
+export class AbstractEntity extends Dispatcher {
     /**
      * Creates an instance of Entity.
      *

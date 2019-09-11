@@ -1,10 +1,10 @@
-import { System } from "./system";
-import { Entity } from "./entity";
-import { Dispatcher } from "./dispatcher";
-import { Collection } from "./collection";
-import { Filter } from "./filter";
-import { Class } from "./types";
-import { Component } from "./component";
+import { System } from './system';
+import { AbstractEntity } from './entity';
+import { Dispatcher } from './dispatcher';
+import { Collection } from './collection';
+import { Filter } from './filter';
+import { Class } from './types';
+import { Component } from './component';
 /**
  * The listener interface for a listener on an engine.
  *
@@ -38,15 +38,15 @@ export interface EngineListener {
     /**
      * Called as soon as the given entity gets added to the engine.
      *
-     * @param {Entity[]} entities
+     * @param {AbstractEntity[]} entities
      */
-    onAddedEntities?(...entities: Entity[]): void;
+    onAddedEntities?(...entities: AbstractEntity[]): void;
     /**
      * Called as soon as the given entity gets removed from the engine.
      *
-     * @param {Entity[]} entities
+     * @param {AbstractEntity[]} entities
      */
-    onRemovedEntities?(...entities: Entity[]): void;
+    onRemovedEntities?(...entities: AbstractEntity[]): void;
     /**
      * Called as soon as all entities got cleared from the engine.
      */
@@ -103,9 +103,9 @@ export declare class Engine extends Dispatcher<EngineListener> {
      * The internal list of all entities in this engine.
      *
      * @protected
-     * @type {Collection<Entity>}
+     * @type {Collection<AbstractEntity>}
      */
-    protected _entities: Collection<Entity>;
+    protected _entities: Collection<AbstractEntity>;
     /**
      * Creates an instance of Engine.
      */
@@ -114,9 +114,9 @@ export declare class Engine extends Dispatcher<EngineListener> {
      * A snapshot of all entities in this engine.
      *
      * @readonly
-     * @type {Collection<Entity>}
+     * @type {Collection<AbstractEntity>}
      */
-    readonly entities: Collection<Entity>;
+    readonly entities: Collection<AbstractEntity>;
     /**
      * A snapshot of all systems in this engine.
      *
@@ -128,7 +128,7 @@ export declare class Engine extends Dispatcher<EngineListener> {
      * A snapshot of all active systems in this engine.
      *
      * @readonly
-     * @type {Entity[]}
+     * @type {AbstractEntity[]}
      */
     readonly activeSystems: readonly System[];
     /**

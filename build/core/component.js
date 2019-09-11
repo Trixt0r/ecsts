@@ -1,4 +1,4 @@
-import { Collection } from "./collection";
+import { Collection } from './collection';
 /**
  * A collection for components.
  * Supports accessing components by their class.

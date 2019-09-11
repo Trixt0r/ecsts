@@ -6,8 +6,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { Engine } from "./engine";
-import { Dispatcher } from "./dispatcher";
+import { Engine } from './engine';
+import { Dispatcher } from './dispatcher';
 /**
  * Defines how a system executes its task.
  *

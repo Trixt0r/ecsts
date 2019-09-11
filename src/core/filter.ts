@@ -1,8 +1,8 @@
-import { Component } from "./component";
-import { Collection, CollectionListener } from "./collection";
-import { Entity, EntityListener } from "./entity";
-import { Engine } from "./engine";
-import { ComponentClass } from "./types";
+import { Component } from './component';
+import { Collection, CollectionListener } from './collection';
+import { AbstractEntity, EntityListener } from './entity';
+import { Engine } from './engine';
+import { ComponentClass } from './types';
 
 /**
  * A filter is used to filter a collection of entities by component types.
@@ -37,25 +37,25 @@ export class Filter {
    * The entities which meet the filter conditions.
    *
    * @protected
-   * @type {Entity[]}
+   * @type {AbstractEntity[]}
    */
-  protected filteredEntities: Entity[];
+  protected filteredEntities: AbstractEntity[];
 
   /**
    * A frozen copy of the filtered entities for the public access.
    *
    * @protected
-   * @type {Entity[]}
+   * @type {AbstractEntity[]}
    */
-  protected frozenEntities: Entity[];
+  protected frozenEntities: AbstractEntity[];
 
   /**
    * The collection listener for syncing data.
    *
    * @protected
-   * @type {CollectionListener<Entity>}
+   * @type {CollectionListener<AbstractEntity>}
    */
-  protected listener: CollectionListener<Entity>;
+  protected listener: CollectionListener<AbstractEntity>;
 
   /**
    * Whether this filter is currently attched to its collection as a listener or not.
@@ -68,16 +68,16 @@ export class Filter {
   /**
    * Creates an instance of Filter.
    *
-   * @param {Collection<Entity>} source The collection of entities to filter.
+   * @param {Collection<AbstractEntity>} source The collection of entities to filter.
    * @param {ComponentClass<Component>[]} types The components for which to filter for.
    */
-  protected constructor(public source: Collection<Entity>,
+  protected constructor(public source: Collection<AbstractEntity>,
                         public readonly types: readonly ComponentClass<Component>[]) {
     this.id = Filter.cache.length;
     this.filteredEntities = [];
     this.frozenEntities = [];
     this.listener = {
-      onAdded: (...entities: Entity[]) => {
+      onAdded: (...entities: AbstractEntity[]) => {
         const before = this.filteredEntities.length;
         entities.forEach(entity => {
           if (this.filterFn(entity)) this.filteredEntities.push(entity);
@@ -85,7 +85,7 @@ export class Filter {
         this.setupComponentSync(entities);
         if (this.filteredEntities.length !== before) this.updateFrozen();
       },
-      onRemoved: (...entities: Entity[]) => {
+      onRemoved: (...entities: AbstractEntity[]) => {
         const before = this.filteredEntities.length;
         entities.forEach(entity => {
           const idx = this.filteredEntities.indexOf(entity);
@@ -123,10 +123,10 @@ export class Filter {
    * Checks whether the given entity contains at least one component
    * whose type matches one of the defined types in this filter.
    *
-   * @param {Entity} entity The entity to check for.
+   * @param {AbstractEntity} entity The entity to check for.
    * @returns {boolean} Whether the given entity has at least one component which matches.
    */
-  protected filterFn(entity: Entity): boolean {
+  protected filterFn(entity: AbstractEntity): boolean {
     const comps = entity.components;
     if (comps.length === 0) return false;
     return comps.some(comp => {
@@ -151,10 +151,10 @@ export class Filter {
   /**
    * Sets up the component sync logic.
    *
-   * @param {Entity[]} entities The entities to perform the setup for.
+   * @param {AbstractEntity[]} entities The entities to perform the setup for.
    * @return {void}
    */
-  protected setupComponentSync(entities: Entity[]): void {
+  protected setupComponentSync(entities: AbstractEntity[]): void {
     entities.forEach(entity => {
       if ((<any>entity).__ecsEntityListener) return;
       const entityListener: EntityListener = {
@@ -191,10 +191,10 @@ export class Filter {
   /**
    * Removes the component sync logic.
    *
-   * @param {Entity[]} entities The entities to remove the setup from.
+   * @param {AbstractEntity[]} entities The entities to remove the setup from.
    * @return {void}
    */
-  protected removeComponentSync(entities: Entity[]) {
+  protected removeComponentSync(entities: AbstractEntity[]) {
     entities.forEach(entity => {
       const entityListener: EntityListener = (<any>entity).__ecsEntityListener;
       const locked: EntityListener[] = (<any>entity)._lockedListeners;
@@ -239,20 +239,20 @@ export class Filter {
    * The entities which match the criterea of this filter.
    *
    * @readonly
-   * @type {Entity[]}
+   * @type {AbstractEntity[]}
    */
-  get entities(): readonly Entity[] {
+  get entities(): readonly AbstractEntity[] {
     return this.frozenEntities;
   }
 
   /**
    * Returns a filter for the given engine or collection of entities and combination of component classes.
    *
-   * @param {Collection<Entity> | Engine} entitiesOrEngine
+   * @param {Collection<AbstractEntity> | Engine} entitiesOrEngine
    * @param {ComponentClass<Component>[]} classes
    * @returns {Filter}
    */
-  static get(entitiesOrEngine: Collection<Entity> | Engine, ...classes: ComponentClass<Component>[]): Filter {
+  static get(entitiesOrEngine: Collection<AbstractEntity> | Engine, ...classes: ComponentClass<Component>[]): Filter {
     const entities = entitiesOrEngine instanceof Engine ? entitiesOrEngine.entities : entitiesOrEngine;
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
     let found = Filter.cache.find(filter => {

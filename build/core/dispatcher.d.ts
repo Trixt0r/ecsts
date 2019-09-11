@@ -1,4 +1,4 @@
-import { ArgumentTypes } from "./types";
+import { ArgumentTypes } from './types';
 /**
  * A dispatcher is an abstract object which holds a list of listeners
  * to which data during certain events can be dispatched, by calling functions implemented by listeners.

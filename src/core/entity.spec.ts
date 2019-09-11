@@ -1,11 +1,11 @@
-import { Entity } from './entity';
+import { AbstractEntity } from './entity';
 import { Dispatcher } from './dispatcher';
 import { ComponentCollection } from './component';
 
-class MyEntity extends Entity { }
+class MyEntity extends AbstractEntity { }
 
 describe('Entity', () => {
-  let myEntity: Entity;
+  let myEntity: AbstractEntity;
   beforeEach(() => myEntity = new MyEntity('randomId'));
 
   describe('initial', () => {

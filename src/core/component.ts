@@ -1,5 +1,5 @@
-import { Collection, CollectionListener } from "./collection";
-import { ComponentClass } from "./types";
+import { Collection, CollectionListener } from './collection';
+import { ComponentClass } from './types';
 
 /**
  * The component interface, every component has to implement.

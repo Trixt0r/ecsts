@@ -1,5 +1,5 @@
-import { Engine } from "./engine";
-import { Dispatcher } from "./dispatcher";
+import { Engine } from './engine';
+import { Dispatcher } from './dispatcher';
 
 /**
  * The listener interface for a listener added to a system.

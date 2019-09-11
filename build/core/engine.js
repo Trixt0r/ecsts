@@ -6,10 +6,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { SystemMode } from "./system";
-import { Dispatcher } from "./dispatcher";
-import { Collection } from "./collection";
-import { Filter } from "./filter";
+import { SystemMode } from './system';
+import { Dispatcher } from './dispatcher';
+import { Collection } from './collection';
+import { Filter } from './filter';
 /**
  * Defines how an engine executes its active systems.
  *
@@ -96,7 +96,7 @@ export class Engine extends Dispatcher {
      * A snapshot of all entities in this engine.
      *
      * @readonly
-     * @type {Collection<Entity>}
+     * @type {Collection<AbstractEntity>}
      */
     get entities() {
         return this._entities;
@@ -114,7 +114,7 @@ export class Engine extends Dispatcher {
      * A snapshot of all active systems in this engine.
      *
      * @readonly
-     * @type {Entity[]}
+     * @type {AbstractEntity[]}
      */
     get activeSystems() {
         return this._activeSystems;
