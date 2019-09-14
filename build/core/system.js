@@ -1,13 +1,15 @@
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 import { Engine } from './engine';
 import { Dispatcher } from './dispatcher';
+import { Aspect } from './aspect';
 /**
  * Defines how a system executes its task.
  *
@@ -92,7 +94,7 @@ export class System extends Dispatcher {
         }
     }
     /**
-     * Determines whether this system is currenlty updating or not.
+     * Determines whether this system is currently updating or not.
      * The value will stay `true` until @see {System#process} resolves or rejects.
      *
      * @readonly
@@ -182,4 +184,37 @@ export class System extends Dispatcher {
      * @returns {void}
      */
     onError(error) { }
+}
+export class AbstractEntitySystem extends System {
+    /**
+     * Creates an instance of System.
+     *
+     * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+     * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
+     * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
+     * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+     */
+    constructor(priority = 0, all, exclude, one) {
+        super(priority);
+        this.priority = priority;
+        this.all = all;
+        this.exclude = exclude;
+        this.one = one;
+        this.aspect = null;
+    }
+    /** @inheritdoc */
+    onAddedToEngine(engine) {
+        if (this.all || this.exclude || this.one) {
+            this.aspect = Aspect.for(engine, this.all, this.exclude, this.one);
+        }
+    }
+    /** @inheritdoc */
+    process(options) {
+        if (!this._engine)
+            return;
+        const entities = this.aspect ? this.aspect.entities : this._engine.entities.elements;
+        for (let i = 0, l = entities.length; i < l; i++) {
+            this.processEntity(entities[i], i, entities, options);
+        }
+    }
 }

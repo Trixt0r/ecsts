@@ -186,7 +186,7 @@ export class Collection extends Dispatcher {
     /**
      * Performs the specified action for each element in the collection.
      *
-     * @param {(element: T, index: number, array: T[]) => any} callbackFn
+     * @param {(element: T, index: number, array: T[]) => void} callbackFn
      * A function that accepts up to three arguments.
      * forEach calls the callbackfn function one time for each element in the array.
      * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
@@ -199,7 +199,7 @@ export class Collection extends Dispatcher {
      * Returns the value of the first element in the collection where predicate is true, and undefined
      * otherwise.
      *
-     * @param {(element: T, index: number, array: readonly T[]) => any} predicate
+     * @param {(element: T, index: number, array: readonly T[]) => unknown} predicate
      * Find calls predicate once for each element of the array, in ascending order,
      * until it finds one where predicate returns true. If such an element is found, find
      * immediately returns that element value. Otherwise, find returns undefined.
@@ -214,7 +214,7 @@ export class Collection extends Dispatcher {
      * Returns the index of the first element in the collection where predicate is true, and -1
      * otherwise.
      *
-     * @param {(entity: T, index: number, array: readonly T[]) => any} predicate
+     * @param {(entity: T, index: number, array: readonly T[]) => unknown} predicate
      * Find calls predicate once for each element of the array, in ascending order,
      * until it finds one where predicate returns true. If such an element is found,
      * findIndex immediately returns that element index. Otherwise, findIndex returns -1.
@@ -228,12 +228,12 @@ export class Collection extends Dispatcher {
     /**
      * Calls a defined callback function on each element of an collection, and returns an array that contains the results.
      *
-     * @param {(entity: T, index: number, array: readonly T[]) => any} callbackFn
+     * @param {(entity: T, index: number, array: readonly T[]) => U} callbackFn
      * A function that accepts up to three arguments.
      * The map method calls the callbackfn function one time for each element in the array.
      * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
-     * @returns {any[]}
+     * @returns {U[]}
      */
     map(callbackFn, thisArg) {
         return this._elements.map(callbackFn, thisArg);
@@ -242,7 +242,7 @@ export class Collection extends Dispatcher {
      *
      * Determines whether all the members of the collection satisfy the specified test.
      *
-     * @param {(entity: T, index: number, array: readonly T[]) => any} callbackFn
+     * @param {(entity: T, index: number, array: readonly T[]) => unknown} callbackFn
      * A function that accepts up to three arguments.
      * The every method calls the callbackfn function for each element in array1 until the callbackfn
      * returns false, or until the end of the array.
@@ -256,7 +256,7 @@ export class Collection extends Dispatcher {
     /**
      * Determines whether the specified callback function returns true for any element of the collection.
      *
-     * @param {(entity: T, index: number, array: readonly T[]) => any} callbackFn
+     * @param {(entity: T, index: number, array: readonly T[]) => unknown} callbackFn
      * A function that accepts up to three arguments.
      * The some method calls the callbackfn function for each element in the collection until the callbackfn
      * returns true, or until the end of the collection.

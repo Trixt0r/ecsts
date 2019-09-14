@@ -2,9 +2,6 @@ import { System } from './system';
 import { AbstractEntity } from './entity';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
-import { Filter } from './filter';
-import { Class } from './types';
-import { Component } from './component';
 /**
  * The listener interface for a listener on an engine.
  *
@@ -140,40 +137,33 @@ export declare class Engine extends Dispatcher<EngineListener> {
     /**
      * Updates all systems in this engine by the given delta value.
      *
-     * @param {any} options
-     * @param {EngineMode} mode
+     * @param {any} [options]
+     * @param {EngineMode} [mode = EngineMode.DEFAULT]
      * @returns {void | Promise<void>}
      */
-    run(options: any, mode?: EngineMode): void | Promise<void>;
+    run(options?: any, mode?: EngineMode): void | Promise<void>;
     /**
      * Updates all systems in this engine by the given delta value,
      * without waiting for a resolve or reject of each system.
      *
-     * @param {any} options
+     * @param {any} [options]
      * @returns {void}
      */
-    protected runDefault(options: any): void;
+    protected runDefault(options?: any): void;
     /**
      * Updates all systems in this engine by the given delta value,
      * by waiting for a system to resolve or reject before continuing with the next one.
      *
-     * @param {any} options
+     * @param {any} [options]
      * @returns {Promise<void>}
      */
-    protected runSuccessive(options: any): Promise<void>;
+    protected runSuccessive(options?: any): Promise<void>;
     /**
      * Updates all systems in this engine by the given delta value,
      * by running all systems in parallel and waiting for all systems to resolve or reject.
      *
-     * @param {any} options
+     * @param {any} [options]
      * @returns {Promise<void>}
      */
-    protected runParallel(options: any): Promise<void>;
-    /**
-     * Returns a filter for the given types of components.
-     *
-     * @param {Class<Component>[]} types The types of components the entities have to match.
-     * @returns {Filter}
-     */
-    getFilter(...types: Class<Component>[]): Filter;
+    protected runParallel(options?: any): Promise<void>;
 }

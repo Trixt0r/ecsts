@@ -1,6 +1,8 @@
-import { System, SystemMode } from './system';
+import { System, SystemMode, AbstractEntitySystem } from './system';
 import { Engine } from './engine';
 import { Dispatcher } from './dispatcher';
+import { AbstractEntity } from './entity';
+import { Component } from './component';
 
 class MySyncSystem extends System {
 
@@ -221,6 +223,50 @@ describe('System', () => {
         expect(called.message).toBe(system.throw);
       }
     });
+  });
+
+});
+
+class MyEntity extends AbstractEntity { }
+class MyComponent1 implements Component { }
+class MyComponent2 implements Component { }
+class MyComponent3 implements Component { }
+class MyComponent4 implements Component { }
+
+class MyEntitySystem extends AbstractEntitySystem<MyEntity> {
+
+  entities: MyEntity[] = [];
+
+  processEntity(entity: MyEntity): void {
+    this.entities.push(entity);
+  }
+}
+
+describe('AbstractEntitySystem', () => {
+
+  it('should process each entity in the engine', () => {
+    const engine = new Engine();
+    engine.entities.add(new MyEntity('1'), new MyEntity('2'), new MyEntity('3'));
+    const system = new MyEntitySystem();
+    engine.systems.add(system);
+    engine.run();
+    expect(system.entities.length).toBe(engine.entities.length);
+    engine.entities.forEach((entity, i) => {
+      expect(system.entities[i]).toBe(entity);
+    });
+  });
+
+  it('should process each entity fitting the provided aspects', () => {
+    const engine = new Engine();
+    engine.entities.add(new MyEntity('1'), new MyEntity('2'), new MyEntity('3'));
+    engine.entities.elements[0].components.add(new MyComponent1(), new MyComponent2(), new MyComponent4());
+    engine.entities.elements[1].components.add(new MyComponent1(), new MyComponent2(), new MyComponent3());
+    engine.entities.elements[2].components.add(new MyComponent1(), new MyComponent2());
+
+    const system = new MyEntitySystem(0, [MyComponent1], [MyComponent3], [MyComponent4, MyComponent2]);
+    engine.systems.add(system);
+    engine.run();
+    expect(system.entities.length).toBe(2);
   });
 
 });

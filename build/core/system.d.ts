@@ -1,5 +1,9 @@
 import { Engine } from './engine';
 import { Dispatcher } from './dispatcher';
+import { AbstractEntity } from './entity';
+import { ComponentClass } from './types';
+import { Component } from './component';
+import { Aspect } from './aspect';
 /**
  * The listener interface for a listener added to a system.
  *
@@ -105,7 +109,7 @@ export declare abstract class System extends Dispatcher<SystemListener> {
      */
     engine: Engine | null;
     /**
-     * Determines whether this system is currenlty updating or not.
+     * Determines whether this system is currently updating or not.
      * The value will stay `true` until @see {System#process} resolves or rejects.
      *
      * @readonly
@@ -180,4 +184,35 @@ export declare abstract class System extends Dispatcher<SystemListener> {
      * @returns {void}
      */
     onError(error: Error): void;
+}
+export declare abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEntity> extends System {
+    priority: number;
+    protected all?: ComponentClass<Component>[] | undefined;
+    protected exclude?: ComponentClass<Component>[] | undefined;
+    protected one?: ComponentClass<Component>[] | undefined;
+    protected aspect: Aspect | null;
+    /**
+     * Creates an instance of System.
+     *
+     * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+     * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
+     * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
+     * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+     */
+    constructor(priority?: number, all?: ComponentClass<Component>[] | undefined, exclude?: ComponentClass<Component>[] | undefined, one?: ComponentClass<Component>[] | undefined);
+    /** @inheritdoc */
+    onAddedToEngine(engine: Engine): void;
+    /** @inheritdoc */
+    process(options?: any): void;
+    /**
+     * Processes the given entity.
+     *
+     * @abstract
+     * @param {T} entity
+     * @param {number} [index]
+     * @param {T[]} [entities]
+     * @param {any} [options]
+     * @returns {void}
+     */
+    abstract processEntity(entity: T, index?: number, entities?: T[], options?: any): void;
 }

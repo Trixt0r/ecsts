@@ -1,8 +1,8 @@
-import { Entity } from '@trixt0r/ecs';
+import { AbstractEntity } from '@trixt0r/ecs';
 
 let id = 1;
 
-export class MyEntity extends Entity {
+export class MyEntity extends AbstractEntity {
 
   constructor() {
     super(id++);

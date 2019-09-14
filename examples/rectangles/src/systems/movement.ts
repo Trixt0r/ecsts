@@ -1,6 +1,7 @@
-import { System, Filter, Engine } from '@trixt0r/ecs';
+import { AbstractEntitySystem } from '@trixt0r/ecs';
 import { Position } from '../components/position';
 import { Velocity } from '../components/velocity';
+import { MyEntity } from 'entity';
 
 /**
  * The movement system is responsible to update the position of each entity
@@ -10,32 +11,20 @@ import { Velocity } from '../components/velocity';
  * @class MovementSystem
  * @extends {System}
  */
-export class MovementSystem extends System {
+export class MovementSystem extends AbstractEntitySystem<MyEntity> {
 
-  filter: Filter;
-
-  /**
-   * Caches the filter.
-   *
-   * @inheritdoc
-   * @param {Engine} engine
-   */
-  onAddedToEngine(engine: Engine) {
-    this.filter = engine.getFilter(Position, Velocity);
+  constructor(priority: number = 0) {
+    super(priority, [Position, Velocity]);
   }
 
   /**
    * Updates the position.
    */
-  process() {
-    const entities = this.filter.entities;
-    for (let i = 0, l = entities.length; i < l; i++) {
-      const entity = entities[i];
-      const position = entity.components.get(Position);
-      const velocity = entity.components.get(Velocity);
-      position.x += velocity.x;
-      position.y += velocity.y;
-    }
+  processEntity(entity: MyEntity) {
+    const position = entity.components.get(Position);
+    const velocity = entity.components.get(Velocity);
+    position.x += velocity.x;
+    position.y += velocity.y;
   }
 
 }

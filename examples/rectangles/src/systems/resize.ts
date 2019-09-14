@@ -1,4 +1,4 @@
-import { System, Filter, Engine } from '@trixt0r/ecs';
+import { System, Aspect, Engine } from '@trixt0r/ecs';
 import { Velocity } from '../components/velocity';
 
 /**
@@ -11,7 +11,7 @@ import { Velocity } from '../components/velocity';
  */
 export class ResizeSystem extends System {
 
-  filter: Filter;
+  aspect: Aspect;
   canvas: HTMLCanvasElement;
   dirty: boolean;
   oldHeight: number;
@@ -35,7 +35,7 @@ export class ResizeSystem extends System {
    * @param {Engine} engine
    */
   onAddedToEngine(engine: Engine) {
-    this.filter = engine.getFilter(Velocity);
+    this.aspect = Aspect.for(engine).one(Velocity);
     this.canvas = <HTMLCanvasElement>document.getElementById('canvas');
   }
 
@@ -46,7 +46,7 @@ export class ResizeSystem extends System {
   process() {
     if (!this.dirty) return;
     const diff = Math.min(20, this.oldHeight - window.innerHeight);
-    this.filter.entities.forEach(entity => {
+    this.aspect.entities.forEach(entity => {
       const velocity = entity.components.get(Velocity);
       if (velocity.y === 0) {
         velocity.y -= diff;

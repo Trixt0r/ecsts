@@ -1,15 +1,15 @@
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 import { SystemMode } from './system';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
-import { Filter } from './filter';
 /**
  * Defines how an engine executes its active systems.
  *
@@ -131,8 +131,8 @@ export class Engine extends Dispatcher {
     /**
      * Updates all systems in this engine by the given delta value.
      *
-     * @param {any} options
-     * @param {EngineMode} mode
+     * @param {any} [options]
+     * @param {EngineMode} [mode = EngineMode.DEFAULT]
      * @returns {void | Promise<void>}
      */
     run(options, mode = EngineMode.DEFAULT) {
@@ -142,7 +142,7 @@ export class Engine extends Dispatcher {
      * Updates all systems in this engine by the given delta value,
      * without waiting for a resolve or reject of each system.
      *
-     * @param {any} options
+     * @param {any} [options]
      * @returns {void}
      */
     runDefault(options) {
@@ -154,7 +154,7 @@ export class Engine extends Dispatcher {
      * Updates all systems in this engine by the given delta value,
      * by waiting for a system to resolve or reject before continuing with the next one.
      *
-     * @param {any} options
+     * @param {any} [options]
      * @returns {Promise<void>}
      */
     runSuccessive(options) {
@@ -168,7 +168,7 @@ export class Engine extends Dispatcher {
      * Updates all systems in this engine by the given delta value,
      * by running all systems in parallel and waiting for all systems to resolve or reject.
      *
-     * @param {any} options
+     * @param {any} [options]
      * @returns {Promise<void>}
      */
     runParallel(options) {
@@ -176,14 +176,5 @@ export class Engine extends Dispatcher {
             const mapped = this._activeSystems.map(system => system.run(options, SystemMode.ASYNC));
             yield Promise.all(mapped);
         });
-    }
-    /**
-     * Returns a filter for the given types of components.
-     *
-     * @param {Class<Component>[]} types The types of components the entities have to match.
-     * @returns {Filter}
-     */
-    getFilter(...types) {
-        return Filter.get.apply(Filter, [this, ...types]);
     }
 }

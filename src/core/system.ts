@@ -1,5 +1,9 @@
 import { Engine } from './engine';
 import { Dispatcher } from './dispatcher';
+import { AbstractEntity } from './entity';
+import { ComponentClass } from './types';
+import { Component } from './component';
+import { Aspect } from './aspect';
 
 /**
  * The listener interface for a listener added to a system.
@@ -154,7 +158,7 @@ export abstract class System extends Dispatcher<SystemListener> {
   }
 
   /**
-   * Determines whether this system is currenlty updating or not.
+   * Determines whether this system is currently updating or not.
    * The value will stay `true` until @see {System#process} resolves or rejects.
    *
    * @readonly
@@ -257,4 +261,56 @@ export abstract class System extends Dispatcher<SystemListener> {
    * @returns {void}
    */
   onError(error: Error): void { /* NOOP */ }
+}
+
+
+type CompClass = ComponentClass<Component>;
+
+export abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEntity> extends System {
+
+  protected aspect: Aspect | null = null;
+
+  /**
+   * Creates an instance of System.
+   *
+   * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+   * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
+   * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
+   * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+   */
+  constructor(public priority: number = 0,
+              protected all?: CompClass[],
+              protected exclude?: CompClass[],
+              protected one?: CompClass[]) {
+    super(priority);
+  }
+
+  /** @inheritdoc */
+  onAddedToEngine(engine: Engine) {
+    if (this.all || this.exclude || this.one) {
+      this.aspect = Aspect.for(engine, this.all, this.exclude, this.one);
+    }
+  }
+
+  /** @inheritdoc */
+  process(options?: any): void {
+    if (!this._engine) return;
+    const entities = this.aspect ? this.aspect.entities : this._engine.entities.elements;
+    for (let i = 0, l = entities.length; i < l; i++) {
+      this.processEntity(<T>entities[i], i, <T[]>entities, options);
+    }
+  }
+
+  /**
+   * Processes the given entity.
+   *
+   * @abstract
+   * @param {T} entity
+   * @param {number} [index]
+   * @param {T[]} [entities]
+   * @param {any} [options]
+   * @returns {void}
+   */
+  abstract processEntity(entity: T, index?: number, entities?: T[] , options?: any): void;
+
 }

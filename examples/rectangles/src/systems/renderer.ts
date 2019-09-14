@@ -1,5 +1,5 @@
 import { Application, Graphics, Text } from 'pixi.js';
-import { System, Filter, Engine } from '@trixt0r/ecs';
+import { System, Aspect, Engine } from '@trixt0r/ecs';
 import { Position } from '../components/position';
 import { Size } from '../components/size';
 
@@ -12,7 +12,7 @@ import { Size } from '../components/size';
  */
 export class RenderingSystem extends System {
 
-  filter: Filter;
+  aspect: Aspect;
   pixiApp: Application;
   graphics: Graphics;
   fps: Text;
@@ -43,7 +43,7 @@ export class RenderingSystem extends System {
    * @param {Engine} engine
    */
   onAddedToEngine(engine: Engine) {
-    this.filter = engine.getFilter(Position, Size);
+    this.aspect = Aspect.for(engine).all(Position, Size);
   }
 
   /**
@@ -59,7 +59,7 @@ export class RenderingSystem extends System {
                       'entities: ' + this.engine.entities.length;
       this.timePassed = 0;
     }
-    const entities = this.filter.entities;
+    const entities = this.aspect.entities;
     this.graphics.clear();
     this.graphics.beginFill(0xaa1100);
     // this.graphics.lineStyle(1, 0xffffff);

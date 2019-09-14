@@ -3,7 +3,6 @@ import { System } from './system';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
 import { AbstractEntity } from './entity';
-import { Filter } from './filter';
 
 class MySyncSystem extends System {
 
@@ -413,18 +412,5 @@ describe('Engine', () => {
       });
     });
 
-  });
-
-  describe('getFilter', () => {
-    it('should call Filter.get with the engine itself as the first argument', () => {
-      const orig = Filter.get;
-      let set = null;
-      (<any>Filter).get = function(...args: any[]) {
-        set = args[0];
-      };
-      engine.getFilter();
-      expect(set).toBe(engine);
-      Filter.get = orig;
-    });
   });
 });

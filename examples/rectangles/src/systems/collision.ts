@@ -1,7 +1,8 @@
-import { System, Filter, Engine } from '@trixt0r/ecs';
+import { Engine, AbstractEntitySystem } from '@trixt0r/ecs';
 import { Position } from '../components/position';
 import { Velocity } from '../components/velocity';
 import { Size } from '../components/size';
+import { MyEntity } from 'entity';
 
 /**
  * A system which handles collisions with the bounds of the scene.
@@ -10,10 +11,12 @@ import { Size } from '../components/size';
  * @class CollisionSystem
  * @extends {System}
  */
-export class CollisionSystem extends System {
-
-  filter: Filter;
+export class CollisionSystem extends AbstractEntitySystem<MyEntity> {
   canvas: HTMLCanvasElement;
+
+  constructor(priority: number = 0) {
+    super(priority, [Position, Velocity, Size]);
+  }
 
   /**
    * Caches the filter and canvas.
@@ -22,7 +25,7 @@ export class CollisionSystem extends System {
    * @param {Engine} engine
    */
   onAddedToEngine(engine: Engine) {
-    this.filter = engine.getFilter(Position, Velocity, Size);
+    super.onAddedToEngine(engine);
     this.canvas = <HTMLCanvasElement>document.getElementById('canvas');
   }
 
@@ -30,19 +33,15 @@ export class CollisionSystem extends System {
    * Performs the collision detection,
    * i.e. makes sure each entity stays in the scene.
    */
-  process() {
-    const entities = this.filter.entities;
-    for (let i = 0, l = entities.length; i < l; i++) {
-      const entity = entities[i];
-      const position = entity.components.get(Position);
-      const velocity = entity.components.get(Velocity);
-      const size = entity.components.get(Size);
-      if (position.x + size.width > this.canvas.width || position.x < 0) velocity.x *= -1;
-      if (position.y < 0 && velocity.y < 0) velocity.y = 0;
-      else if (position.y + size.height >= this.canvas.height && velocity.y > 0) velocity.y *= -1;
-      position.x = Math.min(this.canvas.width - size.width, Math.max(0, position.x));
-      position.y = Math.min(this.canvas.height - size.height, Math.max(0, position.y));
-    }
+  processEntity(entity: MyEntity) {
+    const position = entity.components.get(Position);
+    const velocity = entity.components.get(Velocity);
+    const size = entity.components.get(Size);
+    if (position.x + size.width > this.canvas.width || position.x < 0) velocity.x *= -1;
+    if (position.y < 0 && velocity.y < 0) velocity.y = 0;
+    else if (position.y + size.height >= this.canvas.height && velocity.y > 0) velocity.y *= -1;
+    position.x = Math.min(this.canvas.width - size.width, Math.max(0, position.x));
+    position.y = Math.min(this.canvas.height - size.height, Math.max(0, position.y));
   }
 
 }
