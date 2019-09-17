@@ -63,9 +63,10 @@ export declare enum SystemMode {
  * @export
  * @abstract
  * @class System
- * @extends {Dispatcher<SystemListener>}
+ * @extends {Dispatcher<L>}
+ * @template L
  */
-export declare abstract class System extends Dispatcher<SystemListener> {
+export declare abstract class System<L extends SystemListener = SystemListener> extends Dispatcher<L> {
     priority: number;
     /**
      * Determines whether this system is active or not.
@@ -92,12 +93,12 @@ export declare abstract class System extends Dispatcher<SystemListener> {
     /**
      * Creates an instance of System.
      *
-     * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+     * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
      */
     constructor(priority?: number);
     /**
      * The active state of this system.
-     * If the flag is set to `false`, this system will not be updated.
+     * If the flag is set to `false`, this system will not be able to process.
      *
      * @type {boolean}
      */
@@ -185,16 +186,34 @@ export declare abstract class System extends Dispatcher<SystemListener> {
      */
     onError(error: Error): void;
 }
+/**
+ * An abstract entity system is a system which processes each entity.
+ *
+ * Optionally it accepts component types for auto filtering the entities before processing.
+ * This class abstracts away the initialization of aspects and detaches them properly, if needed.
+ *
+ * @export
+ * @abstract
+ * @class AbstractEntitySystem
+ * @extends {System}
+ * @template T
+ */
 export declare abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEntity> extends System {
     priority: number;
     protected all?: ComponentClass<Component>[] | undefined;
     protected exclude?: ComponentClass<Component>[] | undefined;
     protected one?: ComponentClass<Component>[] | undefined;
+    /**
+     * The optional aspect, if any.
+     *
+     * @protected
+     * @type {(Aspect | null)}
+     */
     protected aspect: Aspect | null;
     /**
-     * Creates an instance of System.
+     * Creates an instance of AbstractEntitySystem.
      *
-     * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+     * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
      * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
      * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
      * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
@@ -202,6 +221,8 @@ export declare abstract class AbstractEntitySystem<T extends AbstractEntity = Ab
     constructor(priority?: number, all?: ComponentClass<Component>[] | undefined, exclude?: ComponentClass<Component>[] | undefined, one?: ComponentClass<Component>[] | undefined);
     /** @inheritdoc */
     onAddedToEngine(engine: Engine): void;
+    /** @inheritdoc */
+    onRemovedFromEngine(): void;
     /** @inheritdoc */
     process(options?: any): void;
     /**

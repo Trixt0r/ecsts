@@ -35,13 +35,14 @@ export var SystemMode;
  * @export
  * @abstract
  * @class System
- * @extends {Dispatcher<SystemListener>}
+ * @extends {Dispatcher<L>}
+ * @template L
  */
 export class System extends Dispatcher {
     /**
      * Creates an instance of System.
      *
-     * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+     * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
      */
     constructor(priority = 0) {
         super();
@@ -52,7 +53,7 @@ export class System extends Dispatcher {
     }
     /**
      * The active state of this system.
-     * If the flag is set to `false`, this system will not be updated.
+     * If the flag is set to `false`, this system will not be able to process.
      *
      * @type {boolean}
      */
@@ -185,11 +186,23 @@ export class System extends Dispatcher {
      */
     onError(error) { }
 }
+/**
+ * An abstract entity system is a system which processes each entity.
+ *
+ * Optionally it accepts component types for auto filtering the entities before processing.
+ * This class abstracts away the initialization of aspects and detaches them properly, if needed.
+ *
+ * @export
+ * @abstract
+ * @class AbstractEntitySystem
+ * @extends {System}
+ * @template T
+ */
 export class AbstractEntitySystem extends System {
     /**
-     * Creates an instance of System.
+     * Creates an instance of AbstractEntitySystem.
      *
-     * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+     * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
      * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
      * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
      * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
@@ -200,6 +213,12 @@ export class AbstractEntitySystem extends System {
         this.all = all;
         this.exclude = exclude;
         this.one = one;
+        /**
+         * The optional aspect, if any.
+         *
+         * @protected
+         * @type {(Aspect | null)}
+         */
         this.aspect = null;
     }
     /** @inheritdoc */
@@ -207,6 +226,12 @@ export class AbstractEntitySystem extends System {
         if (this.all || this.exclude || this.one) {
             this.aspect = Aspect.for(engine, this.all, this.exclude, this.one);
         }
+    }
+    /** @inheritdoc */
+    onRemovedFromEngine() {
+        if (!this.aspect)
+            return;
+        this.aspect.detach();
     }
     /** @inheritdoc */
     process(options) {

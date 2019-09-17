@@ -128,7 +128,7 @@ class MySystem extends AbstractEntitySystem<MyEntity> {
     super(/* optional priority here */, [Position]);
   }
 
-  async processEntity(entity: MyEntity): void {
+  processEntity(entity: MyEntity): void {
     const position = entity.components.get(Position);
     //... do your logic here
   }

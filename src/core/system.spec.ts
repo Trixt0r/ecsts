@@ -3,6 +3,7 @@ import { Engine } from './engine';
 import { Dispatcher } from './dispatcher';
 import { AbstractEntity } from './entity';
 import { Component } from './component';
+import { Aspect } from './aspect';
 
 class MySyncSystem extends System {
 
@@ -240,6 +241,10 @@ class MyEntitySystem extends AbstractEntitySystem<MyEntity> {
   processEntity(entity: MyEntity): void {
     this.entities.push(entity);
   }
+
+  getAspect(): Aspect {
+    return this.aspect;
+  }
 }
 
 describe('AbstractEntitySystem', () => {
@@ -267,6 +272,16 @@ describe('AbstractEntitySystem', () => {
     engine.systems.add(system);
     engine.run();
     expect(system.entities.length).toBe(2);
+  });
+
+  it('should detach the aspect after removing the system from the engine', () => {
+    const engine = new Engine();
+
+    const system = new MyEntitySystem(0, [MyComponent1], [MyComponent3], [MyComponent4, MyComponent2]);
+    engine.systems.add(system);
+    expect(system.getAspect().isAttached).toBe(true);
+    engine.systems.remove(system);
+    expect(system.getAspect().isAttached).toBe(false);
   });
 
 });

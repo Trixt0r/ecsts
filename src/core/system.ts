@@ -72,9 +72,10 @@ export enum SystemMode {
  * @export
  * @abstract
  * @class System
- * @extends {Dispatcher<SystemListener>}
+ * @extends {Dispatcher<L>}
+ * @template L
  */
-export abstract class System extends Dispatcher<SystemListener> {
+export abstract class System<L extends SystemListener = SystemListener> extends Dispatcher<L> {
 
   /**
    * Determines whether this system is active or not.
@@ -104,7 +105,7 @@ export abstract class System extends Dispatcher<SystemListener> {
   /**
    * Creates an instance of System.
    *
-   * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+   * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
    */
   constructor(public priority: number = 0) {
     super();
@@ -115,7 +116,7 @@ export abstract class System extends Dispatcher<SystemListener> {
 
   /**
    * The active state of this system.
-   * If the flag is set to `false`, this system will not be updated.
+   * If the flag is set to `false`, this system will not be able to process.
    *
    * @type {boolean}
    */
@@ -131,7 +132,7 @@ export abstract class System extends Dispatcher<SystemListener> {
     } else {
       this.onDeactivated();
     }
-    this.dispatch(active ? 'onActivated' : 'onDeactivated');
+    (<Dispatcher<SystemListener>>this).dispatch(active ? 'onActivated' : 'onDeactivated');
   }
 
   /**
@@ -149,11 +150,11 @@ export abstract class System extends Dispatcher<SystemListener> {
     this._engine = engine;
     if (oldEngine instanceof Engine) {
       this.onRemovedFromEngine(oldEngine);
-      this.dispatch('onRemovedFromEngine', oldEngine);
+      (<Dispatcher<SystemListener>>this).dispatch('onRemovedFromEngine', oldEngine);
     }
     if (engine instanceof Engine) {
       this.onAddedToEngine(engine);
-      this.dispatch('onAddedToEngine', engine);
+      (<Dispatcher<SystemListener>>this).dispatch('onAddedToEngine', engine);
     }
   }
 
@@ -189,7 +190,7 @@ export abstract class System extends Dispatcher<SystemListener> {
     try {
       this.process(options);
     } catch (e) {
-      this.dispatch('onError', e);
+      (<Dispatcher<SystemListener>>this).dispatch('onError', e);
     }
   }
 
@@ -204,7 +205,7 @@ export abstract class System extends Dispatcher<SystemListener> {
     try {
       await this.process(options);
     } catch (e) {
-      this.dispatch('onError', e);
+      (<Dispatcher<SystemListener>>this).dispatch('onError', e);
     } finally {
       this._updating = false;
     }
@@ -263,17 +264,34 @@ export abstract class System extends Dispatcher<SystemListener> {
   onError(error: Error): void { /* NOOP */ }
 }
 
-
 type CompClass = ComponentClass<Component>;
 
+/**
+ * An abstract entity system is a system which processes each entity.
+ *
+ * Optionally it accepts component types for auto filtering the entities before processing.
+ * This class abstracts away the initialization of aspects and detaches them properly, if needed.
+ *
+ * @export
+ * @abstract
+ * @class AbstractEntitySystem
+ * @extends {System}
+ * @template T
+ */
 export abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEntity> extends System {
 
+  /**
+   * The optional aspect, if any.
+   *
+   * @protected
+   * @type {(Aspect | null)}
+   */
   protected aspect: Aspect | null = null;
 
   /**
-   * Creates an instance of System.
+   * Creates an instance of AbstractEntitySystem.
    *
-   * @param {number} [priority=0] The priority of this engine. The lower the value the earlier it will be updated.
+   * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
    * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
    * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
    * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
@@ -286,10 +304,16 @@ export abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEn
   }
 
   /** @inheritdoc */
-  onAddedToEngine(engine: Engine) {
+  onAddedToEngine(engine: Engine): void {
     if (this.all || this.exclude || this.one) {
       this.aspect = Aspect.for(engine, this.all, this.exclude, this.one);
     }
+  }
+
+  /** @inheritdoc */
+  onRemovedFromEngine(): void {
+    if (!this.aspect) return;
+    this.aspect.detach();
   }
 
   /** @inheritdoc */
