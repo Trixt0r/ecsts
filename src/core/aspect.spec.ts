@@ -46,6 +46,12 @@ describe('Aspect', () => {
 
     describe('entities', () => {
       describe('add', () => {
+        let calledArguments: MyEntity[];
+        beforeEach(() => {
+          calledArguments = void 0;
+          aspectOne.addListener({ onAddedEntities: function() { calledArguments = Array.prototype.slice.call(arguments); } });
+        });
+
         it('should not match any entities, if the entities have no components', () => {
           expect(aspectOne.entities.length).toBe(0);
         });
@@ -54,12 +60,14 @@ describe('Aspect', () => {
           entity.components.add(new MyComponent4());
           collection.add(entity);
           expect(aspectOne.entities.length).toBe(0);
+          expect(calledArguments).toBeUndefined();
         });
 
         it('should not match entities, if the entities have no matching component(type)', () => {
           entity.components.add(new MyTypedComponent3(), new MyTypedComponent4());
           collection.add(entity);
           expect(aspectOne.entities.length).toBe(0);
+          expect(calledArguments).toBeUndefined();
         });
 
         it('should match entities, if the entities have at least one matching component(class)', () => {
@@ -67,6 +75,9 @@ describe('Aspect', () => {
           collection.add(entity);
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
         });
 
         it('should match entities, if the entities have at least one matching component(type)', () => {
@@ -74,6 +85,9 @@ describe('Aspect', () => {
           collection.add(entity);
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
         });
 
         it('should match entities, if the entities have matching components multiple times(class)', () => {
@@ -83,6 +97,9 @@ describe('Aspect', () => {
           collection.add(entity);
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
         });
 
         it('should match entities, if the entities have matching components multiple times(type)', () => {
@@ -92,11 +109,17 @@ describe('Aspect', () => {
           collection.add(entity);
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
         });
       });
 
       describe('remove', () => {
+        let calledArguments: MyEntity[];
         beforeEach(() => {
+          calledArguments = void 0;
+          aspectOne.addListener({ onRemovedEntities: function() { calledArguments = Array.prototype.slice.call(arguments); } });
           entity.components.add(new MyComponent1());
           collection.add(entity);
         });
@@ -104,6 +127,9 @@ describe('Aspect', () => {
         it('should not match the removed entities', () => {
           collection.remove(entity);
           expect(aspectOne.entities.length).toBe(0);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
         });
 
         it('should not remove entities if the removed did not match', () => {
@@ -113,11 +139,15 @@ describe('Aspect', () => {
           collection.add(other1, other2);
           collection.remove(other1, other2);
           expect(aspectOne.entities.length).toBe(1);
+          expect(calledArguments).toBeUndefined();
         });
       });
 
       describe('clear', () => {
+        let called: boolean;
         beforeEach(() => {
+          called = false;
+          aspectOne.addListener({ onClearedEntities: function() { called = true; } });
           entity.components.add(new MyComponent1());
           collection.add(entity);
         });
@@ -125,10 +155,16 @@ describe('Aspect', () => {
         it('should not match any entities', () => {
           collection.clear();
           expect(aspectOne.entities.length).toBe(0);
+          expect(called).toBe(true);
         });
       });
 
       describe('sort', () => {
+        let called: boolean;
+        beforeEach(() => {
+          called = false;
+          aspectOne.addListener({ onSortedEntities: function() { called = true; } });
+        });
         it('should preserve the order', () => {
           collection.add(
             new MySortableEntity('1', 3),
@@ -140,53 +176,161 @@ describe('Aspect', () => {
           expect((<MySortableEntity>aspectOne.entities[0]).position).toBe(1);
           expect((<MySortableEntity>aspectOne.entities[1]).position).toBe(2);
           expect((<MySortableEntity>aspectOne.entities[2]).position).toBe(3);
+          expect(called).toBe(true);
         });
       });
     });
 
     describe('components', () => {
-      beforeEach(() => collection.add(entity));
+      let calledEntities: MyEntity[];
+      let calledEntity: MyEntity;
+      let calledComponents: Component[];
+
+      beforeEach(() => {
+        calledEntities = void 0;
+        calledEntity = void 0;
+        calledComponents = void 0;
+        collection.add(entity);
+      });
 
       describe('add', () => {
+        beforeEach(() => {
+          aspectOne.addListener({
+            onAddedEntities: function() { calledEntities = Array.prototype.slice.call(arguments); },
+            onAddedComponents: function(entity, ...components: Component[]) {
+              calledEntity = entity;
+              calledComponents = components.slice();
+            },
+          });
+        });
+
         it('should match if a matching component got added', () => {
           entity.components.add(new MyComponent2());
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledEntities).toBeDefined();
+          expect(calledEntities[0]).toBe(entity);
+          expect(calledEntity).toBeDefined();
+          expect(calledEntity).toBe(entity);
+          expect(calledComponents).toBeDefined();
+          expect(calledComponents[0]).toBe(entity.components.elements[0]);
         });
 
         it('should not match if non-matching component got added', () => {
           entity.components.add(new MyComponent4());
           expect(aspectOne.entities.length).toBe(0);
+          expect(calledEntities).toBeUndefined();
+          expect(calledEntity).toBeDefined();
+          expect(calledEntity).toBe(entity);
+          expect(calledComponents).toBeDefined();
+          expect(calledComponents[0]).toBe(entity.components.elements[0]);
         });
       });
 
       describe('remove', () => {
         beforeEach(() => {
+          aspectOne.addListener({
+            onRemovedEntities: function() { calledEntities = Array.prototype.slice.call(arguments); },
+            onRemovedComponents: function(entity, ...components: Component[]) {
+              calledEntity = entity;
+              calledComponents = components.slice();
+            },
+          });
           entity.components.add(new MyComponent1(), new MyComponent2(), new MyComponent3(), new MyComponent4());
         });
 
         it('should still match if a non-matching component got removed', () => {
+          const toRemove = entity.components.elements[3];
           entity.components.remove(3);
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledEntities).toBeUndefined();
+          expect(calledEntity).toBeDefined();
+          expect(calledEntity).toBe(entity);
+          expect(calledComponents).toBeDefined();
+          expect(calledComponents[0]).toBe(toRemove);
         });
 
         it('should still match if matching components got removed but there are still matching components', () => {
+          const toRemove = entity.components.elements.slice(0, 2);
           entity.components.remove(0, 1);
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledEntities).toBeUndefined();
+          expect(calledEntity).toBeDefined();
+          expect(calledEntity).toBe(entity);
+          expect(calledComponents).toBeDefined();
+          expect(calledComponents[0]).toBe(toRemove[0]);
+          expect(calledComponents[1]).toBe(toRemove[1]);
         });
 
         it('should not match anymore if all matching component got removed', () => {
+          const toRemove = entity.components.elements.slice(0, 3);
           entity.components.remove(0, 1, 2);
           expect(aspectOne.entities.length).toBe(0);
+          expect(calledEntities).toBeDefined();
+          expect(calledEntities[0]).toBe(entity);
+          expect(calledEntity).toBeDefined();
+          expect(calledEntity).toBe(entity);
+          expect(calledComponents).toBeDefined();
+          expect(calledComponents[0]).toBe(toRemove[0]);
+          expect(calledComponents[1]).toBe(toRemove[1]);
         });
       });
 
       describe('clear', () => {
+        let notMatching: MyEntity;
+        beforeEach(() => {
+          notMatching = new MyEntity('no-match');
+          notMatching.components.add(new MyComponent4());
+          collection.add(notMatching);
+          aspectOne.addListener({
+            onRemovedEntities: function() { calledEntities = Array.prototype.slice.call(arguments); },
+            onClearedComponents: function(entity) {
+              calledEntity = entity;
+            },
+          });
+          entity.components.add(new MyComponent1(), new MyComponent2(), new MyComponent3());
+        });
+
         it('should not match anymore if all components got removed', () => {
           entity.components.clear();
           expect(aspectOne.entities.length).toBe(0);
+          expect(calledEntities).toBeDefined();
+          expect(calledEntities[0]).toBe(entity);
+          expect(calledEntity).toBe(entity);
+        });
+
+        it('should not react if was not matching and components got removed', () => {
+          notMatching.components.clear();
+          expect(aspectOne.entities.length).toBe(1);
+          expect(calledEntities).toBeUndefined();
+          expect(calledEntity).toBeUndefined();
+        });
+      });
+
+      describe('sort', () => {
+        let notMatching: MyEntity;
+        beforeEach(() => {
+          notMatching = new MyEntity('no-match');
+          notMatching.components.add(new MyComponent4());
+          collection.add(notMatching);
+          aspectOne.addListener({
+            onSortedComponents: function(entity) {
+              calledEntity = entity;
+            },
+          });
+          entity.components.add(new MyComponent1(), new MyComponent2(), new MyComponent3());
+        });
+
+        it('should dispatch data to the onSortedComponents handlers', () => {
+          entity.components.sort();
+          expect(calledEntity).toBe(entity);
+        });
+
+        it('should not match anymore if all components got removed', () => {
+          notMatching.components.sort();
+          expect(calledEntity).toBeUndefined();
         });
       });
     });
@@ -255,14 +399,75 @@ describe('Aspect', () => {
     });
   });
 
-  describe('attach/detach', () => {
-    it('should attach/detach the filter to the source collection if not attached/detached', () => {
+  describe('detach', () => {
+    it('should not detach again if already detached', () => {
+      aspectOne.detach();
+      let called = false;
+      aspectOne.addListener({
+        onDetached: () => called = true
+      });
+      aspectOne.detach();
+      expect(called).toBe(false);
+    });
+
+    it('should detach the filter from the source collection if not detached', () => {
+      let called = false;
+      aspectOne.addListener({ onDetached: () => called = true });
       aspectOne.detach();
       expect(aspectOne.isAttached).toBe(false);
       expect(collection.listeners).not.toContain((<any>aspectOne).listener);
+      expect(called).toBe(true);
+    });
+
+    it('should not listen to the source entities anymore and have no entities to query for', () => {
+      const entity = new MyEntity('test');
+      entity.components.add(new MyComponent1());
+      collection.add(entity);
+      expect(aspectOne.entities.length).toBe(1);
+      expect(aspectOne.entities[0]).toEqual(entity);
+      entity.components.clear();
+
+
+      aspectOne.detach();
+      expect(aspectOne.entities.length).toBe(0);
+      entity.components.add(new MyComponent1());
+      expect(aspectOne.entities.length).toBe(0);
+    });
+
+  });
+
+  describe('attach', () => {
+    it('should not attach again if already attached', () => {
+      let called = false;
+      aspectOne.addListener({ onAttached: () => called = true });
+      aspectOne.attach();
+      expect(called).toBe(false);
+    });
+
+    it('should attach the filter to the source collection if not attached', () => {
+      aspectOne.detach();
+      let called = false;
+      aspectOne.addListener({ onAttached: () => called = true });
       aspectOne.attach();
       expect(collection.listeners).toContain((<any>aspectOne).listener);
       expect(aspectOne.isAttached).toBe(true);
+      expect(called).toBe(true);
+    });
+
+    it('should listen to the source entities again and have entities to query for', () => {
+      const entity = new MyEntity('test');
+      const other = new MyEntity('test2');
+      aspectOne.detach();
+
+      other.components.add(new MyComponent1());
+      collection.add(other);
+      aspectOne.attach();
+      expect(aspectOne.entities.length).toBe(1);
+      expect(aspectOne.entities[0]).toEqual(other);
+      entity.components.add(new MyComponent1());
+      collection.add(entity);
+      expect(aspectOne.entities.length).toBe(2);
+      expect(aspectOne.entities[1]).toEqual(entity);
     });
   });
 
@@ -439,7 +644,5 @@ describe('Aspect', () => {
       expect(descriptor.one[1]).toBe(MyComponent2);
     });
   });
-
-  afterEach(() => (<any>Aspect).cache = []);
 
 });

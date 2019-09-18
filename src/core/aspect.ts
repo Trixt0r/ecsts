@@ -3,6 +3,7 @@ import { Collection, CollectionListener } from './collection';
 import { AbstractEntity, EntityListener } from './entity';
 import { Engine } from './engine';
 import { ComponentClass } from './types';
+import { Dispatcher } from './dispatcher';
 
 type CompClass = ComponentClass<Component>;
 type EntityCollection = Collection<AbstractEntity>;
@@ -56,6 +57,92 @@ export interface AspectDescriptor {
 }
 
 /**
+ * Listener which listens to various aspect events.
+ *
+ * @interface AspectListener
+ */
+interface AspectListener {
+
+  /**
+   * Called if new entities got added to the aspect.
+   *
+   * @param {...AbstractEntity[]} entities
+   * @returns {void}
+   */
+  onAddedEntities?(...entities: AbstractEntity[]): void;
+
+  /**
+   * Called if existing entities got remove from the aspect.
+   *
+   * @param {...AbstractEntity[]} entities
+   * @returns {void}
+   */
+  onRemovedEntities?(...entities: AbstractEntity[]): void;
+
+  /**
+   * Called if the source entities got cleared.
+   *
+   * @returns {void}
+   */
+  onClearedEntities?(): void;
+
+  /**
+   * Called if the source entities got sorted.
+   *
+   * @returns {void}
+   */
+  onSortedEntities?(): void;
+
+  /**
+   * Gets called if new components got added to the given entity.
+   *
+   * @param {AbstractEntity} entity
+   * @param {...Component[]} components
+   * @returns {void}
+   */
+  onAddedComponents?(entity: AbstractEntity, ...components: Component[]): void;
+
+  /**
+   * Gets called if components got removed from the given entity.
+   *
+   * @param {AbstractEntity} entity
+   * @param {...Component[]} components
+   * @returns {void}
+   */
+  onRemovedComponents?(entity: AbstractEntity, ...components: Component[]): void;
+
+  /**
+   * Gets called if the components of the given entity got cleared.
+   *
+   * @param {AbstractEntity} entity
+   * @returns {void}
+   */
+  onClearedComponents?(entity: AbstractEntity): void;
+
+  /**
+   * Gets called if the components of the given entity got sorted.
+   *
+   * @param {AbstractEntity} entity
+   * @returns {void}
+   */
+  onSortedComponents?(entity: AbstractEntity): void;
+
+  /**
+   * Gets called if the aspect got attached.
+   *
+   * @returns {void}
+   */
+  onAttached(): void;
+
+  /**
+   * Gets called if the aspect got detached.
+   *
+   * @returns {void}
+   */
+  onDetached(): void;
+}
+
+/**
  * An aspect is used to filter a collection of entities by component types.
  *
  * Use @see {Aspect#get} to obtain an aspect for a list of components to observe on an engine or a collection of entities.
@@ -66,7 +153,7 @@ export interface AspectDescriptor {
  * @export
  * @class Aspect
  */
-export class Aspect {
+export class Aspect<L extends AspectListener = AspectListener> extends Dispatcher<L> {
 
   /**
    * Component types which all have to be matched by the entity source.
@@ -133,6 +220,7 @@ export class Aspect {
    * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
    */
   protected constructor(public source: EntityCollection, all?: CompClass[], exclude?: CompClass[], one?: CompClass[]) {
+    super();
     this.filteredEntities = [];
     this.frozenEntities = [];
     this.allComponents = all ? all : [];
@@ -140,45 +228,52 @@ export class Aspect {
     this.oneComponents = one ? one : [];
     this.listener = {
       onAdded: (...entities: AbstractEntity[]) => {
-        const before = this.filteredEntities.length;
-        entities.forEach(entity => {
-          if (this.matches(entity)) this.filteredEntities.push(entity);
+        const added = entities.filter(entity => {
+          if (!this.matches(entity)) return false;
+          this.filteredEntities.push(entity);
+          return true;
         });
         this.setupComponentSync(entities);
-        if (this.filteredEntities.length !== before) this.updateFrozen();
+        if (added.length === 0) return;
+        this.updateFrozen();
+        const args = <['onAddedEntities', ...AbstractEntity[]]>['onAddedEntities', ...added];
+        (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
       },
       onRemoved: (...entities: AbstractEntity[]) => {
-        const before = this.filteredEntities.length;
-        entities.forEach(entity => {
+        const removed = entities.filter(entity => {
           const idx = this.filteredEntities.indexOf(entity);
-          if (idx >= 0) this.filteredEntities.splice(idx, 1);
+          if (idx < 0) return false;
+          this.filteredEntities.splice(idx, 1);
+          return true;
         });
         this.removeComponentSync(entities);
-        if (this.filteredEntities.length !== before) this.updateFrozen();
+        if (removed.length === 0) return;
+        this.updateFrozen();
+        const args = <['onRemovedEntities', ...AbstractEntity[]]>['onRemovedEntities', ...removed];
+        (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
       },
       onCleared: () => {
+        if (this.filteredEntities.length === 0) return;
         this.removeComponentSync(this.filteredEntities);
         this.filteredEntities = [];
         this.updateFrozen();
+        (<Dispatcher<AspectListener>>this).dispatch('onClearedEntities');
       },
       onSorted: () => {
+        if (this.filteredEntities.length === 0) return;
         this.filteredEntities = this.source.filter(this.matches, this);
         this.updateFrozen();
+        (<Dispatcher<AspectListener>>this).dispatch('onSortedEntities');
       },
     };
-    this.setUp();
-  }
-
-  /**
-   * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
-   *
-   * @returns {void}
-   */
-  protected setUp(): void {
-    this.matchAll();
     this.attach();
   }
 
+  /**
+   * Performs the match on each entity in the source collection.
+   *
+   * @returns {void}
+   */
   protected matchAll(): void {
     this.filteredEntities = this.source.filter(this.matches, this);
     this.setupComponentSync(this.filteredEntities);
@@ -231,29 +326,39 @@ export class Aspect {
     entities.forEach(entity => {
       if ((<any>entity).__ecsEntityListener) return;
       const entityListener: EntityListener = {
-        onAddedComponents: () => {
+        onAddedComponents: (...comps: Component[]) => {
           if (this.filteredEntities.indexOf(entity) >= 0) return;
-          if (this.matches(entity)) {
-            this.filteredEntities.push(entity);
-            this.updateFrozen();
-          }
+          const args =<['onAddedComponents', AbstractEntity, ...Component[]]>['onAddedComponents', entity, ...comps];
+          (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
+          if (!this.matches(entity)) return;
+          this.filteredEntities.push(entity);
+          this.updateFrozen();
+          (<Dispatcher<AspectListener>>this).dispatch('onAddedEntities', entity);
         },
-        onRemovedComponents: () => {
+        onRemovedComponents: (...comps: Component[]) => {
           if (this.filteredEntities.indexOf(entity) < 0) return;
-          if (!this.matches(entity)) {
-            const idx = this.filteredEntities.indexOf(entity);
-            if (idx >= 0) {
-              this.filteredEntities.splice(idx, 1);
-              this.updateFrozen();
-            }
-          }
+          const args =<['onRemovedComponents', AbstractEntity, ...Component[]]>['onRemovedComponents', entity, ...comps];
+          (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
+          if (this.matches(entity)) return;
+          const idx = this.filteredEntities.indexOf(entity);
+          if (idx < 0) return;
+          this.filteredEntities.splice(idx, 1);
+          this.updateFrozen();
+          (<Dispatcher<AspectListener>>this).dispatch('onRemovedEntities', entity);
         },
         onClearedComponents: () => {
           const idx = this.filteredEntities.indexOf(entity);
-          if (idx >= 0) {
-            this.filteredEntities.splice(idx, 1);
-            this.updateFrozen();
-          }
+          if (idx < 0) return;
+          this.filteredEntities.splice(idx, 1);
+          this.updateFrozen();
+          if (this.filteredEntities.indexOf(entity) < 0)
+            (<Dispatcher<AspectListener>>this).dispatch('onRemovedEntities', entity);
+          (<Dispatcher<AspectListener>>this).dispatch('onClearedComponents', entity);
+        },
+        onSortedComponents: () => {
+          const idx = this.filteredEntities.indexOf(entity);
+          if (idx < 0) return;
+          (<Dispatcher<AspectListener>>this).dispatch('onSortedComponents', entity);
         }
       };
       (<any>entity).__ecsEntityListener = entityListener;
@@ -267,7 +372,7 @@ export class Aspect {
    * @param {AbstractEntity[]} entities The entities to remove the setup from.
    * @return {void}
    */
-  protected removeComponentSync(entities: AbstractEntity[]) {
+  protected removeComponentSync(entities: Readonly<AbstractEntity[]>) {
     entities.forEach(entity => {
       const entityListener: EntityListener = (<any>entity).__ecsEntityListener;
       const locked: EntityListener[] = (<any>entity)._lockedListeners;
@@ -283,8 +388,10 @@ export class Aspect {
    */
   attach(): void {
     if (this.attached) return;
+    this.matchAll();
     this.source.addListener(this.listener);
     this.attached = true;
+    (<Dispatcher<AspectListener>>this).dispatch('onAttached');
   }
 
   /**
@@ -295,7 +402,9 @@ export class Aspect {
   detach(): void {
     if (!this.attached) return;
     this.source.removeListener(this.listener);
+    this.removeComponentSync(this.source.elements);
     this.attached = false;
+    (<Dispatcher<AspectListener>>this).dispatch('onDetached');
   }
 
   /**
