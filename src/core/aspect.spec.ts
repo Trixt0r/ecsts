@@ -338,6 +338,14 @@ describe('Aspect', () => {
 
 
   describe('matches', () => {
+    it('should match any entities without any components without any constraints', () => {
+      const aspect = Aspect.for(collection);
+      const entities = [];
+      for (let i = 0; i < 10; i++)
+        entities.push(new MyEntity(String(i)));
+      entities.forEach(entity => expect(aspect.matches(entity)).toBe(true));
+    });
+
     it('should match entities with an "all components" matcher', () => {
       const aspect = Aspect.for(collection, [MyComponent1, MyComponent2]);
       const matchingEntity = new MyEntity('my');

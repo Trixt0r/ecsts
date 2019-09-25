@@ -3,7 +3,7 @@ import { Dispatcher } from './dispatcher';
 import { AbstractEntity } from './entity';
 import { ComponentClass } from './types';
 import { Component } from './component';
-import { Aspect } from './aspect';
+import { Aspect, AspectListener } from './aspect';
 /**
  * The listener interface for a listener added to a system.
  *
@@ -198,7 +198,7 @@ export declare abstract class System<L extends SystemListener = SystemListener> 
  * @extends {System}
  * @template T
  */
-export declare abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEntity> extends System {
+export declare abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEntity> extends System implements AspectListener {
     priority: number;
     protected all?: ComponentClass<Component>[] | undefined;
     protected exclude?: ComponentClass<Component>[] | undefined;
@@ -223,6 +223,62 @@ export declare abstract class AbstractEntitySystem<T extends AbstractEntity = Ab
     onAddedToEngine(engine: Engine): void;
     /** @inheritdoc */
     onRemovedFromEngine(): void;
+    /**
+     * Called if new entities got added to the system.
+     *
+     * @param {...AbstractEntity[]} entities
+     * @returns {void}
+     */
+    onAddedEntities(...entities: AbstractEntity[]): void;
+    /**
+     * Called if existing entities got removed from the system.
+     *
+     * @param {...AbstractEntity[]} entities
+     * @returns {void}
+     */
+    onRemovedEntities?(...entities: AbstractEntity[]): void;
+    /**
+     * Called if the entities got cleared.
+     *
+     * @returns {void}
+     */
+    onClearedEntities?(): void;
+    /**
+     * Called if the entities got sorted.
+     *
+     * @returns {void}
+     */
+    onSortedEntities?(): void;
+    /**
+     * Gets called if new components got added to the given entity.
+     *
+     * @param {AbstractEntity} entity
+     * @param {...Component[]} components
+     * @returns {void}
+     */
+    onAddedComponents?(entity: AbstractEntity, ...components: Component[]): void;
+    /**
+     * Gets called if components got removed from the given entity.
+     *
+     * @param {AbstractEntity} entity
+     * @param {...Component[]} components
+     * @returns {void}
+     */
+    onRemovedComponents?(entity: AbstractEntity, ...components: Component[]): void;
+    /**
+     * Gets called if the components of the given entity got cleared.
+     *
+     * @param {AbstractEntity} entity
+     * @returns {void}
+     */
+    onClearedComponents?(entity: AbstractEntity): void;
+    /**
+     * Gets called if the components of the given entity got sorted.
+     *
+     * @param {AbstractEntity} entity
+     * @returns {void}
+     */
+    onSortedComponents?(entity: AbstractEntity): void;
     /** @inheritdoc */
     process(options?: any): void;
     /**

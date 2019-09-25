@@ -61,7 +61,7 @@ export interface AspectDescriptor {
  *
  * @interface AspectListener
  */
-interface AspectListener {
+export interface AspectListener {
 
   /**
    * Called if new entities got added to the aspect.
@@ -72,7 +72,7 @@ interface AspectListener {
   onAddedEntities?(...entities: AbstractEntity[]): void;
 
   /**
-   * Called if existing entities got remove from the aspect.
+   * Called if existing entities got removed from the aspect.
    *
    * @param {...AbstractEntity[]} entities
    * @returns {void}
@@ -132,14 +132,14 @@ interface AspectListener {
    *
    * @returns {void}
    */
-  onAttached(): void;
+  onAttached?(): void;
 
   /**
    * Gets called if the aspect got detached.
    *
    * @returns {void}
    */
-  onDetached(): void;
+  onDetached?(): void;
 }
 
 /**
@@ -288,7 +288,6 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    */
   matches(entity: AbstractEntity): boolean {
     const comps = entity.components;
-    if (comps.length === 0) return false;
     const testFn = predicateFn(comps);
 
     // First check if "all"-component types are matched
@@ -493,7 +492,11 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
     return this.one.apply(this, classes);
   }
 
-
+  /**
+   * Collects information about this aspect and returns it.
+   *
+   * @returns {AspectDescriptor}
+   */
   getDescriptor(): AspectDescriptor {
     return {
       all: this.allComponents.slice(),

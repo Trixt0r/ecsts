@@ -284,4 +284,33 @@ describe('AbstractEntitySystem', () => {
     expect(system.getAspect().isAttached).toBe(false);
   });
 
+  it('should call all entity and component related methods', () => {
+    const engine = new Engine();
+    const system = new MyEntitySystem();
+    engine.systems.add(system);
+
+    const methodsAndArgs = {
+      onAddedEntities: [new MyEntity('1'), new MyEntity('2'), new MyEntity('3')],
+      onRemovedEntities: [new MyEntity('1'), new MyEntity('2'), new MyEntity('3')],
+      onClearedEntities: [],
+      onSortedEntities: [],
+      onAddedComponents: [new MyEntity('1'), [new MyComponent1(), new MyComponent2()]],
+      onRemovedComponents: [new MyEntity('2'), [new MyComponent1(), new MyComponent2()]],
+      onClearedComponents: [new MyEntity('3')],
+      onSortedComponents: [new MyEntity('4')],
+    };
+    const keys = Object.keys(methodsAndArgs);
+    let calledTimes = 0;
+    keys.forEach((method: any) => {
+      let calledArgs: any[];
+      const methodArgs = methodsAndArgs[method];
+      system[method] = function() { calledArgs = Array.prototype.slice.call(arguments); };
+      system.getAspect().dispatch.apply(system.getAspect(), [method, ...methodArgs]);
+      expect(calledArgs).toBeDefined();
+      expect(calledArgs).toEqual(methodArgs);
+      calledTimes++;
+    });
+    expect(calledTimes).toBe(keys.length);
+  });
+
 });

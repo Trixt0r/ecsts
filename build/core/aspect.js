@@ -1,4 +1,5 @@
 import { Engine } from './engine';
+import { Dispatcher } from './dispatcher';
 /**
  * Generates a function for the given list of component types.
  *
@@ -29,7 +30,7 @@ function predicateFn(comps) {
  * @export
  * @class Aspect
  */
-export class Aspect {
+export class Aspect extends Dispatcher {
     /**
      * Creates an instance of an Aspect.
      *
@@ -39,6 +40,7 @@ export class Aspect {
      * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
      */
     constructor(source, all, exclude, one) {
+        super();
         this.source = source;
         /**
          * Whether this filter is currently attached to its collection as a listener or not.
@@ -54,47 +56,57 @@ export class Aspect {
         this.oneComponents = one ? one : [];
         this.listener = {
             onAdded: (...entities) => {
-                const before = this.filteredEntities.length;
-                entities.forEach(entity => {
-                    if (this.matches(entity))
-                        this.filteredEntities.push(entity);
+                const added = entities.filter(entity => {
+                    if (!this.matches(entity))
+                        return false;
+                    this.filteredEntities.push(entity);
+                    return true;
                 });
                 this.setupComponentSync(entities);
-                if (this.filteredEntities.length !== before)
-                    this.updateFrozen();
+                if (added.length === 0)
+                    return;
+                this.updateFrozen();
+                const args = ['onAddedEntities', ...added];
+                this.dispatch.apply(this, args);
             },
             onRemoved: (...entities) => {
-                const before = this.filteredEntities.length;
-                entities.forEach(entity => {
+                const removed = entities.filter(entity => {
                     const idx = this.filteredEntities.indexOf(entity);
-                    if (idx >= 0)
-                        this.filteredEntities.splice(idx, 1);
+                    if (idx < 0)
+                        return false;
+                    this.filteredEntities.splice(idx, 1);
+                    return true;
                 });
                 this.removeComponentSync(entities);
-                if (this.filteredEntities.length !== before)
-                    this.updateFrozen();
+                if (removed.length === 0)
+                    return;
+                this.updateFrozen();
+                const args = ['onRemovedEntities', ...removed];
+                this.dispatch.apply(this, args);
             },
             onCleared: () => {
+                if (this.filteredEntities.length === 0)
+                    return;
                 this.removeComponentSync(this.filteredEntities);
                 this.filteredEntities = [];
                 this.updateFrozen();
+                this.dispatch('onClearedEntities');
             },
             onSorted: () => {
+                if (this.filteredEntities.length === 0)
+                    return;
                 this.filteredEntities = this.source.filter(this.matches, this);
                 this.updateFrozen();
+                this.dispatch('onSortedEntities');
             },
         };
-        this.setUp();
+        this.attach();
     }
     /**
-     * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
+     * Performs the match on each entity in the source collection.
      *
      * @returns {void}
      */
-    setUp() {
-        this.matchAll();
-        this.attach();
-    }
     matchAll() {
         this.filteredEntities = this.source.filter(this.matches, this);
         this.setupComponentSync(this.filteredEntities);
@@ -108,8 +120,6 @@ export class Aspect {
      */
     matches(entity) {
         const comps = entity.components;
-        if (comps.length === 0)
-            return false;
         const testFn = predicateFn(comps);
         // First check if "all"-component types are matched
         if (this.allComponents.length > 0 && !this.allComponents.every(testFn))
@@ -142,31 +152,46 @@ export class Aspect {
             if (entity.__ecsEntityListener)
                 return;
             const entityListener = {
-                onAddedComponents: () => {
+                onAddedComponents: (...comps) => {
                     if (this.filteredEntities.indexOf(entity) >= 0)
                         return;
-                    if (this.matches(entity)) {
-                        this.filteredEntities.push(entity);
-                        this.updateFrozen();
-                    }
+                    const args = ['onAddedComponents', entity, ...comps];
+                    this.dispatch.apply(this, args);
+                    if (!this.matches(entity))
+                        return;
+                    this.filteredEntities.push(entity);
+                    this.updateFrozen();
+                    this.dispatch('onAddedEntities', entity);
                 },
-                onRemovedComponents: () => {
+                onRemovedComponents: (...comps) => {
                     if (this.filteredEntities.indexOf(entity) < 0)
                         return;
-                    if (!this.matches(entity)) {
-                        const idx = this.filteredEntities.indexOf(entity);
-                        if (idx >= 0) {
-                            this.filteredEntities.splice(idx, 1);
-                            this.updateFrozen();
-                        }
-                    }
+                    const args = ['onRemovedComponents', entity, ...comps];
+                    this.dispatch.apply(this, args);
+                    if (this.matches(entity))
+                        return;
+                    const idx = this.filteredEntities.indexOf(entity);
+                    if (idx < 0)
+                        return;
+                    this.filteredEntities.splice(idx, 1);
+                    this.updateFrozen();
+                    this.dispatch('onRemovedEntities', entity);
                 },
                 onClearedComponents: () => {
                     const idx = this.filteredEntities.indexOf(entity);
-                    if (idx >= 0) {
-                        this.filteredEntities.splice(idx, 1);
-                        this.updateFrozen();
-                    }
+                    if (idx < 0)
+                        return;
+                    this.filteredEntities.splice(idx, 1);
+                    this.updateFrozen();
+                    if (this.filteredEntities.indexOf(entity) < 0)
+                        this.dispatch('onRemovedEntities', entity);
+                    this.dispatch('onClearedComponents', entity);
+                },
+                onSortedComponents: () => {
+                    const idx = this.filteredEntities.indexOf(entity);
+                    if (idx < 0)
+                        return;
+                    this.dispatch('onSortedComponents', entity);
                 }
             };
             entity.__ecsEntityListener = entityListener;
@@ -195,8 +220,10 @@ export class Aspect {
     attach() {
         if (this.attached)
             return;
+        this.matchAll();
         this.source.addListener(this.listener);
         this.attached = true;
+        this.dispatch('onAttached');
     }
     /**
      * Detaches this filter from its collection.
@@ -207,7 +234,9 @@ export class Aspect {
         if (!this.attached)
             return;
         this.source.removeListener(this.listener);
+        this.removeComponentSync(this.source.elements);
         this.attached = false;
+        this.dispatch('onDetached');
     }
     /**
      * Whether this filter is attached to its collection or not.
@@ -287,6 +316,11 @@ export class Aspect {
     some(...classes) {
         return this.one.apply(this, classes);
     }
+    /**
+     * Collects information about this aspect and returns it.
+     *
+     * @returns {AspectDescriptor}
+     */
     getDescriptor() {
         return {
             all: this.allComponents.slice(),

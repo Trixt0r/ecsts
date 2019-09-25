@@ -223,16 +223,72 @@ export class AbstractEntitySystem extends System {
     }
     /** @inheritdoc */
     onAddedToEngine(engine) {
-        if (this.all || this.exclude || this.one) {
-            this.aspect = Aspect.for(engine, this.all, this.exclude, this.one);
-        }
+        this.aspect = Aspect.for(engine, this.all, this.exclude, this.one);
+        this.aspect.addListener(this);
     }
     /** @inheritdoc */
     onRemovedFromEngine() {
         if (!this.aspect)
             return;
+        this.aspect.removeListener(this);
         this.aspect.detach();
     }
+    /**
+     * Called if new entities got added to the system.
+     *
+     * @param {...AbstractEntity[]} entities
+     * @returns {void}
+     */
+    onAddedEntities(...entities) { }
+    /**
+     * Called if existing entities got removed from the system.
+     *
+     * @param {...AbstractEntity[]} entities
+     * @returns {void}
+     */
+    onRemovedEntities(...entities) { }
+    /**
+     * Called if the entities got cleared.
+     *
+     * @returns {void}
+     */
+    onClearedEntities() { }
+    /**
+     * Called if the entities got sorted.
+     *
+     * @returns {void}
+     */
+    onSortedEntities() { }
+    /**
+     * Gets called if new components got added to the given entity.
+     *
+     * @param {AbstractEntity} entity
+     * @param {...Component[]} components
+     * @returns {void}
+     */
+    onAddedComponents(entity, ...components) { }
+    /**
+     * Gets called if components got removed from the given entity.
+     *
+     * @param {AbstractEntity} entity
+     * @param {...Component[]} components
+     * @returns {void}
+     */
+    onRemovedComponents(entity, ...components) { }
+    /**
+     * Gets called if the components of the given entity got cleared.
+     *
+     * @param {AbstractEntity} entity
+     * @returns {void}
+     */
+    onClearedComponents(entity) { }
+    /**
+     * Gets called if the components of the given entity got sorted.
+     *
+     * @param {AbstractEntity} entity
+     * @returns {void}
+     */
+    onSortedComponents(entity) { }
     /** @inheritdoc */
     process(options) {
         if (!this._engine)

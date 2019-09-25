@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0
+
+This version adds improvements to the `Aspect` and `AbstractEntitySystem` classes.
+
+### Improvements
+
+* `Aspect` is now a dispatcher, which dispatches events like `onAddedEntities`, `onAddedComponents`, etc.
+* `AbstractEntitySystem` listens for the new dispatched events and adds stub methods
+for systems extending the abstraction. This way you can avoid boilerplate code.
+* Various minor fixes.
+
 ## 0.1.0
 
 This version includes breaking changes for filtering entities by components.

@@ -3,6 +3,7 @@ import { Collection, CollectionListener } from './collection';
 import { AbstractEntity } from './entity';
 import { Engine } from './engine';
 import { ComponentClass } from './types';
+import { Dispatcher } from './dispatcher';
 declare type CompClass = ComponentClass<Component>;
 declare type EntityCollection = Collection<AbstractEntity>;
 /**
@@ -32,6 +33,81 @@ export interface AspectDescriptor {
     one: CompClass[];
 }
 /**
+ * Listener which listens to various aspect events.
+ *
+ * @interface AspectListener
+ */
+export interface AspectListener {
+    /**
+     * Called if new entities got added to the aspect.
+     *
+     * @param {...AbstractEntity[]} entities
+     * @returns {void}
+     */
+    onAddedEntities?(...entities: AbstractEntity[]): void;
+    /**
+     * Called if existing entities got removed from the aspect.
+     *
+     * @param {...AbstractEntity[]} entities
+     * @returns {void}
+     */
+    onRemovedEntities?(...entities: AbstractEntity[]): void;
+    /**
+     * Called if the source entities got cleared.
+     *
+     * @returns {void}
+     */
+    onClearedEntities?(): void;
+    /**
+     * Called if the source entities got sorted.
+     *
+     * @returns {void}
+     */
+    onSortedEntities?(): void;
+    /**
+     * Gets called if new components got added to the given entity.
+     *
+     * @param {AbstractEntity} entity
+     * @param {...Component[]} components
+     * @returns {void}
+     */
+    onAddedComponents?(entity: AbstractEntity, ...components: Component[]): void;
+    /**
+     * Gets called if components got removed from the given entity.
+     *
+     * @param {AbstractEntity} entity
+     * @param {...Component[]} components
+     * @returns {void}
+     */
+    onRemovedComponents?(entity: AbstractEntity, ...components: Component[]): void;
+    /**
+     * Gets called if the components of the given entity got cleared.
+     *
+     * @param {AbstractEntity} entity
+     * @returns {void}
+     */
+    onClearedComponents?(entity: AbstractEntity): void;
+    /**
+     * Gets called if the components of the given entity got sorted.
+     *
+     * @param {AbstractEntity} entity
+     * @returns {void}
+     */
+    onSortedComponents?(entity: AbstractEntity): void;
+    /**
+     * Gets called if the aspect got attached.
+     *
+     * @returns {void}
+     */
+    onAttached?(): void;
+    /**
+     * Gets called if the aspect got detached.
+     *
+     * @returns {void}
+     */
+    onDetached?(): void;
+}
+/**
  * An aspect is used to filter a collection of entities by component types.
  *
  * Use @see {Aspect#get} to obtain an aspect for a list of components to observe on an engine or a collection of entities.
@@ -42,7 +118,7 @@ export interface AspectDescriptor {
  * @export
  * @class Aspect
  */
-export declare class Aspect {
+export declare class Aspect<L extends AspectListener = AspectListener> extends Dispatcher<L> {
     source: EntityCollection;
     /**
      * Component types which all have to be matched by the entity source.
@@ -103,11 +179,10 @@ export declare class Aspect {
      */
     protected constructor(source: EntityCollection, all?: CompClass[], exclude?: CompClass[], one?: CompClass[]);
     /**
-     * Performs all necessary steps to guarantee that the filter will be apply properly to the current collection.
+     * Performs the match on each entity in the source collection.
      *
      * @returns {void}
      */
-    protected setUp(): void;
     protected matchAll(): void;
     /**
      * Checks whether the given entity matches the constraints on this aspect.
@@ -135,7 +210,7 @@ export declare class Aspect {
      * @param {AbstractEntity[]} entities The entities to remove the setup from.
      * @return {void}
      */
-    protected removeComponentSync(entities: AbstractEntity[]): void;
+    protected removeComponentSync(entities: Readonly<AbstractEntity[]>): void;
     /**
      * Attaches this filter to its collection.
      *
@@ -201,6 +276,11 @@ export declare class Aspect {
      * @param {ComponentClass<Component>[]} classes
      */
     some(...classes: CompClass[]): this;
+    /**
+     * Collects information about this aspect and returns it.
+     *
+     * @returns {AspectDescriptor}
+     */
     getDescriptor(): AspectDescriptor;
     /**
      * Returns an aspect for the given engine or collection of entities.

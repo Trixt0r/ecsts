@@ -24,14 +24,14 @@ export interface EngineListener {
     /**
      * Called as soon as all systems got cleared from the engine.
      */
-    onClearedSystems(): void;
+    onClearedSystems?(): void;
     /**
      * Called as soon as an error occurred on in an active system during update.
      *
      * @param {Error} error The error that occurred.
      * @param {System} system The system on which the error occurred.
      */
-    onErrorBySystem(error: Error, system: System): void;
+    onErrorBySystem?(error: Error, system: System): void;
     /**
      * Called as soon as the given entity gets added to the engine.
      *
@@ -47,7 +47,7 @@ export interface EngineListener {
     /**
      * Called as soon as all entities got cleared from the engine.
      */
-    onClearedEntities(): void;
+    onClearedEntities?(): void;
 }
 /**
  * Defines how an engine executes its active systems.
