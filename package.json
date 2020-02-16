@@ -1,6 +1,6 @@
 {
   "name": "@trixt0r/ecs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Entity component system for any JS environment written in TypeScript.",
   "main": "build/index.js",
   "keywords": [
@@ -22,9 +22,9 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^24.0.11",
+    "jest": "^24.8.0",
     "ts-jest": "^24.0.2",
-    "typescript": "^3.6.3",
-    "jest": "^24.8.0"
+    "typescript": "^3.6.3"
   },
   "homepage": "https://github.com/Trixt0r/ecsts"
 }
