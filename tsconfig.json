@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "target": "es6",
+    "target": "es5",
     "outDir": "./build",
     "baseUrl": "./src",
     "rootDir": "./src",
     "skipLibCheck": true,
     "strict": true,
-    "alwaysStrict": true
+    "alwaysStrict": true,
+    "lib": ["ES2015"],
+    "downlevelIteration": true
   },
   "exclude": [
     "**/*.spec.ts",

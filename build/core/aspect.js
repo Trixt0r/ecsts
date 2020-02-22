@@ -1,5 +1,40 @@
-import { Engine } from './engine';
-import { Dispatcher } from './dispatcher';
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var engine_1 = require("./engine");
+var dispatcher_1 = require("./dispatcher");
 /**
  * Generates a function for the given list of component types.
  *
@@ -9,9 +44,9 @@ import { Dispatcher } from './dispatcher';
  * @returns {(type: CompClass, index: number, array: readonly CompClass[]) => unknown}
  */
 function predicateFn(comps) {
-    return comp => {
-        return comps.find(c => {
-            const compType = c.constructor;
+    return function (comp) {
+        return comps.find(function (c) {
+            var compType = c.constructor;
             if (compType.type)
                 return comp.type === compType.type;
             else
@@ -30,7 +65,8 @@ function predicateFn(comps) {
  * @export
  * @class Aspect
  */
-export class Aspect extends Dispatcher {
+var Aspect = /** @class */ (function (_super) {
+    __extends(Aspect, _super);
     /**
      * Creates an instance of an Aspect.
      *
@@ -39,88 +75,97 @@ export class Aspect extends Dispatcher {
      * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
      * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
      */
-    constructor(source, all, exclude, one) {
-        super();
-        this.source = source;
+    function Aspect(source, all, exclude, one) {
+        var _this = _super.call(this) || this;
+        _this.source = source;
         /**
          * Whether this filter is currently attached to its collection as a listener or not.
          *
          * @protected
          * @type {boolean}
          */
-        this.attached = false;
-        this.filteredEntities = [];
-        this.frozenEntities = [];
-        this.allComponents = all ? all : [];
-        this.excludeComponents = exclude ? exclude : [];
-        this.oneComponents = one ? one : [];
-        this.listener = {
-            onAdded: (...entities) => {
-                const added = entities.filter(entity => {
-                    if (!this.matches(entity))
+        _this.attached = false;
+        _this.filteredEntities = [];
+        _this.frozenEntities = [];
+        _this.allComponents = all ? all : [];
+        _this.excludeComponents = exclude ? exclude : [];
+        _this.oneComponents = one ? one : [];
+        _this.listener = {
+            onAdded: function () {
+                var entities = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    entities[_i] = arguments[_i];
+                }
+                var added = entities.filter(function (entity) {
+                    if (!_this.matches(entity))
                         return false;
-                    this.filteredEntities.push(entity);
+                    _this.filteredEntities.push(entity);
                     return true;
                 });
-                this.setupComponentSync(entities);
+                _this.setupComponentSync(entities);
                 if (added.length === 0)
                     return;
-                this.updateFrozen();
-                const args = ['onAddedEntities', ...added];
-                this.dispatch.apply(this, args);
+                _this.updateFrozen();
+                var args = __spread(['onAddedEntities'], added);
+                _this.dispatch.apply(_this, args);
             },
-            onRemoved: (...entities) => {
-                const removed = entities.filter(entity => {
-                    const idx = this.filteredEntities.indexOf(entity);
+            onRemoved: function () {
+                var entities = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    entities[_i] = arguments[_i];
+                }
+                var removed = entities.filter(function (entity) {
+                    var idx = _this.filteredEntities.indexOf(entity);
                     if (idx < 0)
                         return false;
-                    this.filteredEntities.splice(idx, 1);
+                    _this.filteredEntities.splice(idx, 1);
                     return true;
                 });
-                this.removeComponentSync(entities);
+                _this.removeComponentSync(entities);
                 if (removed.length === 0)
                     return;
-                this.updateFrozen();
-                const args = ['onRemovedEntities', ...removed];
-                this.dispatch.apply(this, args);
+                _this.updateFrozen();
+                var args = __spread(['onRemovedEntities'], removed);
+                _this.dispatch.apply(_this, args);
             },
-            onCleared: () => {
-                if (this.filteredEntities.length === 0)
+            onCleared: function () {
+                if (_this.filteredEntities.length === 0)
                     return;
-                this.removeComponentSync(this.filteredEntities);
-                this.filteredEntities = [];
-                this.updateFrozen();
-                this.dispatch('onClearedEntities');
+                _this.removeComponentSync(_this.filteredEntities);
+                _this.filteredEntities = [];
+                _this.updateFrozen();
+                _this.dispatch('onClearedEntities');
             },
-            onSorted: () => {
-                if (this.filteredEntities.length === 0)
+            onSorted: function () {
+                if (_this.filteredEntities.length === 0)
                     return;
-                this.filteredEntities = this.source.filter(this.matches, this);
-                this.updateFrozen();
-                this.dispatch('onSortedEntities');
+                _this.filteredEntities = _this.source.filter(_this.matches, _this);
+                _this.updateFrozen();
+                _this.dispatch('onSortedEntities');
             },
         };
-        this.attach();
+        _this.attach();
+        return _this;
     }
     /**
      * Performs the match on each entity in the source collection.
      *
      * @returns {void}
      */
-    matchAll() {
+    Aspect.prototype.matchAll = function () {
         this.filteredEntities = this.source.filter(this.matches, this);
         this.setupComponentSync(this.filteredEntities);
         this.updateFrozen();
-    }
+    };
     /**
      * Checks whether the given entity matches the constraints on this aspect.
      *
      * @param {AbstractEntity} entity The entity to check for.
      * @returns {boolean} Whether the given entity has at least one component which matches.
      */
-    matches(entity) {
-        const comps = entity.components;
-        const testFn = predicateFn(comps);
+    Aspect.prototype.matches = function (entity) {
+        var comps = entity.components;
+        var testFn = predicateFn(comps);
         // First check if "all"-component types are matched
         if (this.allComponents.length > 0 && !this.allComponents.every(testFn))
             return false;
@@ -131,131 +176,148 @@ export class Aspect extends Dispatcher {
         if (this.oneComponents.length > 0 && !this.oneComponents.some(testFn))
             return false;
         return true;
-    }
+    };
     /**
      * Updates the frozen entities.
      *
      * @returns {void}
      */
-    updateFrozen() {
+    Aspect.prototype.updateFrozen = function () {
         this.frozenEntities = this.filteredEntities.slice();
         Object.freeze(this.frozenEntities);
-    }
+    };
     /**
      * Sets up the component sync logic.
      *
      * @param {AbstractEntity[]} entities The entities to perform the setup for.
      * @return {void}
      */
-    setupComponentSync(entities) {
-        entities.forEach(entity => {
+    Aspect.prototype.setupComponentSync = function (entities) {
+        var _this = this;
+        entities.forEach(function (entity) {
             if (entity.__ecsEntityListener)
                 return;
-            const entityListener = {
-                onAddedComponents: (...comps) => {
-                    if (this.filteredEntities.indexOf(entity) >= 0)
+            var entityListener = {
+                onAddedComponents: function () {
+                    var comps = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        comps[_i] = arguments[_i];
+                    }
+                    if (_this.filteredEntities.indexOf(entity) >= 0)
                         return;
-                    const args = ['onAddedComponents', entity, ...comps];
-                    this.dispatch.apply(this, args);
-                    if (!this.matches(entity))
+                    var args = __spread(['onAddedComponents', entity], comps);
+                    _this.dispatch.apply(_this, args);
+                    if (!_this.matches(entity))
                         return;
-                    this.filteredEntities.push(entity);
-                    this.updateFrozen();
-                    this.dispatch('onAddedEntities', entity);
+                    _this.filteredEntities.push(entity);
+                    _this.updateFrozen();
+                    _this.dispatch('onAddedEntities', entity);
                 },
-                onRemovedComponents: (...comps) => {
-                    if (this.filteredEntities.indexOf(entity) < 0)
+                onRemovedComponents: function () {
+                    var comps = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        comps[_i] = arguments[_i];
+                    }
+                    if (_this.filteredEntities.indexOf(entity) < 0)
                         return;
-                    const args = ['onRemovedComponents', entity, ...comps];
-                    this.dispatch.apply(this, args);
-                    if (this.matches(entity))
+                    var args = __spread(['onRemovedComponents', entity], comps);
+                    _this.dispatch.apply(_this, args);
+                    if (_this.matches(entity))
                         return;
-                    const idx = this.filteredEntities.indexOf(entity);
+                    var idx = _this.filteredEntities.indexOf(entity);
                     if (idx < 0)
                         return;
-                    this.filteredEntities.splice(idx, 1);
-                    this.updateFrozen();
-                    this.dispatch('onRemovedEntities', entity);
+                    _this.filteredEntities.splice(idx, 1);
+                    _this.updateFrozen();
+                    _this.dispatch('onRemovedEntities', entity);
                 },
-                onClearedComponents: () => {
-                    const idx = this.filteredEntities.indexOf(entity);
+                onClearedComponents: function () {
+                    var idx = _this.filteredEntities.indexOf(entity);
                     if (idx < 0)
                         return;
-                    this.filteredEntities.splice(idx, 1);
-                    this.updateFrozen();
-                    if (this.filteredEntities.indexOf(entity) < 0)
-                        this.dispatch('onRemovedEntities', entity);
-                    this.dispatch('onClearedComponents', entity);
+                    _this.filteredEntities.splice(idx, 1);
+                    _this.updateFrozen();
+                    if (_this.filteredEntities.indexOf(entity) < 0)
+                        _this.dispatch('onRemovedEntities', entity);
+                    _this.dispatch('onClearedComponents', entity);
                 },
-                onSortedComponents: () => {
-                    const idx = this.filteredEntities.indexOf(entity);
+                onSortedComponents: function () {
+                    var idx = _this.filteredEntities.indexOf(entity);
                     if (idx < 0)
                         return;
-                    this.dispatch('onSortedComponents', entity);
+                    _this.dispatch('onSortedComponents', entity);
                 }
             };
             entity.__ecsEntityListener = entityListener;
             entity.addListener(entityListener);
         });
-    }
+    };
     /**
      * Removes the component sync logic.
      *
      * @param {AbstractEntity[]} entities The entities to remove the setup from.
      * @return {void}
      */
-    removeComponentSync(entities) {
-        entities.forEach(entity => {
-            const entityListener = entity.__ecsEntityListener;
-            const locked = entity._lockedListeners;
+    Aspect.prototype.removeComponentSync = function (entities) {
+        entities.forEach(function (entity) {
+            var entityListener = entity.__ecsEntityListener;
+            var locked = entity._lockedListeners;
             locked.splice(locked.indexOf(entityListener), 1);
             entity.removeListener(entityListener);
         });
-    }
+    };
     /**
      * Attaches this filter to its collection.
      *
      * @returns {void}
      */
-    attach() {
+    Aspect.prototype.attach = function () {
         if (this.attached)
             return;
         this.matchAll();
         this.source.addListener(this.listener);
         this.attached = true;
         this.dispatch('onAttached');
-    }
+    };
     /**
      * Detaches this filter from its collection.
      *
      * @returns {void}
      */
-    detach() {
+    Aspect.prototype.detach = function () {
         if (!this.attached)
             return;
         this.source.removeListener(this.listener);
         this.removeComponentSync(this.source.elements);
         this.attached = false;
         this.dispatch('onDetached');
-    }
-    /**
-     * Whether this filter is attached to its collection or not.
-     *
-     * @readonly
-     * @type {boolean}
-     */
-    get isAttached() {
-        return this.attached;
-    }
-    /**
-     * The entities which match the criteria of this filter.
-     *
-     * @readonly
-     * @type {AbstractEntity[]}
-     */
-    get entities() {
-        return this.frozenEntities;
-    }
+    };
+    Object.defineProperty(Aspect.prototype, "isAttached", {
+        /**
+         * Whether this filter is attached to its collection or not.
+         *
+         * @readonly
+         * @type {boolean}
+         */
+        get: function () {
+            return this.attached;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Aspect.prototype, "entities", {
+        /**
+         * The entities which match the criteria of this filter.
+         *
+         * @readonly
+         * @type {AbstractEntity[]}
+         */
+        get: function () {
+            return this.frozenEntities;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Includes all the given component types.
      *
@@ -263,19 +325,27 @@ export class Aspect extends Dispatcher {
      *
      * @param {ComponentClass<Component>} classes
      */
-    all(...classes) {
-        const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
+    Aspect.prototype.all = function () {
+        var classes = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            classes[_i] = arguments[_i];
+        }
+        var unique = classes.filter(function (value, index, self) { return self.indexOf(value) === index; });
         this.allComponents = unique;
         this.matchAll();
         return this;
-    }
+    };
     /**
      * @alias @see {Aspect#all}
      * @param {ComponentClass<Component>} classes
      */
-    every(...classes) {
+    Aspect.prototype.every = function () {
+        var classes = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            classes[_i] = arguments[_i];
+        }
         return this.all.apply(this, classes);
-    }
+    };
     /**
      * Excludes all of the given component types.
      *
@@ -283,19 +353,27 @@ export class Aspect extends Dispatcher {
      *
      * @param {ComponentClass<Component>} classes
      */
-    exclude(...classes) {
-        const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
+    Aspect.prototype.exclude = function () {
+        var classes = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            classes[_i] = arguments[_i];
+        }
+        var unique = classes.filter(function (value, index, self) { return self.indexOf(value) === index; });
         this.excludeComponents = unique;
         this.matchAll();
         return this;
-    }
+    };
     /**
      * @alias @see {Aspect#exclude}
      * @param {ComponentClass<Component>[]} classes
      */
-    without(...classes) {
+    Aspect.prototype.without = function () {
+        var classes = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            classes[_i] = arguments[_i];
+        }
         return this.exclude.apply(this, classes);
-    }
+    };
     /**
      * Includes one of the given component types.
      *
@@ -303,31 +381,39 @@ export class Aspect extends Dispatcher {
      *
      * @param {ComponentClass<Component>[]} classes
      */
-    one(...classes) {
-        const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
+    Aspect.prototype.one = function () {
+        var classes = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            classes[_i] = arguments[_i];
+        }
+        var unique = classes.filter(function (value, index, self) { return self.indexOf(value) === index; });
         this.oneComponents = unique;
         this.matchAll();
         return this;
-    }
+    };
     /**
      * @alias @see {Aspect#one}
      * @param {ComponentClass<Component>[]} classes
      */
-    some(...classes) {
+    Aspect.prototype.some = function () {
+        var classes = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            classes[_i] = arguments[_i];
+        }
         return this.one.apply(this, classes);
-    }
+    };
     /**
      * Collects information about this aspect and returns it.
      *
      * @returns {AspectDescriptor}
      */
-    getDescriptor() {
+    Aspect.prototype.getDescriptor = function () {
         return {
             all: this.allComponents.slice(),
             exclude: this.excludeComponents.slice(),
             one: this.oneComponents.slice(),
         };
-    }
+    };
     /**
      * Returns an aspect for the given engine or collection of entities.
      *
@@ -337,8 +423,10 @@ export class Aspect extends Dispatcher {
      * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
      * @returns {Aspect}
      */
-    static for(collOrEngine, all, exclude, one) {
-        const entities = collOrEngine instanceof Engine ? collOrEngine.entities : collOrEngine;
+    Aspect.for = function (collOrEngine, all, exclude, one) {
+        var entities = collOrEngine instanceof engine_1.Engine ? collOrEngine.entities : collOrEngine;
         return new Aspect(entities, all, exclude, one);
-    }
-}
+    };
+    return Aspect;
+}(dispatcher_1.Dispatcher));
+exports.Aspect = Aspect;

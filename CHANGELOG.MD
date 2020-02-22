@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.2.2
+
+Target ES5.
+
 ### 0.2.1
 
 Fixed vulnerabilities in package.json.

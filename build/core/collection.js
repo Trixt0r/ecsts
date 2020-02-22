@@ -1,4 +1,39 @@
-import { Dispatcher } from './dispatcher';
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var dispatcher_1 = require("./dispatcher");
 /**
  * A collection holds a list of elements of a certain type
  * and allows to add, remove, sort and clear the list.
@@ -12,23 +47,26 @@ import { Dispatcher } from './dispatcher';
  * @template T
  * @todo Make this iterable.
  */
-export class Collection extends Dispatcher {
+var Collection = /** @class */ (function (_super) {
+    __extends(Collection, _super);
     /**
      * Creates an instance of Collection.
      *
      * @param {T[]} [initial=[]] An optional initial list of elements.
      */
-    constructor(initial = []) {
-        super();
-        this.pointer = 0;
-        this._elements = initial.slice();
-        this._frozenElements = [];
-        this.updatedFrozenObjects();
+    function Collection(initial) {
+        if (initial === void 0) { initial = []; }
+        var _this = _super.call(this) || this;
+        _this.pointer = 0;
+        _this._elements = initial.slice();
+        _this._frozenElements = [];
+        _this.updatedFrozenObjects();
+        return _this;
     }
     /**
      * @inheritdoc
      */
-    next() {
+    Collection.prototype.next = function () {
         if (this.pointer < this._elements.length) {
             return {
                 done: false,
@@ -41,41 +79,49 @@ export class Collection extends Dispatcher {
                 value: null
             };
         }
-    }
+    };
     /**
      * @inheritdoc
      */
-    [Symbol.iterator]() {
+    Collection.prototype[Symbol.iterator] = function () {
         this.pointer = 0;
         return this;
-    }
-    /**
-     * A snapshot of all elements in this collection.
-     *
-     * @readonly
-     * @type {T[]}
-     */
-    get elements() {
-        return this._frozenElements;
-    }
-    /**
-     * The length, of this collection, i.e. how many elements this collection contains.
-     *
-     * @readonly
-     * @type {number}
-     */
-    get length() {
-        return this._frozenElements.length;
-    }
+    };
+    Object.defineProperty(Collection.prototype, "elements", {
+        /**
+         * A snapshot of all elements in this collection.
+         *
+         * @readonly
+         * @type {T[]}
+         */
+        get: function () {
+            return this._frozenElements;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Collection.prototype, "length", {
+        /**
+         * The length, of this collection, i.e. how many elements this collection contains.
+         *
+         * @readonly
+         * @type {number}
+         */
+        get: function () {
+            return this._frozenElements.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Updates the internal frozen element list.
      *
      * @protected
      */
-    updatedFrozenObjects() {
+    Collection.prototype.updatedFrozenObjects = function () {
         this._frozenElements = this._elements.slice();
         Object.freeze(this._frozenElements);
-    }
+    };
     /**
      * Adds the given element to this collection.
      *
@@ -83,12 +129,12 @@ export class Collection extends Dispatcher {
      * @returns {boolean} Whether the element has been added or not.
      *                    It may not be added, if already present in the element list.
      */
-    addSingle(element) {
+    Collection.prototype.addSingle = function (element) {
         if (this._elements.indexOf(element) >= 0)
             return false;
         this._elements.push(element);
         return true;
-    }
+    };
     /**
      * Adds the given element(s) to this collection.
      *
@@ -96,15 +142,20 @@ export class Collection extends Dispatcher {
      * @returns {boolean} Whether elements have been added or not.
      *                    They may not have been added, if they were already present in the element list.
      */
-    add(...elements) {
-        const added = elements.filter(element => this.addSingle(element));
-        const re = added.length > 0;
+    Collection.prototype.add = function () {
+        var _this = this;
+        var elements = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            elements[_i] = arguments[_i];
+        }
+        var added = elements.filter(function (element) { return _this.addSingle(element); });
+        var re = added.length > 0;
         if (re) {
             this.updatedFrozenObjects();
-            this.dispatch.apply(this, ['onAdded', ...added]);
+            this.dispatch.apply(this, __spread(['onAdded'], added));
         }
         return re;
-    }
+    };
     /**
      * Removes the given element or the element at the given index.
      *
@@ -112,14 +163,14 @@ export class Collection extends Dispatcher {
      * @returns {boolean} Whether the element has been removed or not.
      *                    It may not have been removed, if it was not in the element list.
      */
-    removeSingle(elementOrIndex) {
-        const idx = typeof elementOrIndex === 'number' ? elementOrIndex : this._elements.indexOf(elementOrIndex);
+    Collection.prototype.removeSingle = function (elementOrIndex) {
+        var idx = typeof elementOrIndex === 'number' ? elementOrIndex : this._elements.indexOf(elementOrIndex);
         if (idx >= 0 && idx < this._elements.length) {
             this._elements.splice(idx, 1);
             return true;
         }
         return false;
-    }
+    };
     /**
      * Removes the given element(s) or the elements at the given indices.
      *
@@ -127,49 +178,54 @@ export class Collection extends Dispatcher {
      * @returns {boolean} Whether elements have been removed or not.
      *                    They may not have been removed, if every element was not in the element list.
      */
-    remove(...elementsOrIndices) {
-        const elements = elementsOrIndices.map(o => typeof o === 'number' ? this._elements[o] : o);
-        const removed = elements.filter(element => this.removeSingle(element));
-        const re = removed.length > 0;
+    Collection.prototype.remove = function () {
+        var _this = this;
+        var elementsOrIndices = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            elementsOrIndices[_i] = arguments[_i];
+        }
+        var elements = elementsOrIndices.map(function (o) { return typeof o === 'number' ? _this._elements[o] : o; });
+        var removed = elements.filter(function (element) { return _this.removeSingle(element); });
+        var re = removed.length > 0;
         if (re) {
             this.updatedFrozenObjects();
-            this.dispatch.apply(this, ['onRemoved', ...removed]);
+            this.dispatch.apply(this, __spread(['onRemoved'], removed));
         }
         return re;
-    }
+    };
     /**
      * Clears this collection, i.e. removes all elements from the internal list.
      */
-    clear() {
+    Collection.prototype.clear = function () {
         if (!this._elements.length)
             return;
         this._elements = [];
         this.updatedFrozenObjects();
         this.dispatch('onCleared');
-    }
+    };
     /**
      * Returns the index of the given element.
      *
      * @param {T} element The element.
      * @returns {number} The index of the given element or id.
      */
-    indexOf(element) {
+    Collection.prototype.indexOf = function (element) {
         return this._elements.indexOf(element);
-    }
+    };
     /**
      * Sorts this collection.
      *
      * @param {(a: T, b: T) => number} [compareFn]
      * @returns {this}
      */
-    sort(compareFn) {
+    Collection.prototype.sort = function (compareFn) {
         if (!this._elements.length)
             return this;
         this._elements.sort(compareFn);
         this.updatedFrozenObjects();
         this.dispatch('onSorted');
         return this;
-    }
+    };
     /**
      * Returns the elements of this collection that meet the condition specified in a callback function.
      *
@@ -180,9 +236,9 @@ export class Collection extends Dispatcher {
      * If `thisArg` is omitted, undefined is used as the this value.
      * @returns {T[]} An array with elements which met the condition.
      */
-    filter(callbackfn, thisArg) {
+    Collection.prototype.filter = function (callbackfn, thisArg) {
         return this._elements.filter(callbackfn, thisArg);
-    }
+    };
     /**
      * Performs the specified action for each element in the collection.
      *
@@ -192,9 +248,9 @@ export class Collection extends Dispatcher {
      * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
      */
-    forEach(callbackFn, thisArg) {
+    Collection.prototype.forEach = function (callbackFn, thisArg) {
         this._elements.forEach(callbackFn, thisArg);
-    }
+    };
     /**
      * Returns the value of the first element in the collection where predicate is true, and undefined
      * otherwise.
@@ -207,9 +263,9 @@ export class Collection extends Dispatcher {
      * If thisArg is omitted, undefined is used as the this value.
      * @returns {T | undefined}
      */
-    find(predicate, thisArg) {
+    Collection.prototype.find = function (predicate, thisArg) {
         return this._elements.find(predicate, thisArg);
-    }
+    };
     /**
      * Returns the index of the first element in the collection where predicate is true, and -1
      * otherwise.
@@ -222,9 +278,9 @@ export class Collection extends Dispatcher {
      * If thisArg is omitted, undefined is used as the this value.
      * @returns {number}
      */
-    findIndex(predicate, thisArg) {
+    Collection.prototype.findIndex = function (predicate, thisArg) {
         return this._elements.findIndex(predicate, thisArg);
-    }
+    };
     /**
      * Calls a defined callback function on each element of an collection, and returns an array that contains the results.
      *
@@ -235,9 +291,9 @@ export class Collection extends Dispatcher {
      * If thisArg is omitted, undefined is used as the this value.
      * @returns {U[]}
      */
-    map(callbackFn, thisArg) {
+    Collection.prototype.map = function (callbackFn, thisArg) {
         return this._elements.map(callbackFn, thisArg);
-    }
+    };
     /**
      *
      * Determines whether all the members of the collection satisfy the specified test.
@@ -250,9 +306,9 @@ export class Collection extends Dispatcher {
      * If thisArg is omitted, undefined is used as the this value.
      * @returns {boolean}
      */
-    every(callbackFn, thisArg) {
+    Collection.prototype.every = function (callbackFn, thisArg) {
         return this._elements.every(callbackFn, thisArg);
-    }
+    };
     /**
      * Determines whether the specified callback function returns true for any element of the collection.
      *
@@ -264,9 +320,9 @@ export class Collection extends Dispatcher {
      * If thisArg is omitted, undefined is used as the this value.
      * @returns {boolean}
      */
-    some(callbackFn, thisArg) {
+    Collection.prototype.some = function (callbackFn, thisArg) {
         return this._elements.some(callbackFn, thisArg);
-    }
+    };
     /**
      * Calls the specified callback function for all the elements in the collection.
      * The return value of the callback function is the accumulated result,
@@ -280,9 +336,9 @@ export class Collection extends Dispatcher {
      * an collection value.
      * @returns {U}
      */
-    reduce(callbackFn, initialValue) {
+    Collection.prototype.reduce = function (callbackFn, initialValue) {
         return this._elements.reduce(callbackFn, initialValue);
-    }
+    };
     /**
      * Calls the specified callback function for all the elements in the collection, in descending order.
      * The return value of the callback function is the accumulated result,
@@ -294,7 +350,9 @@ export class Collection extends Dispatcher {
      *                         an collection value.
      * @returns {U}
      */
-    reduceRight(callbackFn, initialValue) {
+    Collection.prototype.reduceRight = function (callbackFn, initialValue) {
         return this._elements.reduceRight(callbackFn, initialValue);
-    }
-}
+    };
+    return Collection;
+}(dispatcher_1.Dispatcher));
+exports.Collection = Collection;
