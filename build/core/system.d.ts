@@ -200,9 +200,9 @@ export declare abstract class System<L extends SystemListener = SystemListener> 
  */
 export declare abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEntity> extends System implements AspectListener {
     priority: number;
-    protected all?: ComponentClass<Component>[] | undefined;
-    protected exclude?: ComponentClass<Component>[] | undefined;
-    protected one?: ComponentClass<Component>[] | undefined;
+    protected all?: (Component | ComponentClass<Component>)[] | undefined;
+    protected exclude?: (Component | ComponentClass<Component>)[] | undefined;
+    protected one?: (Component | ComponentClass<Component>)[] | undefined;
     /**
      * The optional aspect, if any.
      *
@@ -218,7 +218,7 @@ export declare abstract class AbstractEntitySystem<T extends AbstractEntity = Ab
      * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
      * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
      */
-    constructor(priority?: number, all?: ComponentClass<Component>[] | undefined, exclude?: ComponentClass<Component>[] | undefined, one?: ComponentClass<Component>[] | undefined);
+    constructor(priority?: number, all?: (Component | ComponentClass<Component>)[] | undefined, exclude?: (Component | ComponentClass<Component>)[] | undefined, one?: (Component | ComponentClass<Component>)[] | undefined);
     /** @inheritdoc */
     onAddedToEngine(engine: Engine): void;
     /** @inheritdoc */

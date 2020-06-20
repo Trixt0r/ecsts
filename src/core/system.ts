@@ -264,7 +264,7 @@ export abstract class System<L extends SystemListener = SystemListener> extends 
   onError(error: Error): void { /* NOOP */ }
 }
 
-type CompClass = ComponentClass<Component>;
+type CompType = ComponentClass<Component> | Component;
 
 /**
  * An abstract entity system is a system which processes each entity.
@@ -294,14 +294,14 @@ export abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEn
    * Creates an instance of AbstractEntitySystem.
    *
    * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
-   * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
-   * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
-   * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+   * @param {CompType[]} [all] Optional component types which should all match.
+   * @param {CompType[]} [exclude] Optional component types which should not match.
+   * @param {CompType[]} [one] Optional component types of which at least one should match.
    */
   constructor(public priority: number = 0,
-              protected all?: CompClass[],
-              protected exclude?: CompClass[],
-              protected one?: CompClass[]) {
+              protected all?: CompType[],
+              protected exclude?: CompType[],
+              protected one?: CompType[]) {
     super(priority);
   }
 

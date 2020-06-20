@@ -230,9 +230,9 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    * Creates an instance of an Aspect.
    *
    * @param {Collection<AbstractEntity>} source The collection of entities to filter.
-   * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
-   * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
-   * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+   * @param {CompType[]} [all] Optional component types which should all match.
+   * @param {CompType[]} [exclude] Optional component types which should not match.
+   * @param {CompType[]} [one] Optional component types of which at least one should match.
    */
   protected constructor(public source: EntityCollection, all?: CompType[], exclude?: CompType[], one?: CompType[]) {
     super();
@@ -446,7 +446,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * Entities have to match every type.
    *
-   * @param {ComponentClass<Component>} classes
+   * @param {CompType} classes
    */
   all(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
@@ -457,7 +457,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
 
   /**
    * @alias @see {Aspect#all}
-   * @param {ComponentClass<Component>} classes
+   * @param {CompType} classes
    */
   every(...classes: CompType[]): this {
     return this.all.apply(this, classes);
@@ -468,7 +468,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * Entities have to exclude all types.
    *
-   * @param {ComponentClass<Component>} classes
+   * @param {CompType[]} classes
    */
   exclude(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
@@ -479,7 +479,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
 
   /**
    * @alias @see {Aspect#exclude}
-   * @param {ComponentClass<Component>[]} classes
+   * @param {CompType[]} classes
    */
   without(...classes: CompType[]): this {
     return this.exclude.apply(this, classes);
@@ -490,7 +490,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * Entities have to match only one type.
    *
-   * @param {ComponentClass<Component>[]} classes
+   * @param {CompType[]} classes
    */
   one(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
@@ -501,7 +501,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
 
   /**
    * @alias @see {Aspect#one}
-   * @param {ComponentClass<Component>[]} classes
+   * @param {CompType[]} classes
    */
   some(...classes: CompType[]): this {
     return this.one.apply(this, classes);
@@ -524,9 +524,9 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    * Returns an aspect for the given engine or collection of entities.
    *
    * @param {Collection<AbstractEntity> | Engine} collOrEngine
-   * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
-   * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
-   * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+   * @param {CompType[]} [all] Optional component types which should all match.
+   * @param {CompType[]} [exclude] Optional component types which should not match.
+   * @param {CompType[]} [one] Optional component types of which at least one should match.
    * @returns {Aspect}
    */
   static for(collOrEngine: EntityCollection | Engine, all?: CompType[], exclude?: CompType[], one?: CompType[]): Aspect {
