@@ -38,20 +38,42 @@ var dispatcher_1 = require("./dispatcher");
 /**
  * Generates a function for the given list of component types.
  *
- * The function will match any component which matches one the given types.
+ * The function will match any component which matches one of the given types.
  *
  * @param {ComponentCollection} comps
- * @returns {(type: CompClass, index: number, array: readonly CompClass[]) => unknown}
+ * @returns {(type: CompType, index: number, array: readonly CompType[]) => unknown}
  */
 function predicateFn(comps) {
     return function (comp) {
-        return comps.find(function (c) {
-            var compType = c.constructor;
-            if (compType.type)
-                return comp.type === compType.type;
-            else
-                return comp === compType;
-        }) !== void 0;
+        var constr = comp.constructor;
+        if (constr !== Object)
+            return comps.find(function (c) {
+                var compType = c.constructor;
+                if (compType.id)
+                    return compType.id === comp.id;
+                else if (compType.type)
+                    return comp.type === compType.type;
+                else {
+                    var ok = comp === compType;
+                    if (ok)
+                        return true;
+                    if (c.id)
+                        return comp.id === c.id;
+                    else if (c.type)
+                        return comp.type === c.type;
+                    else
+                        return false;
+                }
+            }) !== void 0;
+        else
+            return comps.find(function (c) {
+                if (c.id)
+                    return comp.id === c.id;
+                else if (c.type)
+                    return comp.type === c.type;
+                else
+                    return false;
+            }) !== void 0;
     };
 }
 /**

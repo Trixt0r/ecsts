@@ -278,7 +278,7 @@ describe('Collection', () => {
     beforeEach(() => collection.add(new MySortableType(3), new MySortableType(2), new MySortableType(1)));
 
     it('should sort the collection', () => {
-      collection.sort((element: MySortableType) => element.position);
+      collection.sort((a: MySortableType, b: MySortableType) => a.position - b.position);
 
       const elements = <readonly MySortableType[]>collection.elements;
       expect(elements[0].position).toBe(1);

@@ -5,24 +5,39 @@ import { Engine } from './engine';
 import { ComponentClass } from './types';
 import { Dispatcher } from './dispatcher';
 
-type CompClass = ComponentClass<Component>;
+type CompType = ComponentClass<Component> | Component;
 type EntityCollection = Collection<AbstractEntity>;
 
 /**
  * Generates a function for the given list of component types.
  *
- * The function will match any component which matches one the given types.
+ * The function will match any component which matches one of the given types.
  *
  * @param {ComponentCollection} comps
- * @returns {(type: CompClass, index: number, array: readonly CompClass[]) => unknown}
+ * @returns {(type: CompType, index: number, array: readonly CompType[]) => unknown}
  */
-function predicateFn(comps: ComponentCollection): (type: CompClass, index: number, array: readonly CompClass[]) => unknown {
+function predicateFn(comps: ComponentCollection): (type: CompType, index: number, array: readonly CompType[]) => unknown {
   return comp => {
-    return comps.find(c => {
-      const compType = <CompClass>c.constructor;
-      if (compType.type) return comp.type === compType.type;
-      else return comp === compType;
-    }) !== void 0;
+    const constr = (<ComponentClass<Component>>comp).constructor;
+    if (constr !== Object)
+      return comps.find(c => {
+        const compType = <ComponentClass<Component>>c.constructor;
+        if (compType.id) return compType.id === comp.id;
+        else if (compType.type) return comp.type === compType.type;
+        else {
+          const ok = comp === compType;
+          if (ok) return true;
+          if (c.id) return comp.id === c.id;
+          else if (c.type) return comp.type === c.type;
+          else return false;
+        }
+      }) !== void 0;
+    else
+      return comps.find(c => {
+        if (c.id) return comp.id === c.id;
+        else if (c.type) return comp.type === c.type;
+        else return false;
+      }) !== void 0;
   };
 }
 
@@ -37,23 +52,23 @@ export interface AspectDescriptor {
   /**
    * Components which all have to be matched by an entity.
    *
-   * @type {CompClass[]}
+   * @type {CompType[]}
    */
-  all: CompClass[],
+  all: CompType[],
 
   /**
    * Components which are not allowed to be matched by an entity.
    *
-   * @type {CompClass[]}
+   * @type {CompType[]}
    */
-  exclude: CompClass[],
+  exclude: CompType[],
 
   /**
-   * Components which of which at least one has to be matched by an entity.
+   * Components of which at least one has to be matched by an entity.
    *
-   * @type {CompClass[]}
+   * @type {CompType[]}
    */
-  one: CompClass[]
+  one: CompType[]
 }
 
 /**
@@ -159,25 +174,25 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    * Component types which all have to be matched by the entity source.
    *
    * @protected
-   * @type {CompClass[]}
+   * @type {CompType[]}
    */
-  protected allComponents: CompClass[];
+  protected allComponents: CompType[];
 
   /**
    * Component types which all are not allowed to match.
    *
    * @protected
-   * @type {CompClass[]}
+   * @type {CompType[]}
    */
-  protected excludeComponents: CompClass[];
+  protected excludeComponents: CompType[];
 
   /**
    * Component types of which at least one has to match.
    *
    * @protected
-   * @type {CompClass[]}
+   * @type {CompType[]}
    */
-  protected oneComponents: CompClass[];
+  protected oneComponents: CompType[];
 
   /**
    * The entities which meet the filter conditions.
@@ -219,7 +234,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
    * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
    */
-  protected constructor(public source: EntityCollection, all?: CompClass[], exclude?: CompClass[], one?: CompClass[]) {
+  protected constructor(public source: EntityCollection, all?: CompType[], exclude?: CompType[], one?: CompType[]) {
     super();
     this.filteredEntities = [];
     this.frozenEntities = [];
@@ -433,7 +448,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * @param {ComponentClass<Component>} classes
    */
-  all(...classes: CompClass[]): this {
+  all(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
     this.allComponents = unique;
     this.matchAll();
@@ -444,7 +459,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    * @alias @see {Aspect#all}
    * @param {ComponentClass<Component>} classes
    */
-  every(...classes: CompClass[]): this {
+  every(...classes: CompType[]): this {
     return this.all.apply(this, classes);
   }
 
@@ -455,7 +470,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * @param {ComponentClass<Component>} classes
    */
-  exclude(...classes: CompClass[]): this {
+  exclude(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
     this.excludeComponents = unique;
     this.matchAll();
@@ -466,7 +481,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    * @alias @see {Aspect#exclude}
    * @param {ComponentClass<Component>[]} classes
    */
-  without(...classes: CompClass[]): this {
+  without(...classes: CompType[]): this {
     return this.exclude.apply(this, classes);
   }
 
@@ -477,7 +492,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * @param {ComponentClass<Component>[]} classes
    */
-  one(...classes: CompClass[]): this {
+  one(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
     this.oneComponents = unique;
     this.matchAll();
@@ -488,7 +503,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    * @alias @see {Aspect#one}
    * @param {ComponentClass<Component>[]} classes
    */
-  some(...classes: CompClass[]): this {
+  some(...classes: CompType[]): this {
     return this.one.apply(this, classes);
   }
 
@@ -514,7 +529,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
    * @returns {Aspect}
    */
-  static for(collOrEngine: EntityCollection | Engine, all?: CompClass[], exclude?: CompClass[], one?: CompClass[]): Aspect {
+  static for(collOrEngine: EntityCollection | Engine, all?: CompType[], exclude?: CompType[], one?: CompType[]): Aspect {
     const entities = collOrEngine instanceof Engine ? collOrEngine.entities : collOrEngine;
     return new Aspect(entities, all, exclude, one);
   }

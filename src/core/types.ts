@@ -31,7 +31,14 @@ export interface Class<T> extends Function {
 export interface ComponentClass<T extends Component> extends Class<T> {
 
   /**
-   * The static type of the component
+   * The static id of the component.
+   *
+   * @type {string}
+   */
+  readonly id?: string;
+
+  /**
+   * The static type of the component.
    *
    * @type {string}
    */

@@ -11,6 +11,15 @@ import { ComponentClass } from './types';
  * @interface Component
  */
 export interface Component {
+  /**
+   * An optional id for the component.
+   */
+  id?: string;
+
+  /**
+   * An optional type for the component.
+   */
+  type?: string;
 }
 
 /**

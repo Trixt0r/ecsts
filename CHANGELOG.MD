@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.3.0
+
+Components can now also have an optional `id`.
+Aspects support the id value for filtering certain entities.
+
 ### 0.2.2
 
 Target ES5.

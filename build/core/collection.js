@@ -45,7 +45,6 @@ var dispatcher_1 = require("./dispatcher");
  * @class Collection
  * @extends {Dispatcher<CollectionListener<T>>}
  * @template T
- * @todo Make this iterable.
  */
 var Collection = /** @class */ (function (_super) {
     __extends(Collection, _super);

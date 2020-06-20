@@ -44,7 +44,6 @@ export interface CollectionListener<T> {
  * @class Collection
  * @extends {Dispatcher<CollectionListener<T>>}
  * @template T
- * @todo Make this iterable.
  */
 export class Collection<T> extends Dispatcher<CollectionListener<T>> implements IterableIterator<T> {
 

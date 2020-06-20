@@ -17,6 +17,10 @@ class MyTypedComponent1 implements Component { static readonly type = 'my-comp';
 class MyTypedComponent2 implements Component { static readonly type = 'my-comp'; }
 class MyTypedComponent3 implements Component { static readonly type = 'my-other-comp'; }
 class MyTypedComponent4 implements Component { static readonly type = 'my-other-comp'; }
+class MyIdComponent1 implements Component { static readonly id = 'my-comp-1'; }
+class MyIdComponent2 implements Component { static readonly id = 'my-comp-2'; }
+class MyIdComponent3 implements Component { static readonly id = 'my-comp-3'; }
+class MyIdComponent4 implements Component { static readonly id = 'my-comp-4'; }
 
 describe('Aspect', () => {
 
@@ -25,7 +29,9 @@ describe('Aspect', () => {
 
   beforeEach(() => {
     collection = new Collection();
-    aspectOne = Aspect.for(collection).one(MyComponent1, MyComponent2, MyComponent3, MyTypedComponent1);
+    aspectOne = Aspect.for(collection).one(
+      MyComponent1, MyComponent2, MyComponent3, MyTypedComponent1, MyIdComponent1, { id: 'plain-id' }, { type: 'plain-type' }
+    );
   });
 
   describe('initial', () => {
@@ -70,6 +76,27 @@ describe('Aspect', () => {
           expect(calledArguments).toBeUndefined();
         });
 
+        it('should not match entities, if the entities have no matching component(id)', () => {
+          entity.components.add(new MyIdComponent3(), new MyIdComponent4());
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(0);
+          expect(calledArguments).toBeUndefined();
+        });
+
+        it('should not match entities, if the entities have no matching component(plain type)', () => {
+          entity.components.add({ type: 'plain-type-2' });
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(0);
+          expect(calledArguments).toBeUndefined();
+        });
+
+        it('should not match entities, if the entities have no matching component(plain id)', () => {
+          entity.components.add({ type: 'plain-id-2' });
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(0);
+          expect(calledArguments).toBeUndefined();
+        });
+
         it('should match entities, if the entities have at least one matching component(class)', () => {
           entity.components.add(new MyComponent1());
           collection.add(entity);
@@ -82,6 +109,36 @@ describe('Aspect', () => {
 
         it('should match entities, if the entities have at least one matching component(type)', () => {
           entity.components.add(new MyTypedComponent2());
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(1);
+          expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
+        });
+
+        it('should match entities, if the entities have at least one matching component(id)', () => {
+          entity.components.add(new MyIdComponent1());
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(1);
+          expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
+        });
+
+        it('should match entities, if the entities have at least one matching component(plain type)', () => {
+          entity.components.add({ type: 'plain-type' });
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(1);
+          expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
+        });
+
+        it('should match entities, if the entities have at least one matching component(plain id)', () => {
+          entity.components.add({ id: 'plain-id' });
           collection.add(entity);
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
@@ -104,8 +161,45 @@ describe('Aspect', () => {
 
         it('should match entities, if the entities have matching components multiple times(type)', () => {
           entity.components.add(new MyTypedComponent2());
+          entity.components.add(new MyTypedComponent2());
           entity.components.add(new MyTypedComponent1());
           entity.components.add(new MyTypedComponent1());
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(1);
+          expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
+        });
+
+        it('should match entities, if the entities have matching components multiple times(id)', () => {
+          entity.components.add(new MyIdComponent1());
+          entity.components.add(new MyIdComponent1());
+          entity.components.add(new MyIdComponent1());
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(1);
+          expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
+        });
+
+        it('should match entities, if the entities have matching components multiple times(plain type)', () => {
+          entity.components.add({ type: 'plain-type' });
+          entity.components.add({ type: 'plain-type' });
+          entity.components.add({ type: 'plain-type' });
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(1);
+          expect(aspectOne.entities[0]).toBe(entity);
+          expect(calledArguments).not.toBeUndefined();
+          expect(calledArguments.length).toBe(1);
+          expect(calledArguments[0]).toBe(entity);
+        });
+
+        it('should match entities, if the entities have matching components multiple times(plain id)', () => {
+          entity.components.add({ id: 'plain-id' });
+          entity.components.add({ id: 'plain-id' });
+          entity.components.add({ id: 'plain-id' });
           collection.add(entity);
           expect(aspectOne.entities.length).toBe(1);
           expect(aspectOne.entities[0]).toBe(entity);
@@ -335,7 +429,6 @@ describe('Aspect', () => {
       });
     });
   });
-
 
   describe('matches', () => {
     it('should match any entities without any components without any constraints', () => {
