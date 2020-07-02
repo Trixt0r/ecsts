@@ -62,7 +62,7 @@ export class RenderingSystem extends System {
     const entities = this.aspect.entities;
     this.graphics.clear();
     this.graphics.beginFill(0xaa1100);
-    // this.graphics.lineStyle(1, 0xffffff);
+    this.graphics.lineStyle(1, 0xffffff);
     for (const entity of entities) {
       const position = entity.components.get(Position);
       const size = entity.components.get(Size);

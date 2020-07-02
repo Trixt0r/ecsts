@@ -173,9 +173,9 @@ export declare class Aspect<L extends AspectListener = AspectListener> extends D
      * Creates an instance of an Aspect.
      *
      * @param {Collection<AbstractEntity>} source The collection of entities to filter.
-     * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
-     * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
-     * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+     * @param {CompType[]} [all] Optional component types which should all match.
+     * @param {CompType[]} [exclude] Optional component types which should not match.
+     * @param {CompType[]} [one] Optional component types of which at least one should match.
      */
     protected constructor(source: EntityCollection, all?: CompType[], exclude?: CompType[], one?: CompType[]);
     /**
@@ -242,12 +242,12 @@ export declare class Aspect<L extends AspectListener = AspectListener> extends D
      *
      * Entities have to match every type.
      *
-     * @param {ComponentClass<Component>} classes
+     * @param {CompType} classes
      */
     all(...classes: CompType[]): this;
     /**
      * @alias @see {Aspect#all}
-     * @param {ComponentClass<Component>} classes
+     * @param {CompType} classes
      */
     every(...classes: CompType[]): this;
     /**
@@ -255,12 +255,12 @@ export declare class Aspect<L extends AspectListener = AspectListener> extends D
      *
      * Entities have to exclude all types.
      *
-     * @param {ComponentClass<Component>} classes
+     * @param {CompType[]} classes
      */
     exclude(...classes: CompType[]): this;
     /**
      * @alias @see {Aspect#exclude}
-     * @param {ComponentClass<Component>[]} classes
+     * @param {CompType[]} classes
      */
     without(...classes: CompType[]): this;
     /**
@@ -268,12 +268,12 @@ export declare class Aspect<L extends AspectListener = AspectListener> extends D
      *
      * Entities have to match only one type.
      *
-     * @param {ComponentClass<Component>[]} classes
+     * @param {CompType[]} classes
      */
     one(...classes: CompType[]): this;
     /**
      * @alias @see {Aspect#one}
-     * @param {ComponentClass<Component>[]} classes
+     * @param {CompType[]} classes
      */
     some(...classes: CompType[]): this;
     /**
@@ -286,9 +286,9 @@ export declare class Aspect<L extends AspectListener = AspectListener> extends D
      * Returns an aspect for the given engine or collection of entities.
      *
      * @param {Collection<AbstractEntity> | Engine} collOrEngine
-     * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
-     * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
-     * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+     * @param {CompType[]} [all] Optional component types which should all match.
+     * @param {CompType[]} [exclude] Optional component types which should not match.
+     * @param {CompType[]} [one] Optional component types of which at least one should match.
      * @returns {Aspect}
      */
     static for(collOrEngine: EntityCollection | Engine, all?: CompType[], exclude?: CompType[], one?: CompType[]): Aspect;

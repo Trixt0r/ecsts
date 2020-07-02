@@ -20,6 +20,11 @@ export interface Component {
    * An optional type for the component.
    */
   type?: string;
+
+  /**
+   * Any additional fields, a component might have.
+   */
+  [key: string]: any;
 }
 
 /**

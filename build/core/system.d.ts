@@ -214,9 +214,9 @@ export declare abstract class AbstractEntitySystem<T extends AbstractEntity = Ab
      * Creates an instance of AbstractEntitySystem.
      *
      * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
-     * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
-     * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
-     * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+     * @param {CompType[]} [all] Optional component types which should all match.
+     * @param {CompType[]} [exclude] Optional component types which should not match.
+     * @param {CompType[]} [one] Optional component types of which at least one should match.
      */
     constructor(priority?: number, all?: (Component | ComponentClass<Component>)[] | undefined, exclude?: (Component | ComponentClass<Component>)[] | undefined, one?: (Component | ComponentClass<Component>)[] | undefined);
     /** @inheritdoc */

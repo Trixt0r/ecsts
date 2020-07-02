@@ -276,9 +276,9 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
      * Creates an instance of AbstractEntitySystem.
      *
      * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
-     * @param {ComponentClass<Component>[]} [all] Optional component types which should all match.
-     * @param {ComponentClass<Component>[]} [exclude] Optional component types which should not match.
-     * @param {ComponentClass<Component>[]} [one] Optional component types of which at least one should match.
+     * @param {CompType[]} [all] Optional component types which should all match.
+     * @param {CompType[]} [exclude] Optional component types which should not match.
+     * @param {CompType[]} [one] Optional component types of which at least one should match.
      */
     function AbstractEntitySystem(priority, all, exclude, one) {
         if (priority === void 0) { priority = 0; }
