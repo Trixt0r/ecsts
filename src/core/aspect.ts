@@ -171,6 +171,16 @@ export interface AspectListener {
 export class Aspect<L extends AspectListener = AspectListener> extends Dispatcher<L> {
 
   /**
+   * Internal index.
+   */
+  protected static ID: number = 0;
+
+  /**
+   * Internal unique id.
+   */
+  protected readonly id: number;
+
+  /**
    * Component types which all have to be matched by the entity source.
    *
    * @protected
@@ -236,6 +246,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    */
   protected constructor(public source: EntityCollection, all?: CompType[], exclude?: CompType[], one?: CompType[]) {
     super();
+    this.id = Aspect.ID++;
     this.filteredEntities = [];
     this.frozenEntities = [];
     this.allComponents = all ? all : [];
@@ -338,36 +349,37 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    */
   protected setupComponentSync(entities: AbstractEntity[]): void {
     entities.forEach(entity => {
-      if ((<any>entity).__ecsEntityListener) return;
-      const entityListener: EntityListener = {
-        onAddedComponents: (...comps: Component[]) => {
-          if (this.filteredEntities.indexOf(entity) >= 0) return;
-          const args =<['onAddedComponents', AbstractEntity, ...Component[]]>['onAddedComponents', entity, ...comps];
-          (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
-          if (!this.matches(entity)) return;
-          this.filteredEntities.push(entity);
-          this.updateFrozen();
-          (<Dispatcher<AspectListener>>this).dispatch('onAddedEntities', entity);
-        },
-        onRemovedComponents: (...comps: Component[]) => {
-          if (this.filteredEntities.indexOf(entity) < 0) return;
-          const args =<['onRemovedComponents', AbstractEntity, ...Component[]]>['onRemovedComponents', entity, ...comps];
-          (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
-          if (this.matches(entity)) return;
-          const idx = this.filteredEntities.indexOf(entity);
-          if (idx < 0) return;
+      if (!(<any>entity).__ecsEntityListener) (<any>entity).__ecsEntityListener = { };
+      if ((<any>entity).__ecsEntityListener[this.id]) return;
+      const update = () => {
+        const idx = this.filteredEntities.indexOf(entity);
+        const matches = this.matches(entity);
+        if (idx >= 0 && !matches) {
           this.filteredEntities.splice(idx, 1);
           this.updateFrozen();
           (<Dispatcher<AspectListener>>this).dispatch('onRemovedEntities', entity);
+          return true;
+        } else if (matches && idx < 0) {
+          this.filteredEntities.push(entity);
+          this.updateFrozen();
+          (<Dispatcher<AspectListener>>this).dispatch('onAddedEntities', entity);
+          return true;
+        }
+        return false;
+      }
+      const entityListener: EntityListener = {
+        onAddedComponents: (...comps: Component[]) => {
+          const args =<['onAddedComponents', AbstractEntity, ...Component[]]>['onAddedComponents', entity, ...comps];
+          (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
+          update();
+        },
+        onRemovedComponents: (...comps: Component[]) => {
+          const args =<['onRemovedComponents', AbstractEntity, ...Component[]]>['onRemovedComponents', entity, ...comps];
+          (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
+          update();
         },
         onClearedComponents: () => {
-          const idx = this.filteredEntities.indexOf(entity);
-          if (idx < 0) return;
-          this.filteredEntities.splice(idx, 1);
-          this.updateFrozen();
-          if (this.filteredEntities.indexOf(entity) < 0)
-            (<Dispatcher<AspectListener>>this).dispatch('onRemovedEntities', entity);
-          (<Dispatcher<AspectListener>>this).dispatch('onClearedComponents', entity);
+          if (update()) (<Dispatcher<AspectListener>>this).dispatch('onClearedComponents', entity);
         },
         onSortedComponents: () => {
           const idx = this.filteredEntities.indexOf(entity);
@@ -375,7 +387,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
           (<Dispatcher<AspectListener>>this).dispatch('onSortedComponents', entity);
         }
       };
-      (<any>entity).__ecsEntityListener = entityListener;
+      (<any>entity).__ecsEntityListener[this.id] = entityListener;
       entity.addListener(entityListener);
     });
   }
@@ -388,7 +400,9 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    */
   protected removeComponentSync(entities: Readonly<AbstractEntity[]>) {
     entities.forEach(entity => {
-      const entityListener: EntityListener = (<any>entity).__ecsEntityListener;
+      if (!(<any>entity).__ecsEntityListener) (<any>entity).__ecsEntityListener = { };
+      const entityListener: EntityListener = (<any>entity).__ecsEntityListener[this.id];
+      if (!entityListener) return;
       const locked: EntityListener[] = (<any>entity)._lockedListeners;
       locked.splice(locked.indexOf(entityListener), 1);
       entity.removeListener(entityListener);

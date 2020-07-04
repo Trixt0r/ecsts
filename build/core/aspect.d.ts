@@ -121,6 +121,14 @@ export interface AspectListener {
 export declare class Aspect<L extends AspectListener = AspectListener> extends Dispatcher<L> {
     source: EntityCollection;
     /**
+     * Internal index.
+     */
+    protected static ID: number;
+    /**
+     * Internal unique id.
+     */
+    protected readonly id: number;
+    /**
      * Component types which all have to be matched by the entity source.
      *
      * @protected

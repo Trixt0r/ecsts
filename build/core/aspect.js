@@ -107,6 +107,7 @@ var Aspect = /** @class */ (function (_super) {
          * @type {boolean}
          */
         _this.attached = false;
+        _this.id = Aspect.ID++;
         _this.filteredEntities = [];
         _this.frozenEntities = [];
         _this.allComponents = all ? all : [];
@@ -217,51 +218,49 @@ var Aspect = /** @class */ (function (_super) {
     Aspect.prototype.setupComponentSync = function (entities) {
         var _this = this;
         entities.forEach(function (entity) {
-            if (entity.__ecsEntityListener)
+            if (!entity.__ecsEntityListener)
+                entity.__ecsEntityListener = {};
+            if (entity.__ecsEntityListener[_this.id])
                 return;
+            var update = function () {
+                var idx = _this.filteredEntities.indexOf(entity);
+                var matches = _this.matches(entity);
+                if (idx >= 0 && !matches) {
+                    _this.filteredEntities.splice(idx, 1);
+                    _this.updateFrozen();
+                    _this.dispatch('onRemovedEntities', entity);
+                    return true;
+                }
+                else if (matches && idx < 0) {
+                    _this.filteredEntities.push(entity);
+                    _this.updateFrozen();
+                    _this.dispatch('onAddedEntities', entity);
+                    return true;
+                }
+                return false;
+            };
             var entityListener = {
                 onAddedComponents: function () {
                     var comps = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
                         comps[_i] = arguments[_i];
                     }
-                    if (_this.filteredEntities.indexOf(entity) >= 0)
-                        return;
                     var args = __spread(['onAddedComponents', entity], comps);
                     _this.dispatch.apply(_this, args);
-                    if (!_this.matches(entity))
-                        return;
-                    _this.filteredEntities.push(entity);
-                    _this.updateFrozen();
-                    _this.dispatch('onAddedEntities', entity);
+                    update();
                 },
                 onRemovedComponents: function () {
                     var comps = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
                         comps[_i] = arguments[_i];
                     }
-                    if (_this.filteredEntities.indexOf(entity) < 0)
-                        return;
                     var args = __spread(['onRemovedComponents', entity], comps);
                     _this.dispatch.apply(_this, args);
-                    if (_this.matches(entity))
-                        return;
-                    var idx = _this.filteredEntities.indexOf(entity);
-                    if (idx < 0)
-                        return;
-                    _this.filteredEntities.splice(idx, 1);
-                    _this.updateFrozen();
-                    _this.dispatch('onRemovedEntities', entity);
+                    update();
                 },
                 onClearedComponents: function () {
-                    var idx = _this.filteredEntities.indexOf(entity);
-                    if (idx < 0)
-                        return;
-                    _this.filteredEntities.splice(idx, 1);
-                    _this.updateFrozen();
-                    if (_this.filteredEntities.indexOf(entity) < 0)
-                        _this.dispatch('onRemovedEntities', entity);
-                    _this.dispatch('onClearedComponents', entity);
+                    if (update())
+                        _this.dispatch('onClearedComponents', entity);
                 },
                 onSortedComponents: function () {
                     var idx = _this.filteredEntities.indexOf(entity);
@@ -270,7 +269,7 @@ var Aspect = /** @class */ (function (_super) {
                     _this.dispatch('onSortedComponents', entity);
                 }
             };
-            entity.__ecsEntityListener = entityListener;
+            entity.__ecsEntityListener[_this.id] = entityListener;
             entity.addListener(entityListener);
         });
     };
@@ -281,8 +280,13 @@ var Aspect = /** @class */ (function (_super) {
      * @return {void}
      */
     Aspect.prototype.removeComponentSync = function (entities) {
+        var _this = this;
         entities.forEach(function (entity) {
-            var entityListener = entity.__ecsEntityListener;
+            if (!entity.__ecsEntityListener)
+                entity.__ecsEntityListener = {};
+            var entityListener = entity.__ecsEntityListener[_this.id];
+            if (!entityListener)
+                return;
             var locked = entity._lockedListeners;
             locked.splice(locked.indexOf(entityListener), 1);
             entity.removeListener(entityListener);
@@ -449,6 +453,10 @@ var Aspect = /** @class */ (function (_super) {
         var entities = collOrEngine instanceof engine_1.Engine ? collOrEngine.entities : collOrEngine;
         return new Aspect(entities, all, exclude, one);
     };
+    /**
+     * Internal index.
+     */
+    Aspect.ID = 0;
     return Aspect;
 }(dispatcher_1.Dispatcher));
 exports.Aspect = Aspect;

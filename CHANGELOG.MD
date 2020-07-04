@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.4.0
+
+Fixed aspect bugs.
+
 ### 0.3.0
 
 Components can now also have an optional `id`.

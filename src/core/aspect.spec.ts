@@ -18,7 +18,6 @@ class MyTypedComponent2 implements Component { static readonly type = 'my-comp';
 class MyTypedComponent3 implements Component { static readonly type = 'my-other-comp'; }
 class MyTypedComponent4 implements Component { static readonly type = 'my-other-comp'; }
 class MyIdComponent1 implements Component { static readonly id = 'my-comp-1'; }
-class MyIdComponent2 implements Component { static readonly id = 'my-comp-2'; }
 class MyIdComponent3 implements Component { static readonly id = 'my-comp-3'; }
 class MyIdComponent4 implements Component { static readonly id = 'my-comp-4'; }
 
@@ -207,6 +206,23 @@ describe('Aspect', () => {
           expect(calledArguments.length).toBe(1);
           expect(calledArguments[0]).toBe(entity);
         });
+
+        it('should not match entities, if components got removed afterwards and no more components match', () => {
+          const comp = new MyComponent1();
+          entity.components.add(comp);
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(1);
+          entity.components.remove(comp);
+          expect(aspectOne.entities.length).toBe(0);
+        });
+
+        it('should match entities, if new components got added afterwards', () => {
+          entity.components.add(new MyComponent4());
+          collection.add(entity);
+          expect(aspectOne.entities.length).toBe(0);
+          entity.components.add(new MyComponent1());
+          expect(aspectOne.entities.length).toBe(1);
+        });
       });
 
       describe('remove', () => {
@@ -234,6 +250,15 @@ describe('Aspect', () => {
           collection.remove(other1, other2);
           expect(aspectOne.entities.length).toBe(1);
           expect(calledArguments).toBeUndefined();
+        });
+
+        it('should match entities, if new components got removed afterwards', () => {
+          const aspect = Aspect.for(collection).one(MyComponent1).exclude(MyComponent4);
+          entity.components.add(new MyComponent1(), new MyComponent4());
+          expect(aspect.entities.length).toBe(0);
+          entity.components.remove(entity.components.elements[entity.components.length - 1]);
+          expect(aspect.entities.length).toBe(1);
+          aspect.detach();
         });
       });
 
@@ -527,7 +552,6 @@ describe('Aspect', () => {
       expect(aspectOne.entities.length).toBe(1);
       expect(aspectOne.entities[0]).toEqual(entity);
       entity.components.clear();
-
 
       aspectOne.detach();
       expect(aspectOne.entities.length).toBe(0);
