@@ -290,6 +290,7 @@ var Aspect = /** @class */ (function (_super) {
             var locked = entity._lockedListeners;
             locked.splice(locked.indexOf(entityListener), 1);
             entity.removeListener(entityListener);
+            delete entity.__ecsEntityListener[_this.id];
         });
     };
     /**

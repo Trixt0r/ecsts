@@ -406,6 +406,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
       const locked: EntityListener[] = (<any>entity)._lockedListeners;
       locked.splice(locked.indexOf(entityListener), 1);
       entity.removeListener(entityListener);
+      delete (<any>entity).__ecsEntityListener[this.id];
     });
   }
 

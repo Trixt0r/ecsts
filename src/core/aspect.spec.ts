@@ -260,6 +260,24 @@ describe('Aspect', () => {
           expect(aspect.entities.length).toBe(1);
           aspect.detach();
         });
+
+        it('should not match entities, if entity got removed and re-added with not matching components', () => {
+          const aspect = Aspect.for(collection).one(MyComponent1).exclude(MyComponent4);
+          const exclude = new MyComponent4();
+          expect(aspect.entities.length).toBe(1);
+          entity.components.add(exclude);
+          expect(aspect.entities.length).toBe(0);
+          entity.components.remove(exclude);
+          expect(aspect.entities.length).toBe(1);
+          collection.remove(entity);
+          expect(aspect.entities.length).toBe(0);
+          collection.add(entity);
+          expect(aspect.entities.length).toBe(1);
+          entity.components.add(exclude);
+          expect(aspect.entities.length).toBe(0);
+          aspect.detach();
+          entity.components.remove(exclude);
+        });
       });
 
       describe('clear', () => {
