@@ -33,6 +33,7 @@ var __spread = (this && this.__spread) || function () {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Collection = void 0;
 var dispatcher_1 = require("./dispatcher");
 /**
  * A collection holds a list of elements of a certain type
@@ -96,7 +97,7 @@ var Collection = /** @class */ (function (_super) {
         get: function () {
             return this._frozenElements;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Collection.prototype, "length", {
@@ -109,7 +110,7 @@ var Collection = /** @class */ (function (_super) {
         get: function () {
             return this._frozenElements.length;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**

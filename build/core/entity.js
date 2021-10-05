@@ -33,6 +33,7 @@ var __spread = (this && this.__spread) || function () {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractEntity = void 0;
 var component_1 = require("./component");
 var dispatcher_1 = require("./dispatcher");
 /**
@@ -72,7 +73,7 @@ var AbstractEntity = /** @class */ (function (_super) {
         get: function () {
             return this._components;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**

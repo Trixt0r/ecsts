@@ -64,7 +64,7 @@ export declare abstract class AbstractEntity<C extends Component = Component, L 
      * @readonly
      * @type {ComponentCollection<C>}
      */
-    readonly components: ComponentCollection<C>;
+    get components(): ComponentCollection<C>;
     /**
      * Dispatches the `onAdded` event to all listeners as `onAddedComponents`.
      *

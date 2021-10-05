@@ -34,7 +34,7 @@ export declare abstract class Dispatcher<T> {
      * @readonly
      * @type {T[]}
      */
-    readonly listeners: readonly Partial<T>[];
+    get listeners(): readonly Partial<T>[];
     /**
      * Adds the given listener to this entity.
      *

@@ -237,14 +237,14 @@ export declare class Aspect<L extends AspectListener = AspectListener> extends D
      * @readonly
      * @type {boolean}
      */
-    readonly isAttached: boolean;
+    get isAttached(): boolean;
     /**
      * The entities which match the criteria of this filter.
      *
      * @readonly
      * @type {AbstractEntity[]}
      */
-    readonly entities: readonly AbstractEntity[];
+    get entities(): readonly AbstractEntity[];
     /**
      * Includes all the given component types.
      *

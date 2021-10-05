@@ -75,14 +75,14 @@ export declare class Collection<T> extends Dispatcher<CollectionListener<T>> imp
      * @readonly
      * @type {T[]}
      */
-    readonly elements: readonly T[];
+    get elements(): readonly T[];
     /**
      * The length, of this collection, i.e. how many elements this collection contains.
      *
      * @readonly
      * @type {number}
      */
-    readonly length: number;
+    get length(): number;
     /**
      * Updates the internal frozen element list.
      *

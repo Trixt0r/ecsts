@@ -69,6 +69,7 @@ var __spread = (this && this.__spread) || function () {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Engine = exports.EngineMode = void 0;
 var system_1 = require("./system");
 var dispatcher_1 = require("./dispatcher");
 var collection_1 = require("./collection");
@@ -182,7 +183,7 @@ var Engine = /** @class */ (function (_super) {
         get: function () {
             return this._entities;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Engine.prototype, "systems", {
@@ -195,7 +196,7 @@ var Engine = /** @class */ (function (_super) {
         get: function () {
             return this._systems;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Engine.prototype, "activeSystems", {
@@ -208,7 +209,7 @@ var Engine = /** @class */ (function (_super) {
         get: function () {
             return this._activeSystems;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**

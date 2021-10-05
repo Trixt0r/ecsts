@@ -102,13 +102,15 @@ export declare abstract class System<L extends SystemListener = SystemListener> 
      *
      * @type {boolean}
      */
-    active: boolean;
+    get active(): boolean;
+    set active(active: boolean);
     /**
      * The engine this system is assigned to.
      *
      * @type {Engine | null}
      */
-    engine: Engine | null;
+    get engine(): Engine | null;
+    set engine(engine: Engine | null);
     /**
      * Determines whether this system is currently updating or not.
      * The value will stay `true` until @see {System#process} resolves or rejects.
@@ -116,7 +118,7 @@ export declare abstract class System<L extends SystemListener = SystemListener> 
      * @readonly
      * @type {boolean}
      */
-    readonly updating: boolean;
+    get updating(): boolean;
     /**
      * Runs the system process with the given delta time.
      *

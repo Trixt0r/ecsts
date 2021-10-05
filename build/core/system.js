@@ -49,6 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractEntitySystem = exports.System = exports.SystemMode = void 0;
 var engine_1 = require("./engine");
 var dispatcher_1 = require("./dispatcher");
 var aspect_1 = require("./aspect");
@@ -118,7 +119,7 @@ var System = /** @class */ (function (_super) {
             }
             this.dispatch(active ? 'onActivated' : 'onDeactivated');
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(System.prototype, "engine", {
@@ -144,7 +145,7 @@ var System = /** @class */ (function (_super) {
                 this.dispatch('onAddedToEngine', engine);
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(System.prototype, "updating", {
@@ -158,7 +159,7 @@ var System = /** @class */ (function (_super) {
         get: function () {
             return this._updating;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**

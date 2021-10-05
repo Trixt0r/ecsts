@@ -113,21 +113,21 @@ export declare class Engine extends Dispatcher<EngineListener> {
      * @readonly
      * @type {Collection<AbstractEntity>}
      */
-    readonly entities: Collection<AbstractEntity>;
+    get entities(): Collection<AbstractEntity>;
     /**
      * A snapshot of all systems in this engine.
      *
      * @readonly
      * @type {Collection<System>}
      */
-    readonly systems: Collection<System>;
+    get systems(): Collection<System>;
     /**
      * A snapshot of all active systems in this engine.
      *
      * @readonly
      * @type {AbstractEntity[]}
      */
-    readonly activeSystems: readonly System[];
+    get activeSystems(): readonly System[];
     /**
      * Updates the internal active system list.
      *

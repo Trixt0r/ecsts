@@ -33,6 +33,7 @@ var __spread = (this && this.__spread) || function () {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Aspect = void 0;
 var engine_1 = require("./engine");
 var dispatcher_1 = require("./dispatcher");
 /**
@@ -329,7 +330,7 @@ var Aspect = /** @class */ (function (_super) {
         get: function () {
             return this.attached;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Aspect.prototype, "entities", {
@@ -342,7 +343,7 @@ var Aspect = /** @class */ (function (_super) {
         get: function () {
             return this.frozenEntities;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**

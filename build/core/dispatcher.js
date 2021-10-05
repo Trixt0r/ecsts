@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Dispatcher = void 0;
 /**
  * A dispatcher is an abstract object which holds a list of listeners
  * to which data during certain events can be dispatched, by calling functions implemented by listeners.
@@ -27,7 +28,7 @@ var Dispatcher = /** @class */ (function () {
         get: function () {
             return this._listeners.slice();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**

@@ -24,6 +24,7 @@ var __values = (this && this.__values) || function(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ComponentCollection = void 0;
 var collection_1 = require("./collection");
 /**
  * A collection for components.
@@ -119,8 +120,10 @@ var ComponentCollection = /** @class */ (function (_super) {
         var keys = this.cache.keys();
         var type = typeof classOrType === 'string' ? classOrType : classOrType.type;
         var filtered = this.filter(function (element) {
+            var _a;
             var clazz = element.constructor;
-            return type && clazz.type ? type === clazz.type : clazz === classOrType;
+            var typeVal = (_a = element.type) !== null && _a !== void 0 ? _a : clazz.type;
+            return type && typeVal ? type === typeVal : clazz === classOrType;
         });
         if (typeof classOrType !== 'string' && classOrType.type) {
             this.cache.set(classOrType.type, filtered);
@@ -163,8 +166,9 @@ var ComponentCollection = /** @class */ (function (_super) {
         var keys = this.cache.keys();
         elements.forEach(function (element) {
             var e_2, _a;
+            var _b, _c;
             var clazz = element.constructor;
-            var classOrType = clazz.type ? clazz.type : clazz;
+            var classOrType = (_c = (_b = element.type) !== null && _b !== void 0 ? _b : clazz.type) !== null && _c !== void 0 ? _c : clazz;
             if (_this.dirty.get(classOrType))
                 return;
             if (typeof classOrType !== 'string' && classOrType.type)

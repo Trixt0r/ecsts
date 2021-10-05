@@ -35,8 +35,10 @@ export interface Component {
  * @class ComponentCollection
  * @extends {Collection<Component>}
  */
-export class ComponentCollection<C extends Component = Component> extends Collection<C> implements CollectionListener<C> {
-
+export class ComponentCollection<C extends Component = Component>
+  extends Collection<C>
+  implements CollectionListener<C>
+{
   /**
    * Internal map for faster component access, by class or type.
    *
@@ -114,10 +116,12 @@ export class ComponentCollection<C extends Component = Component> extends Collec
    */
   protected updateCache(classOrType: ComponentClass<C> | string): void {
     const keys = this.cache.keys();
-    const type = typeof classOrType === 'string' ? classOrType : classOrType.type;
-    const filtered = this.filter(element => {
+    const type =
+      typeof classOrType === 'string' ? classOrType : classOrType.type;
+    const filtered = this.filter((element) => {
       const clazz = <ComponentClass<C>>element.constructor;
-      return type && clazz.type ? type === clazz.type : clazz === classOrType;
+      const typeVal = element.type ?? clazz.type;
+      return type && typeVal ? type === typeVal : clazz === classOrType;
     });
     if (typeof classOrType !== 'string' && classOrType.type) {
       this.cache.set(classOrType.type, filtered);
@@ -143,9 +147,9 @@ export class ComponentCollection<C extends Component = Component> extends Collec
    */
   protected markForCacheUpdate(...elements: C[]): void {
     const keys = this.cache.keys();
-    elements.forEach(element => {
-      const clazz = <ComponentClass<C>>element.constructor;
-      const classOrType = clazz.type ? clazz.type : clazz;
+    elements.forEach((element) => {
+      const clazz = element.constructor as ComponentClass<C>;
+      const classOrType = element.type ?? clazz.type ?? clazz;
       if (this.dirty.get(classOrType)) return;
       if (typeof classOrType !== 'string' && classOrType.type)
         this.dirty.set(classOrType.type, true);
@@ -158,5 +162,4 @@ export class ComponentCollection<C extends Component = Component> extends Collec
       this.dirty.set(classOrType, true);
     });
   }
-
 }
