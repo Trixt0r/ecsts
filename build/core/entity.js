@@ -41,20 +41,14 @@ var dispatcher_1 = require("./dispatcher");
  * An entity holds an id and a list of components attached to it.
  * You can add or remove components from the entity.
  *
- * @export
- * @abstract
- * @class AbstractEntity
- * @extends {Dispatcher<L>}
  * @implements {CollectionListener<C>}
- * @template C The component type.
- * @template L The listener type.
  */
 var AbstractEntity = /** @class */ (function (_super) {
     __extends(AbstractEntity, _super);
     /**
      * Creates an instance of Entity.
      *
-     * @param {string} id The id, you should provide by yourself. Maybe an uuid or a simple number.
+     * @param id The id, you should provide by yourself. Maybe an uuid or a simple number.
      */
     function AbstractEntity(id) {
         var _this = _super.call(this) || this;
@@ -66,9 +60,6 @@ var AbstractEntity = /** @class */ (function (_super) {
     Object.defineProperty(AbstractEntity.prototype, "components", {
         /**
          * A snapshot of all components of this entity.
-         *
-         * @readonly
-         * @type {ComponentCollection<C>}
          */
         get: function () {
             return this._components;
@@ -79,35 +70,34 @@ var AbstractEntity = /** @class */ (function (_super) {
     /**
      * Dispatches the `onAdded` event to all listeners as `onAddedComponents`.
      *
-     * @param {C[]} components
-     * @returns {void}
+     * @param components
      */
     AbstractEntity.prototype.onAdded = function () {
+        var _a;
         var components = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             components[_i] = arguments[_i];
         }
-        return this
-            .dispatch.apply(this, __spread(['onAddedComponents'], components));
+        return (_a = this).dispatch.apply(_a, __spread(['onAddedComponents'], components));
     };
     /**
      * Dispatches the `onRemoved` event to all listeners as `onRemovedComponents`.
      *
-     * @param {Component[]} components
-     * @returns {void}
+     * @param components
+     *
      */
     AbstractEntity.prototype.onRemoved = function () {
+        var _a;
         var components = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             components[_i] = arguments[_i];
         }
-        return this
-            .dispatch.apply(this, __spread(['onRemovedComponents'], components));
+        return (_a = this).dispatch.apply(_a, __spread(['onRemovedComponents'], components));
     };
     /**
      * Dispatches the `onCleared` event to all listeners as `onClearedComponents`.
      *
-     * @returns {void}
+     *
      */
     AbstractEntity.prototype.onCleared = function () {
         return this.dispatch('onClearedComponents');
@@ -115,7 +105,7 @@ var AbstractEntity = /** @class */ (function (_super) {
     /**
      * Dispatches the `onSorted` event to all listeners as `onSortedComponents`.
      *
-     * @returns {void}
+     *
      */
     AbstractEntity.prototype.onSorted = function () {
         return this.dispatch('onSortedComponents');

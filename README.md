@@ -2,7 +2,7 @@
 
 A simple to use entity component system library written in TypeScript.
 
-It is meant to be used for any usecase.
+It is meant to be used for any use case.
 So you will not find any game specific logic in this library.
 
 ## Install
@@ -21,10 +21,10 @@ Check the [rectangles example](https://stackblitz.com/edit/ecs-example-rectangle
 
 The main parts of this library are
 
-  * [`Component`](https://github.com/Trixt0r/ecsts/blob/master/src/core/component.ts)
-  * [`Entity`](https://github.com/Trixt0r/ecsts/blob/master/src/core/entity.ts#L52)
-  * [`System`](https://github.com/Trixt0r/ecsts/blob/master/src/core/system.ts#L77)
-  * [`Engine`](https://github.com/Trixt0r/ecsts/blob/master/src/core/engine.ts#L96)
+- [`Component`](https://github.com/Trixt0r/ecsts/blob/master/src/core/component.ts)
+- [`Entity`](https://github.com/Trixt0r/ecsts/blob/master/src/core/entity.ts#L52)
+- [`System`](https://github.com/Trixt0r/ecsts/blob/master/src/core/system.ts#L77)
+- [`Engine`](https://github.com/Trixt0r/ecsts/blob/master/src/core/engine.ts#L96)
 
 ### Component
 
@@ -37,7 +37,7 @@ For example, you could define a position like this:
 import { Component } from '@trixt0r/ecs';
 
 class Position implements Component {
-  constructor(public x = 0, public y = 0) { }
+  constructor(public x = 0, public y = 0) {}
 }
 ```
 
@@ -75,9 +75,9 @@ Systems implement the actual behavior of your entities, based on which component
 For programming your own systems, you should implement the abstract class [`System`](https://github.com/Trixt0r/ecsts/blob/master/src/core/system.ts#L77).<br>
 This base class provides basic functionalities, such as
 
-  * an `updating` flag, which indicates whether a system is still updating.
-  * an `active` flag, which tells the engine to either run the system in the next update call or not.
-  * an `engine` property, which will be set/unset, as soon as the system gets added/removed to/from an engine.
+- an `updating` flag, which indicates whether a system is still updating.
+- an `active` flag, which tells the engine to either run the system in the next update call or not.
+- an `engine` property, which will be set/unset, as soon as the system gets added/removed to/from an engine.
 
 A system is also a [`Dispatcher`](https://github.com/Trixt0r/ecsts/blob/master/src/core/dispatcher.ts), which means, you can react to any actions happening to a system, by registering a [`SystemListener`](https://github.com/Trixt0r/ecsts/blob/master/src/core/system.ts#L14).
 
@@ -87,7 +87,6 @@ Here is a minimal example of a system, which obtains a list of entities with the
 import { System, Aspect } from '@trixt0r/ecs';
 
 class MySystem extends System {
-
   private aspect: Aspect;
 
   constructor() {
@@ -108,6 +107,7 @@ class MySystem extends System {
   }
 }
 ```
+
 Note that `process` can be `async`.<br>
 If your systems need to do asynchronous tasks, you can implement them as those.
 Your engine can then run them as such.<br>

@@ -1,20 +1,17 @@
 import { ComponentCollection, Component } from './component';
 
-class MyComponent1 implements Component {
-}
+class MyComponent1 implements Component {}
 
-class MyComponent2 implements Component {
-}
+class MyComponent2 implements Component {}
 
 class MyComponentWithType implements Component {
   static type = 'myType';
 }
 
 describe('ComponentCollection', () => {
-
   let collection: ComponentCollection;
 
-  beforeEach(() => collection = new ComponentCollection());
+  beforeEach(() => (collection = new ComponentCollection()));
 
   describe('initial', () => {
     it('should throw if someone tries to remove the first component listener', () => {
@@ -23,7 +20,6 @@ describe('ComponentCollection', () => {
   });
 
   describe('get', () => {
-
     it('should not return any component if empty', () => {
       expect(collection.get(MyComponent1)).toBeUndefined();
       expect(collection.get(MyComponent2)).toBeUndefined();
@@ -85,11 +81,9 @@ describe('ComponentCollection', () => {
       expect(collection.get(MyComponentWithType)).toBe(comps[0]);
       expect(collection.get(MyComponentWithType)).toBe(collection.elements[0]);
     });
-
   });
 
   describe('getAll', () => {
-
     it('should not return any component if empty', () => {
       expect(collection.getAll(MyComponent1).length).toBe(0);
       expect(collection.getAll(MyComponent2).length).toBe(0);
@@ -98,8 +92,7 @@ describe('ComponentCollection', () => {
     });
 
     it('should return components of the previously added class', () => {
-      for (let i = 0; i < 10; i++)
-        collection.add(new MyComponent1(), new MyComponent2());
+      for (let i = 0; i < 10; i++) collection.add(new MyComponent1(), new MyComponent2());
       const comp1 = collection.getAll(MyComponent1);
       const comp2 = collection.getAll(MyComponent2);
       expect(comp1.length).toBe(10);
@@ -111,8 +104,7 @@ describe('ComponentCollection', () => {
     });
 
     it('should return components of the previously added type', () => {
-      for (let i = 0; i < 10; i++)
-        collection.add(new MyComponentWithType());
+      for (let i = 0; i < 10; i++) collection.add(new MyComponentWithType());
       const byClass = collection.getAll(MyComponentWithType);
       const byString = collection.getAll('myType');
       expect(byClass.length).toBe(10);
@@ -126,8 +118,7 @@ describe('ComponentCollection', () => {
     it('should return components of the previously added class, after the first access', () => {
       collection.getAll(MyComponent1);
       collection.getAll(MyComponent2);
-      for (let i = 0; i < 10; i++)
-        collection.add(new MyComponent1(), new MyComponent2());
+      for (let i = 0; i < 10; i++) collection.add(new MyComponent1(), new MyComponent2());
       const comp1 = collection.getAll(MyComponent1);
       const comp2 = collection.getAll(MyComponent2);
       expect(comp1.length).toBe(10);
@@ -141,8 +132,7 @@ describe('ComponentCollection', () => {
     it('should return components of the previously added type, after the first access', () => {
       collection.getAll(MyComponentWithType);
       collection.getAll('myType');
-      for (let i = 0; i < 10; i++)
-        collection.add(new MyComponentWithType());
+      for (let i = 0; i < 10; i++) collection.add(new MyComponentWithType());
       const byClass = collection.getAll(MyComponentWithType);
       const byString = collection.getAll('myType');
       expect(byClass.length).toBe(10);
@@ -152,7 +142,5 @@ describe('ComponentCollection', () => {
         expect(collection.elements[i]).toBe(byString[i]);
       }
     });
-
   });
-
 });

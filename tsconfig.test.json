@@ -1,15 +1,12 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "target": "es6",
     "outDir": "./build",
     "baseUrl": "./src",
     "rootDir": "./src",
     "skipLibCheck": true
   },
-  "exclude": [
-    "**/*.spec.ts",
-    "**/build/*",
-    "**/examples/*"
-  ]
+  "exclude": ["**/*.spec.ts", "**/build/*", "**/examples/*"]
 }

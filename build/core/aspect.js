@@ -41,14 +41,14 @@ var dispatcher_1 = require("./dispatcher");
  *
  * The function will match any component which matches one of the given types.
  *
- * @param {ComponentCollection} comps
- * @returns {(type: CompType, index: number, array: readonly CompType[]) => unknown}
+ * @param comps
+ *
  */
 function predicateFn(comps) {
     return function (comp) {
         var constr = comp.constructor;
         if (constr !== Object)
-            return comps.find(function (c) {
+            return (comps.find(function (c) {
                 var compType = c.constructor;
                 if (compType.id)
                     return compType.id === comp.id;
@@ -65,16 +65,16 @@ function predicateFn(comps) {
                     else
                         return false;
                 }
-            }) !== void 0;
+            }) !== void 0);
         else
-            return comps.find(function (c) {
+            return (comps.find(function (c) {
                 if (c.id)
                     return comp.id === c.id;
                 else if (c.type)
                     return comp.type === c.type;
                 else
                     return false;
-            }) !== void 0;
+            }) !== void 0);
     };
 }
 /**
@@ -85,27 +85,22 @@ function predicateFn(comps) {
  * The user will always have snapshot of entities which meet the aspect criteria no matter when an entity got
  * added or removed.
  *
- * @export
- * @class Aspect
  */
 var Aspect = /** @class */ (function (_super) {
     __extends(Aspect, _super);
     /**
      * Creates an instance of an Aspect.
      *
-     * @param {Collection<AbstractEntity>} source The collection of entities to filter.
-     * @param {CompType[]} [all] Optional component types which should all match.
-     * @param {CompType[]} [exclude] Optional component types which should not match.
-     * @param {CompType[]} [one] Optional component types of which at least one should match.
+     * @param source The collection of entities to filter.
+     * @param all Optional component types which should all match.
+     * @param exclude Optional component types which should not match.
+     * @param one Optional component types of which at least one should match.
      */
     function Aspect(source, all, exclude, one) {
         var _this = _super.call(this) || this;
         _this.source = source;
         /**
          * Whether this filter is currently attached to its collection as a listener or not.
-         *
-         * @protected
-         * @type {boolean}
          */
         _this.attached = false;
         _this.id = Aspect.ID++;
@@ -116,6 +111,7 @@ var Aspect = /** @class */ (function (_super) {
         _this.oneComponents = one ? one : [];
         _this.listener = {
             onAdded: function () {
+                var _a;
                 var entities = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     entities[_i] = arguments[_i];
@@ -127,13 +123,14 @@ var Aspect = /** @class */ (function (_super) {
                     return true;
                 });
                 _this.setupComponentSync(entities);
-                if (added.length === 0)
+                if (added.length <= 0)
                     return;
                 _this.updateFrozen();
-                var args = __spread(['onAddedEntities'], added);
-                _this.dispatch.apply(_this, args);
+                _this.updateFrozen;
+                (_a = _this).dispatch.apply(_a, __spread(['onAddedEntities'], added));
             },
             onRemoved: function () {
+                var _a;
                 var entities = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     entities[_i] = arguments[_i];
@@ -149,8 +146,7 @@ var Aspect = /** @class */ (function (_super) {
                 if (removed.length === 0)
                     return;
                 _this.updateFrozen();
-                var args = __spread(['onRemovedEntities'], removed);
-                _this.dispatch.apply(_this, args);
+                (_a = _this).dispatch.apply(_a, __spread(['onRemovedEntities'], removed));
             },
             onCleared: function () {
                 if (_this.filteredEntities.length === 0)
@@ -174,7 +170,7 @@ var Aspect = /** @class */ (function (_super) {
     /**
      * Performs the match on each entity in the source collection.
      *
-     * @returns {void}
+     *
      */
     Aspect.prototype.matchAll = function () {
         this.filteredEntities = this.source.filter(this.matches, this);
@@ -184,8 +180,8 @@ var Aspect = /** @class */ (function (_super) {
     /**
      * Checks whether the given entity matches the constraints on this aspect.
      *
-     * @param {AbstractEntity} entity The entity to check for.
-     * @returns {boolean} Whether the given entity has at least one component which matches.
+     * @param entity The entity to check for.
+     * @return Whether the given entity has at least one component which matches.
      */
     Aspect.prototype.matches = function (entity) {
         var comps = entity.components;
@@ -204,7 +200,7 @@ var Aspect = /** @class */ (function (_super) {
     /**
      * Updates the frozen entities.
      *
-     * @returns {void}
+     *
      */
     Aspect.prototype.updateFrozen = function () {
         this.frozenEntities = this.filteredEntities.slice();
@@ -213,7 +209,7 @@ var Aspect = /** @class */ (function (_super) {
     /**
      * Sets up the component sync logic.
      *
-     * @param {AbstractEntity[]} entities The entities to perform the setup for.
+     * @param entities The entities to perform the setup for.
      * @return {void}
      */
     Aspect.prototype.setupComponentSync = function (entities) {
@@ -242,21 +238,21 @@ var Aspect = /** @class */ (function (_super) {
             };
             var entityListener = {
                 onAddedComponents: function () {
+                    var _a;
                     var comps = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
                         comps[_i] = arguments[_i];
                     }
-                    var args = __spread(['onAddedComponents', entity], comps);
-                    _this.dispatch.apply(_this, args);
+                    (_a = _this).dispatch.apply(_a, __spread(['onAddedComponents', entity], comps));
                     update();
                 },
                 onRemovedComponents: function () {
+                    var _a;
                     var comps = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
                         comps[_i] = arguments[_i];
                     }
-                    var args = __spread(['onRemovedComponents', entity], comps);
-                    _this.dispatch.apply(_this, args);
+                    (_a = _this).dispatch.apply(_a, __spread(['onRemovedComponents', entity], comps));
                     update();
                 },
                 onClearedComponents: function () {
@@ -268,7 +264,7 @@ var Aspect = /** @class */ (function (_super) {
                     if (idx < 0)
                         return;
                     _this.dispatch('onSortedComponents', entity);
-                }
+                },
             };
             entity.__ecsEntityListener[_this.id] = entityListener;
             entity.addListener(entityListener);
@@ -277,7 +273,7 @@ var Aspect = /** @class */ (function (_super) {
     /**
      * Removes the component sync logic.
      *
-     * @param {AbstractEntity[]} entities The entities to remove the setup from.
+     * @param entities The entities to remove the setup from.
      * @return {void}
      */
     Aspect.prototype.removeComponentSync = function (entities) {
@@ -291,13 +287,14 @@ var Aspect = /** @class */ (function (_super) {
             var locked = entity._lockedListeners;
             locked.splice(locked.indexOf(entityListener), 1);
             entity.removeListener(entityListener);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete entity.__ecsEntityListener[_this.id];
         });
     };
     /**
      * Attaches this filter to its collection.
      *
-     * @returns {void}
+     *
      */
     Aspect.prototype.attach = function () {
         if (this.attached)
@@ -310,7 +307,7 @@ var Aspect = /** @class */ (function (_super) {
     /**
      * Detaches this filter from its collection.
      *
-     * @returns {void}
+     *
      */
     Aspect.prototype.detach = function () {
         if (!this.attached)
@@ -323,9 +320,6 @@ var Aspect = /** @class */ (function (_super) {
     Object.defineProperty(Aspect.prototype, "isAttached", {
         /**
          * Whether this filter is attached to its collection or not.
-         *
-         * @readonly
-         * @type {boolean}
          */
         get: function () {
             return this.attached;
@@ -336,9 +330,6 @@ var Aspect = /** @class */ (function (_super) {
     Object.defineProperty(Aspect.prototype, "entities", {
         /**
          * The entities which match the criteria of this filter.
-         *
-         * @readonly
-         * @type {AbstractEntity[]}
          */
         get: function () {
             return this.frozenEntities;
@@ -351,7 +342,7 @@ var Aspect = /** @class */ (function (_super) {
      *
      * Entities have to match every type.
      *
-     * @param {CompType} classes
+     * @param classes
      */
     Aspect.prototype.all = function () {
         var classes = [];
@@ -365,21 +356,21 @@ var Aspect = /** @class */ (function (_super) {
     };
     /**
      * @alias @see {Aspect#all}
-     * @param {CompType} classes
+     * @param classes
      */
     Aspect.prototype.every = function () {
         var classes = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             classes[_i] = arguments[_i];
         }
-        return this.all.apply(this, classes);
+        return this.all.apply(this, __spread(classes));
     };
     /**
      * Excludes all of the given component types.
      *
      * Entities have to exclude all types.
      *
-     * @param {CompType[]} classes
+     * @param classes
      */
     Aspect.prototype.exclude = function () {
         var classes = [];
@@ -393,21 +384,21 @@ var Aspect = /** @class */ (function (_super) {
     };
     /**
      * @alias @see {Aspect#exclude}
-     * @param {CompType[]} classes
+     * @param classes
      */
     Aspect.prototype.without = function () {
         var classes = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             classes[_i] = arguments[_i];
         }
-        return this.exclude.apply(this, classes);
+        return this.exclude.apply(this, __spread(classes));
     };
     /**
      * Includes one of the given component types.
      *
      * Entities have to match only one type.
      *
-     * @param {CompType[]} classes
+     * @param classes
      */
     Aspect.prototype.one = function () {
         var classes = [];
@@ -421,19 +412,19 @@ var Aspect = /** @class */ (function (_super) {
     };
     /**
      * @alias @see {Aspect#one}
-     * @param {CompType[]} classes
+     * @param classes
      */
     Aspect.prototype.some = function () {
         var classes = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             classes[_i] = arguments[_i];
         }
-        return this.one.apply(this, classes);
+        return this.one.apply(this, __spread(classes));
     };
     /**
      * Collects information about this aspect and returns it.
      *
-     * @returns {AspectDescriptor}
+     *
      */
     Aspect.prototype.getDescriptor = function () {
         return {
@@ -445,11 +436,11 @@ var Aspect = /** @class */ (function (_super) {
     /**
      * Returns an aspect for the given engine or collection of entities.
      *
-     * @param {Collection<AbstractEntity> | Engine} collOrEngine
-     * @param {CompType[]} [all] Optional component types which should all match.
-     * @param {CompType[]} [exclude] Optional component types which should not match.
-     * @param {CompType[]} [one] Optional component types of which at least one should match.
-     * @returns {Aspect}
+     * @param collOrEngine
+     * @param all Optional component types which should all match.
+     * @param exclude Optional component types which should not match.
+     * @param one Optional component types of which at least one should match.
+     *
      */
     Aspect.for = function (collOrEngine, all, exclude, one) {
         var entities = collOrEngine instanceof engine_1.Engine ? collOrEngine.entities : collOrEngine;

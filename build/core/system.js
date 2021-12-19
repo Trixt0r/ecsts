@@ -50,13 +50,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractEntitySystem = exports.System = exports.SystemMode = void 0;
+/* eslint-disable @typescript-eslint/no-empty-function */
 var engine_1 = require("./engine");
 var dispatcher_1 = require("./dispatcher");
 var aspect_1 = require("./aspect");
 /**
  * Defines how a system executes its task.
  *
- * @export
  * @enum {number}
  */
 var SystemMode;
@@ -75,18 +75,14 @@ var SystemMode;
  * Entities can only be accessed via the assigned engine. @see {Engine}.
  * The implementation of the specific system has to choose on which components of an entity to operate.
  *
- * @export
- * @abstract
- * @class System
- * @extends {Dispatcher<L>}
- * @template L
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 var System = /** @class */ (function (_super) {
     __extends(System, _super);
     /**
      * Creates an instance of System.
      *
-     * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
+     * @param [priority=0] The priority of this system. The lower the value the earlier it will process.
      */
     function System(priority) {
         if (priority === void 0) { priority = 0; }
@@ -102,7 +98,6 @@ var System = /** @class */ (function (_super) {
          * The active state of this system.
          * If the flag is set to `false`, this system will not be able to process.
          *
-         * @type {boolean}
          */
         get: function () {
             return this._active;
@@ -126,7 +121,6 @@ var System = /** @class */ (function (_super) {
         /**
          * The engine this system is assigned to.
          *
-         * @type {Engine | null}
          */
         get: function () {
             return this._engine;
@@ -154,7 +148,6 @@ var System = /** @class */ (function (_super) {
          * The value will stay `true` until @see {System#process} resolves or rejects.
          *
          * @readonly
-         * @type {boolean}
          */
         get: function () {
             return this._updating;
@@ -165,19 +158,20 @@ var System = /** @class */ (function (_super) {
     /**
      * Runs the system process with the given delta time.
      *
-     * @param {any} options
-     * @param {SystemMode} [mode=SystemMode.SYNC]
-     * @returns {void | Promise<void>}
+     * @param options
+     * @param mode The system mode to run in.
+     *
      */
     System.prototype.run = function (options, mode) {
+        var _a;
         if (mode === void 0) { mode = SystemMode.SYNC; }
-        return this[mode](options);
+        return (_a = this[mode]) === null || _a === void 0 ? void 0 : _a.call(this, options);
     };
     /**
      * Processes data synchronously.
      *
-     * @param {any} options
-     * @returns {void}
+     * @param options
+     *
      */
     System.prototype.runSync = function (options) {
         try {
@@ -190,8 +184,8 @@ var System = /** @class */ (function (_super) {
     /**
      * Processes data asynchronously.
      *
-     * @param {any} options
-     * @returns {void}
+     * @param options
+     *
      */
     System.prototype.runAsync = function (options) {
         return __awaiter(this, void 0, void 0, function () {
@@ -222,40 +216,53 @@ var System = /** @class */ (function (_super) {
     /**
      * Called as soon as the `active` switched to `true`.
      *
-     * @returns {void}
+     *
      */
-    System.prototype.onActivated = function () { };
+    System.prototype.onActivated = function () {
+        /* NOOP */
+    };
     /**
      * Called as soon as the `active` switched to `false`.
      *
-     * @returns {void}
+     *
      */
-    System.prototype.onDeactivated = function () { };
+    System.prototype.onDeactivated = function () {
+        /* NOOP */
+    };
     /**
      * Called as soon as the system got removed from an engine.
      *
-     * @param {Engine} engine The engine this system got added to.
+     * @param engine The engine this system got added to.
      *
-     * @returns {void}
+     *
      */
-    System.prototype.onRemovedFromEngine = function (engine) { };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    System.prototype.onRemovedFromEngine = function (engine) {
+        /* NOOP */
+    };
     /**
      * Called as soon as the system got added to an engine.
      * Note that this will be called after @see {SystemListener#onRemovedFromEngine}.
      *
-     * @param {Engine} engine The engine this system got added to.
+     * @param engine The engine this system got added to.
      *
-     * @returns {void}
+     *
      */
-    System.prototype.onAddedToEngine = function (engine) { };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    System.prototype.onAddedToEngine = function (engine) {
+        /* NOOP */
+    };
     /**
      * Called as soon an error occurred during update.
      *
-     * @param {Error} error The error which occurred.
+     * @param error The error which occurred.
      *
-     * @returns {void}
+     *
      */
-    System.prototype.onError = function (error) { };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    System.prototype.onError = function (error) {
+        /* NOOP */
+    };
     return System;
 }(dispatcher_1.Dispatcher));
 exports.System = System;
@@ -265,21 +272,16 @@ exports.System = System;
  * Optionally it accepts component types for auto filtering the entities before processing.
  * This class abstracts away the initialization of aspects and detaches them properly, if needed.
  *
- * @export
- * @abstract
- * @class AbstractEntitySystem
- * @extends {System}
- * @template T
  */
 var AbstractEntitySystem = /** @class */ (function (_super) {
     __extends(AbstractEntitySystem, _super);
     /**
      * Creates an instance of AbstractEntitySystem.
      *
-     * @param {number} [priority=0] The priority of this system. The lower the value the earlier it will process.
-     * @param {CompType[]} [all] Optional component types which should all match.
-     * @param {CompType[]} [exclude] Optional component types which should not match.
-     * @param {CompType[]} [one] Optional component types of which at least one should match.
+     * @param [priority=0] The priority of this system. The lower the value the earlier it will process.
+     * @param [all] Optional component types which should all match.
+     * @param [exclude] Optional component types which should not match.
+     * @param [one] Optional component types of which at least one should match.
      */
     function AbstractEntitySystem(priority, all, exclude, one) {
         if (priority === void 0) { priority = 0; }
@@ -291,8 +293,6 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
         /**
          * The optional aspect, if any.
          *
-         * @protected
-         * @type {(Aspect | null)}
          */
         _this.aspect = null;
         return _this;
@@ -312,9 +312,10 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
     /**
      * Called if new entities got added to the system.
      *
-     * @param {...AbstractEntity[]} entities
-     * @returns {void}
+     * @param entities
+     *
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     AbstractEntitySystem.prototype.onAddedEntities = function () {
         var entities = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -324,9 +325,10 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
     /**
      * Called if existing entities got removed from the system.
      *
-     * @param {...AbstractEntity[]} entities
-     * @returns {void}
+     * @param entities
+     *
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     AbstractEntitySystem.prototype.onRemovedEntities = function () {
         var entities = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -336,22 +338,23 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
     /**
      * Called if the entities got cleared.
      *
-     * @returns {void}
+     *
      */
     AbstractEntitySystem.prototype.onClearedEntities = function () { };
     /**
      * Called if the entities got sorted.
      *
-     * @returns {void}
+     *
      */
     AbstractEntitySystem.prototype.onSortedEntities = function () { };
     /**
      * Gets called if new components got added to the given entity.
      *
-     * @param {AbstractEntity} entity
-     * @param {...Component[]} components
-     * @returns {void}
+     * @param entity
+     * @param components
+     *
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     AbstractEntitySystem.prototype.onAddedComponents = function (entity) {
         var components = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -361,10 +364,11 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
     /**
      * Gets called if components got removed from the given entity.
      *
-     * @param {AbstractEntity} entity
-     * @param {...Component[]} components
-     * @returns {void}
+     * @param entity
+     * @param components
+     *
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     AbstractEntitySystem.prototype.onRemovedComponents = function (entity) {
         var components = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -374,16 +378,18 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
     /**
      * Gets called if the components of the given entity got cleared.
      *
-     * @param {AbstractEntity} entity
-     * @returns {void}
+     * @param entity
+     *
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     AbstractEntitySystem.prototype.onClearedComponents = function (entity) { };
     /**
      * Gets called if the components of the given entity got sorted.
      *
-     * @param {AbstractEntity} entity
-     * @returns {void}
+     * @param entity
+     *
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     AbstractEntitySystem.prototype.onSortedComponents = function (entity) { };
     /** @inheritdoc */
     AbstractEntitySystem.prototype.process = function (options) {

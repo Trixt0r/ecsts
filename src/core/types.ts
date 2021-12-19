@@ -2,45 +2,29 @@ import { Component } from './component';
 
 /**
  * A type for the arguments of `F`.
- *
- * @type {ArgumentTypes}
- * @template T
  */
-export type ArgumentTypes<F> = F extends (...args: infer A) => any ? A : never;
+export type ArgumentTypes<F> = F extends (...args: infer A) => unknown ? A : never;
 
 /**
  * Class definition for type `T`.
- *
- * @export
- * @interface Class
- * @extends {Function}
- * @template T
  */
-export interface Class<T> extends Function {
-  new (...args: any[]): T;
+export interface Class<T, U = unknown> extends Function {
+  new (...args: U[]): T;
 }
 
 /**
  * Class definition for a component type `T`.
- *
- * @export
- * @interface ComponentClass
- * @extends {Class<T>}
- * @template T
  */
 export interface ComponentClass<T extends Component> extends Class<T> {
-
   /**
    * The static id of the component.
    *
-   * @type {string}
    */
   readonly id?: string;
 
   /**
    * The static type of the component.
    *
-   * @type {string}
    */
   readonly type?: string;
 }

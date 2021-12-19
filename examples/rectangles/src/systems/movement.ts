@@ -12,8 +12,7 @@ import { MyEntity } from 'entity';
  * @extends {System}
  */
 export class MovementSystem extends AbstractEntitySystem<MyEntity> {
-
-  constructor(priority: number = 0) {
+  constructor(priority = 0) {
     super(priority, [Position, Velocity]);
   }
 
@@ -26,5 +25,4 @@ export class MovementSystem extends AbstractEntitySystem<MyEntity> {
     position.x += velocity.x;
     position.y += velocity.y;
   }
-
 }

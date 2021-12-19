@@ -1,14 +1,16 @@
 import { Collection, CollectionListener } from './collection';
 import { Dispatcher } from './dispatcher';
 
-class MyType { }
+class MyType {}
 class MySortableType extends MyType {
-  constructor(public position: number) { super(); }
+  constructor(public position: number) {
+    super();
+  }
 }
 
 describe('Collection', () => {
   let collection: Collection<MyType>;
-  beforeEach(() => collection = new Collection());
+  beforeEach(() => (collection = new Collection()));
 
   describe('initial', () => {
     it('should be a dispatcher', () => {
@@ -29,40 +31,40 @@ describe('Collection', () => {
 
   describe('elements', () => {
     it('should be frozen initially', () => {
-      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
+      expect(() => (collection.elements as unknown[]).push(new MyType())).toThrow();
     });
 
     it('should be frozen after an element got added', () => {
       collection.add(new MyType());
-      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
+      expect(() => (collection.elements as unknown[]).push(new MyType())).toThrow();
     });
 
     it('should be frozen after an element got removed', () => {
       const comp = new MyType();
       collection.add(comp);
       collection.remove(comp);
-      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
+      expect(() => (collection.elements as unknown[]).push(new MyType())).toThrow();
     });
 
     it('should be frozen after the collection got cleared', () => {
       const comp = new MyType();
       collection.add(comp);
       collection.clear();
-      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
+      expect(() => (collection.elements as unknown[]).push(new MyType())).toThrow();
     });
 
     it('should be frozen after the collection got sorted', () => {
       const comp = new MyType();
       collection.add(comp);
       collection.sort();
-      expect(() => (<any>collection.elements).push(new MyType())).toThrow();
+      expect(() => (collection.elements as unknown[]).push(new MyType())).toThrow();
     });
   });
 
   describe('add', () => {
     let element: MyType;
 
-    beforeEach(() => element = new MyType());
+    beforeEach(() => (element = new MyType()));
 
     it('should add an element', () => {
       const re = collection.add(element);
@@ -105,7 +107,7 @@ describe('Collection', () => {
     it('should notify all listeners that an element got added', () => {
       let added: MyType = null;
       const listener: CollectionListener<MyType> = {
-        onAdded: (element: MyType) => added = element
+        onAdded: (element: MyType) => (added = element),
       };
 
       collection.addListener(listener);
@@ -116,7 +118,7 @@ describe('Collection', () => {
     it('should notify all listeners that elements got added', () => {
       let added: MyType[] = [];
       const listener: CollectionListener<MyType> = {
-        onAdded: (...elements: MyType[]) => added = elements
+        onAdded: (...elements: MyType[]) => (added = elements),
       };
 
       collection.addListener(listener);
@@ -131,7 +133,7 @@ describe('Collection', () => {
     it('should not notify any listener that an element has been removed', () => {
       let removed: MyType = null;
       const listener: CollectionListener<MyType> = {
-        onRemoved: (element: MyType) => removed = element
+        onRemoved: (element: MyType) => (removed = element),
       };
 
       collection.addListener(listener);
@@ -211,7 +213,7 @@ describe('Collection', () => {
     it('should notify all listeners that an element got removed', () => {
       let removed: MyType = null;
       const listener: CollectionListener<MyType> = {
-        onRemoved: (element: MyType) => removed = element
+        onRemoved: (element: MyType) => (removed = element),
       };
 
       collection.addListener(listener);
@@ -225,7 +227,7 @@ describe('Collection', () => {
       collection.add(o1, o2);
       let removed: MyType[] = [];
       const listener: CollectionListener<MyType> = {
-        onRemoved: (...elements: MyType[]) => removed = elements
+        onRemoved: (...elements: MyType[]) => (removed = elements),
       };
 
       collection.addListener(listener);
@@ -238,7 +240,7 @@ describe('Collection', () => {
     it('should not notify any listener that a element has been added', () => {
       let added: MyType = null;
       const listener: CollectionListener<MyType> = {
-        onAdded: (element: MyType) => added = element
+        onAdded: (element: MyType) => (added = element),
       };
 
       collection.addListener(listener);
@@ -248,7 +250,6 @@ describe('Collection', () => {
   });
 
   describe('clear', () => {
-
     beforeEach(() => collection.add(new MyType(), new MyType(), new MyType()));
 
     it('should remove all elements from the collection', () => {
@@ -258,7 +259,7 @@ describe('Collection', () => {
 
     it('should notify all listeners that the collection has been cleared', () => {
       let called = false;
-      collection.addListener({ onCleared: () => called = true });
+      collection.addListener({ onCleared: () => (called = true) });
       collection.add(new MyType());
       collection.clear();
       expect(called).toBe(true);
@@ -266,7 +267,7 @@ describe('Collection', () => {
 
     it('should not notify any listener that the collection has been cleared if there were no elements', () => {
       let called = false;
-      collection.addListener({ onCleared: () => called = true });
+      collection.addListener({ onCleared: () => (called = true) });
       collection.remove(0, 1, 2);
       collection.clear();
       expect(called).toBe(false);
@@ -274,11 +275,10 @@ describe('Collection', () => {
   });
 
   describe('sort', () => {
-
     beforeEach(() => collection.add(new MySortableType(3), new MySortableType(2), new MySortableType(1)));
 
     it('should sort the collection', () => {
-      collection.sort((a: MySortableType, b: MySortableType) => a.position - b.position);
+      collection.sort((a, b) => (a as MySortableType).position - (b as MySortableType).position);
 
       const elements = <readonly MySortableType[]>collection.elements;
       expect(elements[0].position).toBe(1);
@@ -288,7 +288,7 @@ describe('Collection', () => {
 
     it('should notify all listeners that the collection has been sorted', () => {
       let called = false;
-      collection.addListener({ onSorted: () => called = true });
+      collection.addListener({ onSorted: () => (called = true) });
       collection.add(new MySortableType(1));
       collection.sort();
       expect(called).toBe(true);
@@ -296,7 +296,7 @@ describe('Collection', () => {
 
     it('should not notify any listener that the collection has been sorted if there were no elements', () => {
       let called = false;
-      collection.addListener({ onSorted: () => called = true });
+      collection.addListener({ onSorted: () => (called = true) });
       collection.remove(0, 1, 2);
       collection.sort();
       expect(called).toBe(false);
@@ -306,8 +306,7 @@ describe('Collection', () => {
   describe('iterable', () => {
     const amount = 10;
     beforeEach(() => {
-      for (let i = 0; i < amount; i++)
-        collection.add(new MyType());
+      for (let i = 0; i < amount; i++) collection.add(new MyType());
     });
 
     it('should be iterable', () => {
@@ -316,7 +315,7 @@ describe('Collection', () => {
 
     it('should iterate over all elements in the collection', () => {
       let iterations = 0;
-      for (let element of collection) {
+      for (const element of collection) {
         expect(element).toBe(collection.elements[iterations]);
         iterations++;
       }
@@ -328,7 +327,7 @@ describe('Collection', () => {
       const times = 5;
       for (let i = 0; i < 5; i++) {
         let iteration = 0;
-        for (let element of collection) {
+        for (const element of collection) {
           expect(element).toBe(collection.elements[iteration++]);
           iterations++;
         }
@@ -339,7 +338,7 @@ describe('Collection', () => {
     it('should iterate over all remaining elements in the collection', () => {
       let iterations = 0;
       collection.remove(amount - 1, amount - 2, amount - 3, amount - 4, amount - 5);
-      for (let element of collection) {
+      for (const element of collection) {
         expect(element).toBe(collection.elements[iterations]);
         iterations++;
       }
@@ -350,29 +349,29 @@ describe('Collection', () => {
   describe('array-like', () => {
     const amount = 10;
     beforeEach(() => {
-      for (let i = 0; i < amount; i++)
-        collection.add(new MyType());
+      for (let i = 0; i < amount; i++) collection.add(new MyType());
     });
 
     it('should delegate the array methods to the actual internal array', () => {
-      const fn = (element: MyType, index: number, array: readonly MyType[]) => index === 1;
+      const fn = (element: MyType, index: number) => index === 1;
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const ctx = this;
       const methods = {
         filter: [fn, ctx],
         forEach: [fn, ctx],
-        find:[fn, ctx],
-        findIndex:[fn, ctx],
-        map: [(element: MyType, index: number, array: readonly MyType[]) => index, ctx],
+        find: [fn, ctx],
+        findIndex: [fn, ctx],
+        map: [(element: MyType, index: number) => index, ctx],
         every: [fn, ctx],
         some: [fn, ctx],
-        reduce: [(prev, elmnt, idx, array) => prev + idx, 0],
-        reduceRight: [(prev, elmnt, idx, array) => prev + idx, 0],
+        reduce: [(prev, _elmnt, idx) => prev + idx, 0],
+        reduceRight: [(prev, _elmnt, idx) => prev + idx, 0],
       };
       Object.keys(methods).forEach(methodName => {
         const args = methods[methodName];
-        const actual = collection[methodName].apply(collection, args);
-        const expected = (<any>collection)._elements[methodName].apply((<any>collection)._elements, args);
-        expect(actual).toEqual(expected);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const expected = (collection as any)._elements[methodName](...args);
+        expect(collection[methodName](...args)).toEqual(expected);
       });
     });
   });

@@ -10,7 +10,6 @@ import { Velocity } from '../components/velocity';
  * @extends {System}
  */
 export class ResizeSystem extends System {
-
   aspect: Aspect;
   canvas: HTMLCanvasElement;
   dirty: boolean;
@@ -21,10 +20,8 @@ export class ResizeSystem extends System {
     this.dirty = false;
     this.oldHeight = window.innerHeight;
     window.addEventListener('resize', () => {
-      if (window.innerHeight > this.oldHeight)
-        this.oldHeight = window.innerHeight;
-      else
-        this.dirty = true;
+      if (window.innerHeight > this.oldHeight) this.oldHeight = window.innerHeight;
+      else this.dirty = true;
     });
   }
 
@@ -55,5 +52,4 @@ export class ResizeSystem extends System {
     this.oldHeight = window.innerHeight;
     this.dirty = false;
   }
-
 }

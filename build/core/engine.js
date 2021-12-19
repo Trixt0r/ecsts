@@ -75,9 +75,6 @@ var dispatcher_1 = require("./dispatcher");
 var collection_1 = require("./collection");
 /**
  * Defines how an engine executes its active systems.
- *
- * @export
- * @enum {number}
  */
 var EngineMode;
 (function (EngineMode) {
@@ -102,9 +99,6 @@ var EngineMode;
  * The @see {Engine#update} method has to be called in order to perform updates on each system in a certain order.
  * The engine takes care of updating only active systems in any point of time.
  *
- * @export
- * @class Engine
- * @extends {Dispatcher<EngineListener>}
  */
 var Engine = /** @class */ (function (_super) {
     __extends(Engine, _super);
@@ -159,14 +153,14 @@ var Engine = /** @class */ (function (_super) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     entities[_i] = arguments[_i];
                 }
-                _this.dispatch.apply(_this, __spread(['onAddedEntities'], entities));
+                return _this.dispatch.apply(_this, __spread(['onAddedEntities'], entities));
             },
             onRemoved: function () {
                 var entities = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     entities[_i] = arguments[_i];
                 }
-                _this.dispatch.apply(_this, __spread(['onRemovedEntities'], entities));
+                return _this.dispatch.apply(_this, __spread(['onRemovedEntities'], entities));
             },
             onCleared: function () { return _this.dispatch('onClearedEntities'); },
         }, true);
@@ -176,9 +170,6 @@ var Engine = /** @class */ (function (_super) {
     Object.defineProperty(Engine.prototype, "entities", {
         /**
          * A snapshot of all entities in this engine.
-         *
-         * @readonly
-         * @type {Collection<AbstractEntity>}
          */
         get: function () {
             return this._entities;
@@ -189,9 +180,6 @@ var Engine = /** @class */ (function (_super) {
     Object.defineProperty(Engine.prototype, "systems", {
         /**
          * A snapshot of all systems in this engine.
-         *
-         * @readonly
-         * @type {Collection<System>}
          */
         get: function () {
             return this._systems;
@@ -202,9 +190,6 @@ var Engine = /** @class */ (function (_super) {
     Object.defineProperty(Engine.prototype, "activeSystems", {
         /**
          * A snapshot of all active systems in this engine.
-         *
-         * @readonly
-         * @type {AbstractEntity[]}
          */
         get: function () {
             return this._activeSystems;
@@ -214,8 +199,6 @@ var Engine = /** @class */ (function (_super) {
     });
     /**
      * Updates the internal active system list.
-     *
-     * @protected
      */
     Engine.prototype.updatedActiveSystems = function () {
         this._activeSystems = this.systems.filter(function (system) { return system.active; });
@@ -224,20 +207,19 @@ var Engine = /** @class */ (function (_super) {
     /**
      * Updates all systems in this engine by the given delta value.
      *
-     * @param {any} [options]
-     * @param {EngineMode} [mode = EngineMode.DEFAULT]
-     * @returns {void | Promise<void>}
+     * @param [options]
+     * @param [mode = EngineMode.DEFAULT]
      */
     Engine.prototype.run = function (options, mode) {
+        var _a;
         if (mode === void 0) { mode = EngineMode.DEFAULT; }
-        return this[mode](options);
+        return (_a = this[mode]) === null || _a === void 0 ? void 0 : _a.call(this, options);
     };
     /**
      * Updates all systems in this engine by the given delta value,
      * without waiting for a resolve or reject of each system.
      *
-     * @param {any} [options]
-     * @returns {void}
+     * @param [options]
      */
     Engine.prototype.runDefault = function (options) {
         var length = this._activeSystems.length;
@@ -248,8 +230,7 @@ var Engine = /** @class */ (function (_super) {
      * Updates all systems in this engine by the given delta value,
      * by waiting for a system to resolve or reject before continuing with the next one.
      *
-     * @param {any} [options]
-     * @returns {Promise<void>}
+     * @param [options]
      */
     Engine.prototype.runSuccessive = function (options) {
         return __awaiter(this, void 0, void 0, function () {
@@ -278,8 +259,7 @@ var Engine = /** @class */ (function (_super) {
      * Updates all systems in this engine by the given delta value,
      * by running all systems in parallel and waiting for all systems to resolve or reject.
      *
-     * @param {any} [options]
-     * @returns {Promise<void>}
+     * @param [options]
      */
     Engine.prototype.runParallel = function (options) {
         return __awaiter(this, void 0, void 0, function () {

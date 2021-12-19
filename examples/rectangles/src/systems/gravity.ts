@@ -13,7 +13,6 @@ import { MyEntity } from 'entity';
  * @extends {System}
  */
 export class GravitySystem extends AbstractEntitySystem<MyEntity> {
-
   canvas: HTMLCanvasElement;
 
   constructor(public speed: number, priority?: number) {
@@ -39,8 +38,7 @@ export class GravitySystem extends AbstractEntitySystem<MyEntity> {
     const position = entity.components.get(Position);
     const velocity = entity.components.get(Velocity);
     const size = entity.components.get(Size);
-    if (position.y + size.height < this.canvas.height)
-      velocity.y += this.speed * (size.width * size.height) * 0.01;
+    if (position.y + size.height < this.canvas.height) velocity.y += this.speed * (size.width * size.height) * 0.01;
     else if (velocity.y !== 0) {
       velocity.y *= 0.5;
       if (Math.floor(Math.abs(velocity.y)) === 0) {
@@ -49,5 +47,4 @@ export class GravitySystem extends AbstractEntitySystem<MyEntity> {
       }
     }
   }
-
 }

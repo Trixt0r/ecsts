@@ -5,35 +5,31 @@ import { Collection } from './collection';
 import { AbstractEntity } from './entity';
 
 class MySyncSystem extends System {
-
   public throw: string;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   process(delta: number): void {
-    if (this.throw)
-      throw new Error(this.throw);
+    if (this.throw) throw new Error(this.throw);
   }
 }
 
 class MyAsyncSystem extends System {
-
   public throw: string;
-  public timer: number = 10;
+  public timer = 10;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   process(delta: number): Promise<void> {
-    if (this.throw)
-      throw new Error(this.throw);
-    else
-      return new Promise(resolve => setTimeout(resolve, this.timer));
+    if (this.throw) throw new Error(this.throw);
+    else return new Promise(resolve => setTimeout(resolve, this.timer));
   }
 }
 
-class MyEntity extends AbstractEntity { }
+class MyEntity extends AbstractEntity {}
 
 describe('Engine', () => {
-
   let engine: Engine;
 
-  beforeEach(() => engine = new Engine());
+  beforeEach(() => (engine = new Engine()));
 
   describe('initial', () => {
     it('should be a dispatcher', () => {
@@ -81,7 +77,7 @@ describe('Engine', () => {
     it('should call onAddedSystems on each listener if a system got added', () => {
       let called: System = null;
       let calledRemoved: System = null;
-      engine.addListener({ onAddedSystems: sys => called = sys, onRemovedSystems: sys => calledRemoved = sys });
+      engine.addListener({ onAddedSystems: sys => (called = sys), onRemovedSystems: sys => (calledRemoved = sys) });
       engine.systems.add(new MySyncSystem());
       expect(called).toBe(engine.systems.elements[0]);
       expect(calledRemoved).toBeNull();
@@ -92,7 +88,7 @@ describe('Engine', () => {
       let calledAdded: System = null;
       const system = new MySyncSystem();
       engine.systems.add(system);
-      engine.addListener({ onRemovedSystems: sys => called = sys, onAddedSystems: sys => calledAdded = sys });
+      engine.addListener({ onRemovedSystems: sys => (called = sys), onAddedSystems: sys => (calledAdded = sys) });
       engine.systems.remove(system);
       expect(called).toBe(system);
       expect(calledAdded).toBeNull();
@@ -101,7 +97,7 @@ describe('Engine', () => {
     it('should call onClearedSystems on each listener if the systems got cleared', () => {
       let called = false;
       engine.systems.add(new MySyncSystem());
-      engine.addListener({ onClearedSystems: () => called = true });
+      engine.addListener({ onClearedSystems: () => (called = true) });
       engine.systems.clear();
       expect(called).toBe(true);
     });
@@ -118,7 +114,10 @@ describe('Engine', () => {
     it('should call onAddedEntities on each listener if an entity got added', () => {
       let called: AbstractEntity = null;
       let calledRemoved: AbstractEntity = null;
-      engine.addListener({ onAddedEntities: sys => called = sys, onRemovedEntities: sys => calledRemoved = sys });
+      engine.addListener({
+        onAddedEntities: sys => (called = sys),
+        onRemovedEntities: sys => (calledRemoved = sys),
+      });
       engine.entities.add(new MyEntity('id'));
       expect(called).toBe(engine.entities.elements[0]);
       expect(calledRemoved).toBeNull();
@@ -129,7 +128,7 @@ describe('Engine', () => {
       let calledAdded: AbstractEntity = null;
       const system = new MyEntity('id');
       engine.entities.add(system);
-      engine.addListener({ onRemovedEntities: sys => called = sys, onAddedEntities: sys => calledAdded = sys });
+      engine.addListener({ onRemovedEntities: sys => (called = sys), onAddedEntities: sys => (calledAdded = sys) });
       engine.entities.remove(system);
       expect(called).toBe(system);
       expect(calledAdded).toBeNull();
@@ -138,7 +137,7 @@ describe('Engine', () => {
     it('should call onClearedEntities on each listener if the entities got cleared', () => {
       let called = false;
       engine.entities.add(new MyEntity('id'));
-      engine.addListener({ onClearedEntities: () => called = true });
+      engine.addListener({ onClearedEntities: () => (called = true) });
       engine.entities.clear();
       expect(called).toBe(true);
     });
@@ -146,33 +145,38 @@ describe('Engine', () => {
 
   describe('activeSystems', () => {
     it('should be frozen initially', () => {
-      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => (engine.activeSystems as any).push(new MySyncSystem())).toThrow();
     });
 
     it('should be frozen after a system got added', () => {
       engine.systems.add(new MySyncSystem());
-      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => (engine.activeSystems as any).push(new MySyncSystem())).toThrow();
     });
 
     it('should be frozen after a system got removed', () => {
       const comp = new MySyncSystem();
       engine.systems.add(comp);
       engine.systems.remove(comp);
-      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => (engine.activeSystems as any).push(new MySyncSystem())).toThrow();
     });
 
     it('should be frozen after the systems got cleared', () => {
       const comp = new MySyncSystem();
       engine.systems.add(comp);
       engine.systems.clear();
-      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => (engine.activeSystems as any).push(new MySyncSystem())).toThrow();
     });
 
     it('should be frozen after the systems got sorted', () => {
       const comp = new MySyncSystem();
       engine.systems.add(comp);
       engine.systems.sort();
-      expect(() => (<any>engine.activeSystems).push(new MySyncSystem())).toThrow();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => (engine.activeSystems as any).push(new MySyncSystem())).toThrow();
     });
 
     it('should update if a new active system got added', () => {
@@ -220,7 +224,6 @@ describe('Engine', () => {
     const max = 10;
 
     describe('DEFAULT', () => {
-
       beforeEach(() => {
         for (let i = 0; i < max; i++) {
           const system = new MySyncSystem(Math.ceil(Math.random() * max));
@@ -232,7 +235,10 @@ describe('Engine', () => {
         let called = 0;
         const dlt = 10;
         engine.systems.elements.forEach(system => {
-          (<any>system).run = function(delta) { called += delta; };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (system as any).run = function (delta) {
+            called += delta;
+          };
         });
         engine.run(dlt);
         expect(called).toBe(dlt * max);
@@ -242,7 +248,10 @@ describe('Engine', () => {
         let called = 0;
         const dlt = 10;
         engine.systems.elements.forEach(system => {
-          (<any>system).run = function(delta) { called += delta; };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (system as any).run = function (delta) {
+            called += delta;
+          };
         });
         const toDeactivate = 3;
         for (let i = 0; i < toDeactivate; i++)
@@ -254,7 +263,8 @@ describe('Engine', () => {
       it('should execute each system in the correct order', () => {
         const remaining = engine.systems.elements.slice();
         engine.systems.elements.forEach(system => {
-          (<any>system).run = function() {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (system as any).run = function () {
             expect(remaining.shift()).toBe(system);
             remaining.forEach(s => expect(s.priority).toBeGreaterThanOrEqual(system.priority));
           };
@@ -269,18 +279,19 @@ describe('Engine', () => {
           onErrorBySystem: (err, sys) => {
             error = err;
             system = sys;
-          }
+          },
         });
-        (<any>engine.systems.elements[0]).throw = 'Error sync engine.spec';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine.systems.elements[0] as any).throw = 'Error sync engine.spec';
         engine.run(0);
         expect(error).not.toBeNull();
-        expect(error.message).toBe((<any>engine.systems.elements[0]).throw);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(error.message).toBe((engine.systems.elements[0] as any).throw);
         expect(system).toBe(engine.systems.elements[0]);
       });
     });
 
     describe('async', () => {
-
       beforeEach(() => {
         for (let i = 0; i < max; i++) {
           const system = new MyAsyncSystem(Math.ceil(Math.random() * max));
@@ -294,7 +305,9 @@ describe('Engine', () => {
           let called = 0;
           const dlt = 10;
           engine.systems.elements.forEach(system => {
-            (<any>system).run = function(delta) { called += delta; };
+            system.run = function (delta) {
+              called += delta;
+            };
           });
           await engine.run(dlt, EngineMode.SUCCESSIVE);
           expect(called).toBe(dlt * max);
@@ -304,7 +317,9 @@ describe('Engine', () => {
           let called = 0;
           const dlt = 10;
           engine.systems.elements.forEach(system => {
-            (<any>system).run = function(delta) { called += delta; };
+            system.run = function (delta) {
+              called += delta;
+            };
           });
           const toDeactivate = 3;
           for (let i = 0; i < toDeactivate; i++)
@@ -315,7 +330,7 @@ describe('Engine', () => {
 
         it('should wait for a system before continuing with the next one', async () => {
           engine.systems.elements.forEach(system => {
-            (<any>system).process = function() {
+            system.process = function () {
               const updating = engine.systems.filter(system => system.updating);
               expect(updating.length).toBe(1);
               expect(updating[0]).toBe(system);
@@ -327,7 +342,7 @@ describe('Engine', () => {
         it('should execute each system in the correct order', async () => {
           const remaining = engine.systems.elements.slice();
           engine.systems.elements.forEach(system => {
-            (<any>system).run = function() {
+            system.run = function () {
               expect(remaining.shift()).toBe(system);
               remaining.forEach(s => expect(s.priority).toBeGreaterThanOrEqual(system.priority));
             };
@@ -342,12 +357,14 @@ describe('Engine', () => {
             onErrorBySystem: (err, sys) => {
               error = err;
               system = sys;
-            }
+            },
           });
-          (<any>engine.systems.elements[0]).throw = 'Error successive engine.spec';
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (engine.systems.elements[0] as any).throw = 'Error successive engine.spec';
           await engine.run(0, EngineMode.SUCCESSIVE);
           expect(error).not.toBeNull();
-          expect(error.message).toBe((<any>engine.systems.elements[0]).throw);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          expect(error.message).toBe((engine.systems.elements[0] as any).throw);
           expect(system).toBe(engine.systems.elements[0]);
         });
       });
@@ -357,7 +374,9 @@ describe('Engine', () => {
           let called = 0;
           const dlt = 10;
           engine.systems.elements.forEach(system => {
-            (<any>system).run = function(delta) { called += delta; };
+            system.run = function (delta) {
+              called += delta;
+            };
           });
           await engine.run(dlt, EngineMode.PARALLEL);
           expect(called).toBe(dlt * max);
@@ -367,7 +386,9 @@ describe('Engine', () => {
           let called = 0;
           const dlt = 10;
           engine.systems.elements.forEach(system => {
-            (<any>system).run = function(delta) { called += delta; };
+            system.run = function (delta) {
+              called += delta;
+            };
           });
           const toDeactivate = 3;
           for (let i = 0; i < toDeactivate; i++)
@@ -386,7 +407,7 @@ describe('Engine', () => {
         it('should execute each system in the correct order', async () => {
           const remaining = engine.systems.elements.slice();
           engine.systems.elements.forEach(system => {
-            (<any>system).run = function() {
+            system.run = function () {
               expect(remaining.shift()).toBe(system);
               remaining.forEach(s => expect(s.priority).toBeGreaterThanOrEqual(system.priority));
             };
@@ -401,16 +422,17 @@ describe('Engine', () => {
             onErrorBySystem: (err, sys) => {
               error = err;
               system = sys;
-            }
+            },
           });
-          (<any>engine.systems.elements[0]).throw = 'Error parallel engine.spec';
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (engine.systems.elements[0] as any).throw = 'Error parallel engine.spec';
           await engine.run(0, EngineMode.PARALLEL);
           expect(error).not.toBeNull();
-          expect(error.message).toBe((<any>engine.systems.elements[0]).throw);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          expect(error.message).toBe((engine.systems.elements[0] as any).throw);
           expect(system).toBe(engine.systems.elements[0]);
         });
       });
     });
-
   });
 });

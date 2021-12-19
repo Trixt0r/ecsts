@@ -4,24 +4,35 @@ import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
 
 /**
+ * System which is synced within an engine.
+ */
+type SyncedSystem = System & {
+  /**
+   * System listener mapping for engine specific caching purposes.
+   */
+  __ecsEngineListener: SystemListener;
+
+  /**
+   * The list of listeners for this system.
+   */
+  _lockedListeners: SystemListener[];
+};
+
+/**
  * The listener interface for a listener on an engine.
- *
- * @export
- * @interface EntityListener
  */
 export interface EngineListener {
-
   /**
    * Called as soon as the given system gets added to the engine.
    *
-   * @param {System[]} systems
+   * @param systems
    */
   onAddedSystems?(...systems: System[]): void;
 
   /**
    * Called as soon as the given system gets removed from the engine.
    *
-   * @param {System[]} systems
+   * @param systems
    */
   onRemovedSystems?(...systems: System[]): void;
 
@@ -33,22 +44,22 @@ export interface EngineListener {
   /**
    * Called as soon as an error occurred on in an active system during update.
    *
-   * @param {Error} error The error that occurred.
-   * @param {System} system The system on which the error occurred.
+   * @param error The error that occurred.
+   * @param system The system on which the error occurred.
    */
   onErrorBySystem?(error: Error, system: System): void;
 
   /**
    * Called as soon as the given entity gets added to the engine.
    *
-   * @param {AbstractEntity[]} entities
+   * @param entities
    */
   onAddedEntities?(...entities: AbstractEntity[]): void;
 
   /**
    * Called as soon as the given entity gets removed from the engine.
    *
-   * @param {AbstractEntity[]} entities
+   * @param entities
    */
   onRemovedEntities?(...entities: AbstractEntity[]): void;
 
@@ -60,9 +71,6 @@ export interface EngineListener {
 
 /**
  * Defines how an engine executes its active systems.
- *
- * @export
- * @enum {number}
  */
 export enum EngineMode {
   /**
@@ -89,33 +97,20 @@ export enum EngineMode {
  * The @see {Engine#update} method has to be called in order to perform updates on each system in a certain order.
  * The engine takes care of updating only active systems in any point of time.
  *
- * @export
- * @class Engine
- * @extends {Dispatcher<EngineListener>}
  */
 export class Engine extends Dispatcher<EngineListener> {
-
   /**
    * The internal list of all systems in this engine.
-   *
-   * @protected
-   * @type {Collection<System>}
    */
   protected _systems: Collection<System>;
 
   /**
    * The frozen list of active systems which is used to iterate during the update.
-   *
-   * @protected
-   * @type {System[]}
    */
   protected _activeSystems: System[];
 
   /**
    * The internal list of all entities in this engine.
-   *
-   * @protected
-   * @type {Collection<AbstractEntity>}
    */
   protected _entities: Collection<AbstractEntity>;
 
@@ -127,55 +122,54 @@ export class Engine extends Dispatcher<EngineListener> {
     this._systems = new Collection<System>();
     this._entities = new Collection<AbstractEntity>();
     this._activeSystems = [];
-    this._systems.addListener({
-      onAdded: (...systems: System[]) => {
-        this._systems.sort((a, b) => a.priority - b.priority);
-        systems.forEach(system => {
-          system.engine = this;
-          this.updatedActiveSystems();
+    this._systems.addListener(
+      {
+        onAdded: (...systems: SyncedSystem[]) => {
+          this._systems.sort((a, b) => a.priority - b.priority);
+          systems.forEach(system => {
+            system.engine = this;
+            this.updatedActiveSystems();
 
-          const systemListener: SystemListener = {
-            onActivated: () => this.updatedActiveSystems(),
-            onDeactivated: () => this.updatedActiveSystems(),
-            onError: error => this.dispatch('onErrorBySystem', error, system),
-          };
-          (<any>system).__ecsEngineListener = systemListener;
-          system.addListener(systemListener, true);
-        });
-      this.dispatch.apply(this, <['onAddedSystems', ...System[]]>['onAddedSystems', ...systems]);
+            const systemListener: SystemListener = {
+              onActivated: () => this.updatedActiveSystems(),
+              onDeactivated: () => this.updatedActiveSystems(),
+              onError: error => this.dispatch('onErrorBySystem', error, system),
+            };
+            system.__ecsEngineListener = systemListener;
+            system.addListener(systemListener, true);
+          });
+          this.dispatch('onAddedSystems', ...systems);
+        },
+        onRemoved: (...systems: SyncedSystem[]) => {
+          systems.forEach(system => {
+            system.engine = null;
+            this.updatedActiveSystems();
+            const systemListener = system.__ecsEngineListener;
+            const locked: SystemListener[] = system._lockedListeners;
+            locked.splice(locked.indexOf(systemListener), 1);
+            system.removeListener(systemListener);
+          });
+          this.dispatch('onRemovedSystems', ...systems);
+        },
+        onCleared: () => this.dispatch('onClearedSystems'),
       },
-      onRemoved: (...systems: System[]) => {
-        systems.forEach(system => {
-          system.engine = null;
-          this.updatedActiveSystems();
-          const systemListener: SystemListener = (<any>system).__ecsEngineListener;
-          const locked: SystemListener[] = (<any>system)._lockedListeners;
-          locked.splice(locked.indexOf(systemListener), 1);
-          system.removeListener(systemListener);
-        });
-        this.dispatch.apply(this, <['onRemovedSystems', ...System[]]>['onRemovedSystems', ...systems]);
-      },
-      onCleared: () => this.dispatch('onClearedSystems'),
-    }, true);
+      true
+    );
 
-    this._entities.addListener({
-      onAdded: (...entities: AbstractEntity[]) => {
-        this.dispatch.apply(this, <['onAddedEntities', ...AbstractEntity[]]>['onAddedEntities', ...entities]);
+    this._entities.addListener(
+      {
+        onAdded: (...entities: AbstractEntity[]) => this.dispatch('onAddedEntities', ...entities),
+        onRemoved: (...entities: AbstractEntity[]) => this.dispatch('onRemovedEntities', ...entities),
+        onCleared: () => this.dispatch('onClearedEntities'),
       },
-      onRemoved: (...entities: AbstractEntity[]) => {
-        this.dispatch.apply(this, <['onRemovedEntities', ...AbstractEntity[]]>['onRemovedEntities', ...entities]);
-      },
-      onCleared: () => this.dispatch('onClearedEntities'),
-    }, true);
+      true
+    );
 
     this.updatedActiveSystems();
   }
 
   /**
    * A snapshot of all entities in this engine.
-   *
-   * @readonly
-   * @type {Collection<AbstractEntity>}
    */
   get entities(): Collection<AbstractEntity> {
     return this._entities;
@@ -183,9 +177,6 @@ export class Engine extends Dispatcher<EngineListener> {
 
   /**
    * A snapshot of all systems in this engine.
-   *
-   * @readonly
-   * @type {Collection<System>}
    */
   get systems(): Collection<System> {
     return this._systems;
@@ -193,9 +184,6 @@ export class Engine extends Dispatcher<EngineListener> {
 
   /**
    * A snapshot of all active systems in this engine.
-   *
-   * @readonly
-   * @type {AbstractEntity[]}
    */
   get activeSystems(): readonly System[] {
     return this._activeSystems;
@@ -203,8 +191,6 @@ export class Engine extends Dispatcher<EngineListener> {
 
   /**
    * Updates the internal active system list.
-   *
-   * @protected
    */
   protected updatedActiveSystems(): void {
     this._activeSystems = this.systems.filter(system => system.active);
@@ -214,50 +200,43 @@ export class Engine extends Dispatcher<EngineListener> {
   /**
    * Updates all systems in this engine by the given delta value.
    *
-   * @param {any} [options]
-   * @param {EngineMode} [mode = EngineMode.DEFAULT]
-   * @returns {void | Promise<void>}
+   * @param [options]
+   * @param [mode = EngineMode.DEFAULT]
    */
-  run(options?: any, mode: EngineMode = EngineMode.DEFAULT): void | Promise<void> {
-    return this[mode](options);
+  run<T>(options?: T, mode: EngineMode = EngineMode.DEFAULT): void | Promise<void> {
+    return this[mode]?.call(this, options);
   }
 
   /**
    * Updates all systems in this engine by the given delta value,
    * without waiting for a resolve or reject of each system.
    *
-   * @param {any} [options]
-   * @returns {void}
+   * @param [options]
    */
-  protected runDefault(options?: any): void {
+  protected runDefault<T>(options?: T): void {
     const length = this._activeSystems.length;
-    for (let i = 0; i < length; i++)
-      this._activeSystems[i].run(options, SystemMode.SYNC);
+    for (let i = 0; i < length; i++) this._activeSystems[i].run(options, SystemMode.SYNC);
   }
 
   /**
    * Updates all systems in this engine by the given delta value,
    * by waiting for a system to resolve or reject before continuing with the next one.
    *
-   * @param {any} [options]
-   * @returns {Promise<void>}
+   * @param [options]
    */
-  protected async runSuccessive(options?: any): Promise<void> {
+  protected async runSuccessive<T>(options?: T): Promise<void> {
     const length = this._activeSystems.length;
-    for (let i = 0; i < length; i++)
-      await this._activeSystems[i].run(options, SystemMode.SYNC);
+    for (let i = 0; i < length; i++) await this._activeSystems[i].run(options, SystemMode.SYNC);
   }
 
   /**
    * Updates all systems in this engine by the given delta value,
    * by running all systems in parallel and waiting for all systems to resolve or reject.
    *
-   * @param {any} [options]
-   * @returns {Promise<void>}
+   * @param [options]
    */
-  protected async runParallel(options?: any): Promise<void> {
+  protected async runParallel<T>(options?: T): Promise<void> {
     const mapped = this._activeSystems.map(system => system.run(options, SystemMode.ASYNC));
     await Promise.all(mapped);
   }
-
 }

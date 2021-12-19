@@ -8,13 +8,7 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "target": "es6",
-    "lib": [
-      "dom",
-      "es2015"
-    ]
+    "lib": ["dom", "es2015"]
   },
-  "exclude": [
-    "**/*.spec.ts",
-    "**/build/*"
-  ]
+  "exclude": ["**/*.spec.ts", "**/build/*"]
 }

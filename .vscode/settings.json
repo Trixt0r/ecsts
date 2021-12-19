@@ -1,0 +1,4 @@
+{
+  "jest.coverageFormatter": "GutterFormatter",
+  "jest.showCoverageOnLoad": true
+}

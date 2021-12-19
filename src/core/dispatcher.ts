@@ -4,27 +4,16 @@ import { ArgumentTypes } from './types';
  * A dispatcher is an abstract object which holds a list of listeners
  * to which data during certain events can be dispatched, by calling functions implemented by listeners.
  *
- * @export
- * @abstract
- * @class Dispatcher
- * @template T The listener type, which has to implemented by the listeners.
  */
 export abstract class Dispatcher<T> {
-
   /**
    * The list of listeners for this dispatcher.
-   *
-   * @protected
-   * @type {Partial<T>[]}
    */
   protected _listeners: Partial<T>[];
 
   /**
    * Locked listeners.
    * Those listeners in this array can not be removed anymore.
-   *
-   * @protected
-   * @type {Partial<T>}
    */
   protected _lockedListeners: Partial<T>[];
 
@@ -38,9 +27,6 @@ export abstract class Dispatcher<T> {
 
   /**
    * The current listeners for this dispatcher.
-   *
-   * @readonly
-   * @type {T[]}
    */
   get listeners(): readonly Partial<T>[] {
     return this._listeners.slice();
@@ -49,8 +35,8 @@ export abstract class Dispatcher<T> {
   /**
    * Adds the given listener to this entity.
    *
-   * @param {Partial<T>} listener
-   * @returns {boolean} Whether the listener has been added or not.
+   * @param listener
+   * @return Whether the listener has been added or not.
    *                    It may not be added, if already present in the listener list.
    */
   addListener(listener: Partial<T>, lock = false): boolean {
@@ -63,8 +49,8 @@ export abstract class Dispatcher<T> {
   /**
    * Removes the given listener or the listener at the given index.
    *
-   * @param {(Partial<T> | number)} listenerOrIndex
-   * @returns {boolean} Whether the listener has been removed or not.
+   * @param listenerOrIndex
+   * @return Whether the listener has been removed or not.
    *                    It may not have been removed, if it was not in the listener list.
    */
   removeListener(listenerOrIndex: Partial<T> | number): boolean {
@@ -84,8 +70,8 @@ export abstract class Dispatcher<T> {
    * on each listener, if implemented.
    * Note that the listener's scope will be used, when the listener's function gets called.
    *
-   * @param {extends keyof T} name The function name to call.
-   * @param {ArgumentTypes<T[K]>} args The arguments to pass to the function.
+   * @param name The function name to call.
+   * @param args The arguments to pass to the function.
    */
   dispatch<K extends keyof T>(name: K, ...args: ArgumentTypes<T[K]>): void {
     // TODO: optimize this; cache the listeners with the given function name
@@ -95,5 +81,4 @@ export abstract class Dispatcher<T> {
       fn.apply(listener, args);
     });
   }
-
 }

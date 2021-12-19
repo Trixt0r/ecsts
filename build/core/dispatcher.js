@@ -5,10 +5,6 @@ exports.Dispatcher = void 0;
  * A dispatcher is an abstract object which holds a list of listeners
  * to which data during certain events can be dispatched, by calling functions implemented by listeners.
  *
- * @export
- * @abstract
- * @class Dispatcher
- * @template T The listener type, which has to implemented by the listeners.
  */
 var Dispatcher = /** @class */ (function () {
     /**
@@ -21,9 +17,6 @@ var Dispatcher = /** @class */ (function () {
     Object.defineProperty(Dispatcher.prototype, "listeners", {
         /**
          * The current listeners for this dispatcher.
-         *
-         * @readonly
-         * @type {T[]}
          */
         get: function () {
             return this._listeners.slice();
@@ -34,8 +27,8 @@ var Dispatcher = /** @class */ (function () {
     /**
      * Adds the given listener to this entity.
      *
-     * @param {Partial<T>} listener
-     * @returns {boolean} Whether the listener has been added or not.
+     * @param listener
+     * @return Whether the listener has been added or not.
      *                    It may not be added, if already present in the listener list.
      */
     Dispatcher.prototype.addListener = function (listener, lock) {
@@ -50,8 +43,8 @@ var Dispatcher = /** @class */ (function () {
     /**
      * Removes the given listener or the listener at the given index.
      *
-     * @param {(Partial<T> | number)} listenerOrIndex
-     * @returns {boolean} Whether the listener has been removed or not.
+     * @param listenerOrIndex
+     * @return Whether the listener has been removed or not.
      *                    It may not have been removed, if it was not in the listener list.
      */
     Dispatcher.prototype.removeListener = function (listenerOrIndex) {
@@ -71,8 +64,8 @@ var Dispatcher = /** @class */ (function () {
      * on each listener, if implemented.
      * Note that the listener's scope will be used, when the listener's function gets called.
      *
-     * @param {extends keyof T} name The function name to call.
-     * @param {ArgumentTypes<T[K]>} args The arguments to pass to the function.
+     * @param name The function name to call.
+     * @param args The arguments to pass to the function.
      */
     Dispatcher.prototype.dispatch = function (name) {
         var args = [];

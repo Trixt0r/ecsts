@@ -2,11 +2,11 @@ import { AbstractEntity } from './entity';
 import { Dispatcher } from './dispatcher';
 import { ComponentCollection } from './component';
 
-class MyEntity extends AbstractEntity { }
+class MyEntity extends AbstractEntity {}
 
 describe('Entity', () => {
   let myEntity: AbstractEntity;
-  beforeEach(() => myEntity = new MyEntity('randomId'));
+  beforeEach(() => (myEntity = new MyEntity('randomId')));
 
   describe('initial', () => {
     it('should have an id', () => {
@@ -36,38 +36,35 @@ describe('Entity', () => {
   });
 
   describe('dispatch', () => {
-
     it('should dispatch onAddedComponents if a component got added', () => {
       let called = false;
-      myEntity.addListener({ onAddedComponents: () => called = true });
-      myEntity.components.add({ });
+      myEntity.addListener({ onAddedComponents: () => (called = true) });
+      myEntity.components.add({});
       expect(called).toBe(true);
     });
 
     it('should dispatch onRemovedComponents if a component got removed', () => {
       let called = false;
-      myEntity.addListener({ onRemovedComponents: () => called = true });
-      myEntity.components.add({ });
+      myEntity.addListener({ onRemovedComponents: () => (called = true) });
+      myEntity.components.add({});
       myEntity.components.remove(0);
       expect(called).toBe(true);
     });
 
     it('should dispatch onClearedComponents if the components got cleared', () => {
       let called = false;
-      myEntity.addListener({ onClearedComponents: () => called = true });
-      myEntity.components.add({ });
+      myEntity.addListener({ onClearedComponents: () => (called = true) });
+      myEntity.components.add({});
       myEntity.components.clear();
       expect(called).toBe(true);
     });
 
     it('should dispatch onSortedComponents if the components got sorted', () => {
       let called = false;
-      myEntity.addListener({ onSortedComponents: () => called = true });
-      myEntity.components.add({ });
+      myEntity.addListener({ onSortedComponents: () => (called = true) });
+      myEntity.components.add({});
       myEntity.components.sort();
       expect(called).toBe(true);
     });
-
   });
-
 });

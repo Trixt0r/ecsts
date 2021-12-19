@@ -41,16 +41,13 @@ function addEntity(times: number) {
     entity.components.add(size);
     toAdd.push(entity);
   }
-  engine.entities.add.apply(engine.entities, toAdd);
+  engine.entities.add(...toAdd);
 }
 
 /**
  * Resolves after the given time.
- *
- * @param {number} ms
- * @returns {Promise<any>}
  */
-async function wait(ms: number): Promise<any> {
+async function wait(ms: number): Promise<unknown> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 

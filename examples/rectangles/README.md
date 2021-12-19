@@ -4,11 +4,11 @@ A minimal example, built with pixi.js.
 
 The example shows how to implement the following systems:
 
-  * Rendering (with pixi.js)
-  * Movement
-  * Gravity
-  * Collision
-  * Window Resizing
+- Rendering (with pixi.js)
+- Movement
+- Gravity
+- Collision
+- Window Resizing
 
 # Run
 

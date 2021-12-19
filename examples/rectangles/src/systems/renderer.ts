@@ -11,18 +11,17 @@ import { Size } from '../components/size';
  * @extends {System}
  */
 export class RenderingSystem extends System {
-
   aspect: Aspect;
   pixiApp: Application;
   graphics: Graphics;
   fps: Text;
   timePassed: number;
 
-  constructor(priority: number = 0) {
+  constructor(priority = 0) {
     super(priority);
     this.pixiApp = new Application({
       view: <HTMLCanvasElement>document.getElementById('canvas'),
-      backgroundColor: 0x1155aa
+      backgroundColor: 0x1155aa,
     });
     this.timePassed = 350;
     this.fps = new Text('FPS: ', { fill: 0xffffff });
@@ -54,9 +53,8 @@ export class RenderingSystem extends System {
   process(delta: number) {
     this.timePassed += delta;
     if (this.timePassed > 300) {
-      this.fps.text = 'FPS: ' + Math.floor((1000 / delta)) + '\n' +
-                      'ms: ' + delta + '\n' +
-                      'entities: ' + this.engine.entities.length;
+      this.fps.text =
+        'FPS: ' + Math.floor(1000 / delta) + '\n' + 'ms: ' + delta + '\n' + 'entities: ' + this.engine.entities.length;
       this.timePassed = 0;
     }
     const entities = this.aspect.entities;
@@ -71,5 +69,4 @@ export class RenderingSystem extends System {
     this.graphics.endFill();
     this.pixiApp.render();
   }
-
 }

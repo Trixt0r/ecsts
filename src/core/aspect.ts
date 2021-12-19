@@ -5,154 +5,169 @@ import { Engine } from './engine';
 import { ComponentClass } from './types';
 import { Dispatcher } from './dispatcher';
 
+/**
+ * Component or component class.
+ */
 type CompType = ComponentClass<Component> | Component;
+
+/**
+ * A collection of entities.
+ */
 type EntityCollection = Collection<AbstractEntity>;
+
+/**
+ * Entity which is synced within an aspect.
+ */
+type SyncedEntity = AbstractEntity & {
+  /**
+   * Entity listener mapping for aspect specific caching purposes.
+   */
+  __ecsEntityListener: Record<number, EntityListener>;
+
+  /**
+   * The list of listeners for this entity.
+   */
+  _lockedListeners: EntityListener[];
+};
 
 /**
  * Generates a function for the given list of component types.
  *
  * The function will match any component which matches one of the given types.
  *
- * @param {ComponentCollection} comps
- * @returns {(type: CompType, index: number, array: readonly CompType[]) => unknown}
+ * @param comps
+ *
  */
-function predicateFn(comps: ComponentCollection): (type: CompType, index: number, array: readonly CompType[]) => unknown {
+function predicateFn(
+  comps: ComponentCollection
+): (type: CompType, index: number, array: readonly CompType[]) => unknown {
   return comp => {
     const constr = (<ComponentClass<Component>>comp).constructor;
     if (constr !== Object)
-      return comps.find(c => {
-        const compType = <ComponentClass<Component>>c.constructor;
-        if (compType.id) return compType.id === comp.id;
-        else if (compType.type) return comp.type === compType.type;
-        else {
-          const ok = comp === compType;
-          if (ok) return true;
+      return (
+        comps.find(c => {
+          const compType = <ComponentClass<Component>>c.constructor;
+          if (compType.id) return compType.id === comp.id;
+          else if (compType.type) return comp.type === compType.type;
+          else {
+            const ok = comp === compType;
+            if (ok) return true;
+            if (c.id) return comp.id === c.id;
+            else if (c.type) return comp.type === c.type;
+            else return false;
+          }
+        }) !== void 0
+      );
+    else
+      return (
+        comps.find(c => {
           if (c.id) return comp.id === c.id;
           else if (c.type) return comp.type === c.type;
           else return false;
-        }
-      }) !== void 0;
-    else
-      return comps.find(c => {
-        if (c.id) return comp.id === c.id;
-        else if (c.type) return comp.type === c.type;
-        else return false;
-      }) !== void 0;
+        }) !== void 0
+      );
   };
 }
 
 /**
  * Describes the constraints of an aspect.
- *
- * @export
- * @interface AspectDescriptor
  */
 export interface AspectDescriptor {
-
   /**
    * Components which all have to be matched by an entity.
-   *
-   * @type {CompType[]}
    */
-  all: CompType[],
+  all: CompType[];
 
   /**
    * Components which are not allowed to be matched by an entity.
-   *
-   * @type {CompType[]}
    */
-  exclude: CompType[],
+  exclude: CompType[];
 
   /**
    * Components of which at least one has to be matched by an entity.
-   *
-   * @type {CompType[]}
    */
-  one: CompType[]
+  one: CompType[];
 }
 
 /**
  * Listener which listens to various aspect events.
- *
- * @interface AspectListener
  */
 export interface AspectListener {
-
   /**
    * Called if new entities got added to the aspect.
    *
-   * @param {...AbstractEntity[]} entities
-   * @returns {void}
+   * @param entities
+   *
    */
   onAddedEntities?(...entities: AbstractEntity[]): void;
 
   /**
    * Called if existing entities got removed from the aspect.
    *
-   * @param {...AbstractEntity[]} entities
-   * @returns {void}
+   * @param entities
+   *
    */
   onRemovedEntities?(...entities: AbstractEntity[]): void;
 
   /**
    * Called if the source entities got cleared.
    *
-   * @returns {void}
+   *
    */
   onClearedEntities?(): void;
 
   /**
    * Called if the source entities got sorted.
    *
-   * @returns {void}
+   *
    */
   onSortedEntities?(): void;
 
   /**
    * Gets called if new components got added to the given entity.
    *
-   * @param {AbstractEntity} entity
-   * @param {...Component[]} components
-   * @returns {void}
+   * @param entity
+   * @param components
+   *
    */
   onAddedComponents?(entity: AbstractEntity, ...components: Component[]): void;
 
   /**
    * Gets called if components got removed from the given entity.
    *
-   * @param {AbstractEntity} entity
-   * @param {...Component[]} components
-   * @returns {void}
+   * @param entity
+   * @param components
+   *
    */
   onRemovedComponents?(entity: AbstractEntity, ...components: Component[]): void;
 
   /**
    * Gets called if the components of the given entity got cleared.
    *
-   * @param {AbstractEntity} entity
-   * @returns {void}
+   * @param entity
+   *
    */
   onClearedComponents?(entity: AbstractEntity): void;
 
   /**
    * Gets called if the components of the given entity got sorted.
    *
-   * @param {AbstractEntity} entity
-   * @returns {void}
+   * @param entity
+   *
    */
   onSortedComponents?(entity: AbstractEntity): void;
 
   /**
    * Gets called if the aspect got attached.
    *
-   * @returns {void}
+   *
    */
   onAttached?(): void;
 
   /**
    * Gets called if the aspect got detached.
    *
-   * @returns {void}
+   *
    */
   onDetached?(): void;
 }
@@ -165,15 +180,12 @@ export interface AspectListener {
  * The user will always have snapshot of entities which meet the aspect criteria no matter when an entity got
  * added or removed.
  *
- * @export
- * @class Aspect
  */
 export class Aspect<L extends AspectListener = AspectListener> extends Dispatcher<L> {
-
   /**
    * Internal index.
    */
-  protected static ID: number = 0;
+  protected static ID = 0;
 
   /**
    * Internal unique id.
@@ -182,67 +194,46 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
 
   /**
    * Component types which all have to be matched by the entity source.
-   *
-   * @protected
-   * @type {CompType[]}
    */
   protected allComponents: CompType[];
 
   /**
    * Component types which all are not allowed to match.
-   *
-   * @protected
-   * @type {CompType[]}
    */
   protected excludeComponents: CompType[];
 
   /**
    * Component types of which at least one has to match.
-   *
-   * @protected
-   * @type {CompType[]}
    */
   protected oneComponents: CompType[];
 
   /**
    * The entities which meet the filter conditions.
-   *
-   * @protected
-   * @type {AbstractEntity[]}
    */
-  protected filteredEntities: AbstractEntity[];
+  protected filteredEntities: SyncedEntity[];
 
   /**
    * A frozen copy of the filtered entities for the public access.
-   *
-   * @protected
-   * @type {AbstractEntity[]}
    */
   protected frozenEntities: AbstractEntity[];
 
   /**
    * The collection listener for syncing data.
-   *
-   * @protected
-   * @type {CollectionListener<AbstractEntity>}
    */
   protected listener: CollectionListener<AbstractEntity>;
 
   /**
    * Whether this filter is currently attached to its collection as a listener or not.
-   *
-   * @protected
-   * @type {boolean}
    */
   protected attached = false;
 
   /**
    * Creates an instance of an Aspect.
    *
-   * @param {Collection<AbstractEntity>} source The collection of entities to filter.
-   * @param {CompType[]} [all] Optional component types which should all match.
-   * @param {CompType[]} [exclude] Optional component types which should not match.
-   * @param {CompType[]} [one] Optional component types of which at least one should match.
+   * @param source The collection of entities to filter.
+   * @param all Optional component types which should all match.
+   * @param exclude Optional component types which should not match.
+   * @param one Optional component types of which at least one should match.
    */
   protected constructor(public source: EntityCollection, all?: CompType[], exclude?: CompType[], one?: CompType[]) {
     super();
@@ -253,19 +244,19 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
     this.excludeComponents = exclude ? exclude : [];
     this.oneComponents = one ? one : [];
     this.listener = {
-      onAdded: (...entities: AbstractEntity[]) => {
+      onAdded: (...entities: SyncedEntity[]) => {
         const added = entities.filter(entity => {
           if (!this.matches(entity)) return false;
           this.filteredEntities.push(entity);
           return true;
         });
         this.setupComponentSync(entities);
-        if (added.length === 0) return;
+        if (added.length <= 0) return;
         this.updateFrozen();
-        const args = <['onAddedEntities', ...AbstractEntity[]]>['onAddedEntities', ...added];
-        (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
+        this.updateFrozen;
+        (<Dispatcher<AspectListener>>this).dispatch('onAddedEntities', ...added);
       },
-      onRemoved: (...entities: AbstractEntity[]) => {
+      onRemoved: (...entities: SyncedEntity[]) => {
         const removed = entities.filter(entity => {
           const idx = this.filteredEntities.indexOf(entity);
           if (idx < 0) return false;
@@ -275,8 +266,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
         this.removeComponentSync(entities);
         if (removed.length === 0) return;
         this.updateFrozen();
-        const args = <['onRemovedEntities', ...AbstractEntity[]]>['onRemovedEntities', ...removed];
-        (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
+        (<Dispatcher<AspectListener>>this).dispatch('onRemovedEntities', ...removed);
       },
       onCleared: () => {
         if (this.filteredEntities.length === 0) return;
@@ -287,7 +277,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
       },
       onSorted: () => {
         if (this.filteredEntities.length === 0) return;
-        this.filteredEntities = this.source.filter(this.matches, this);
+        this.filteredEntities = this.source.filter(this.matches, this) as SyncedEntity[];
         this.updateFrozen();
         (<Dispatcher<AspectListener>>this).dispatch('onSortedEntities');
       },
@@ -298,10 +288,10 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
   /**
    * Performs the match on each entity in the source collection.
    *
-   * @returns {void}
+   *
    */
   protected matchAll(): void {
-    this.filteredEntities = this.source.filter(this.matches, this);
+    this.filteredEntities = this.source.filter(this.matches, this) as SyncedEntity[];
     this.setupComponentSync(this.filteredEntities);
     this.updateFrozen();
   }
@@ -309,24 +299,21 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
   /**
    * Checks whether the given entity matches the constraints on this aspect.
    *
-   * @param {AbstractEntity} entity The entity to check for.
-   * @returns {boolean} Whether the given entity has at least one component which matches.
+   * @param entity The entity to check for.
+   * @return Whether the given entity has at least one component which matches.
    */
   matches(entity: AbstractEntity): boolean {
     const comps = entity.components;
     const testFn = predicateFn(comps);
 
     // First check if "all"-component types are matched
-    if (this.allComponents.length > 0 && !this.allComponents.every(testFn))
-      return false;
+    if (this.allComponents.length > 0 && !this.allComponents.every(testFn)) return false;
 
     // Then check if "exclude"-component types are NOT matched
-    if (this.excludeComponents.length > 0 && this.excludeComponents.some(testFn))
-      return false;
+    if (this.excludeComponents.length > 0 && this.excludeComponents.some(testFn)) return false;
 
     // Lastly check if "one"-component types are matched
-    if (this.oneComponents.length > 0 && !this.oneComponents.some(testFn))
-      return false;
+    if (this.oneComponents.length > 0 && !this.oneComponents.some(testFn)) return false;
 
     return true;
   }
@@ -334,7 +321,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
   /**
    * Updates the frozen entities.
    *
-   * @returns {void}
+   *
    */
   protected updateFrozen(): void {
     this.frozenEntities = this.filteredEntities.slice();
@@ -344,13 +331,13 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
   /**
    * Sets up the component sync logic.
    *
-   * @param {AbstractEntity[]} entities The entities to perform the setup for.
+   * @param entities The entities to perform the setup for.
    * @return {void}
    */
-  protected setupComponentSync(entities: AbstractEntity[]): void {
+  protected setupComponentSync(entities: SyncedEntity[]): void {
     entities.forEach(entity => {
-      if (!(<any>entity).__ecsEntityListener) (<any>entity).__ecsEntityListener = { };
-      if ((<any>entity).__ecsEntityListener[this.id]) return;
+      if (!entity.__ecsEntityListener) entity.__ecsEntityListener = {};
+      if (entity.__ecsEntityListener[this.id]) return;
       const update = () => {
         const idx = this.filteredEntities.indexOf(entity);
         const matches = this.matches(entity);
@@ -366,16 +353,14 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
           return true;
         }
         return false;
-      }
+      };
       const entityListener: EntityListener = {
         onAddedComponents: (...comps: Component[]) => {
-          const args =<['onAddedComponents', AbstractEntity, ...Component[]]>['onAddedComponents', entity, ...comps];
-          (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
+          (<Dispatcher<AspectListener>>this).dispatch('onAddedComponents', entity, ...comps);
           update();
         },
         onRemovedComponents: (...comps: Component[]) => {
-          const args =<['onRemovedComponents', AbstractEntity, ...Component[]]>['onRemovedComponents', entity, ...comps];
-          (<Dispatcher<AspectListener>>this).dispatch.apply(this, args);
+          (<Dispatcher<AspectListener>>this).dispatch('onRemovedComponents', entity, ...comps);
           update();
         },
         onClearedComponents: () => {
@@ -385,9 +370,9 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
           const idx = this.filteredEntities.indexOf(entity);
           if (idx < 0) return;
           (<Dispatcher<AspectListener>>this).dispatch('onSortedComponents', entity);
-        }
+        },
       };
-      (<any>entity).__ecsEntityListener[this.id] = entityListener;
+      entity.__ecsEntityListener[this.id] = entityListener;
       entity.addListener(entityListener);
     });
   }
@@ -395,25 +380,26 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
   /**
    * Removes the component sync logic.
    *
-   * @param {AbstractEntity[]} entities The entities to remove the setup from.
+   * @param entities The entities to remove the setup from.
    * @return {void}
    */
-  protected removeComponentSync(entities: Readonly<AbstractEntity[]>) {
+  protected removeComponentSync(entities: Readonly<SyncedEntity[]>) {
     entities.forEach(entity => {
-      if (!(<any>entity).__ecsEntityListener) (<any>entity).__ecsEntityListener = { };
-      const entityListener: EntityListener = (<any>entity).__ecsEntityListener[this.id];
+      if (!(entity as SyncedEntity).__ecsEntityListener) (entity as SyncedEntity).__ecsEntityListener = {};
+      const entityListener: EntityListener = entity.__ecsEntityListener[this.id];
       if (!entityListener) return;
-      const locked: EntityListener[] = (<any>entity)._lockedListeners;
+      const locked: EntityListener[] = entity._lockedListeners;
       locked.splice(locked.indexOf(entityListener), 1);
       entity.removeListener(entityListener);
-      delete (<any>entity).__ecsEntityListener[this.id];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (entity as any).__ecsEntityListener[this.id];
     });
   }
 
   /**
    * Attaches this filter to its collection.
    *
-   * @returns {void}
+   *
    */
   attach(): void {
     if (this.attached) return;
@@ -426,21 +412,18 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
   /**
    * Detaches this filter from its collection.
    *
-   * @returns {void}
+   *
    */
   detach(): void {
     if (!this.attached) return;
     this.source.removeListener(this.listener);
-    this.removeComponentSync(this.source.elements);
+    this.removeComponentSync(this.source.elements as SyncedEntity[]);
     this.attached = false;
     (<Dispatcher<AspectListener>>this).dispatch('onDetached');
   }
 
   /**
    * Whether this filter is attached to its collection or not.
-   *
-   * @readonly
-   * @type {boolean}
    */
   get isAttached(): boolean {
     return this.attached;
@@ -448,9 +431,6 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
 
   /**
    * The entities which match the criteria of this filter.
-   *
-   * @readonly
-   * @type {AbstractEntity[]}
    */
   get entities(): readonly AbstractEntity[] {
     return this.frozenEntities;
@@ -461,7 +441,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * Entities have to match every type.
    *
-   * @param {CompType} classes
+   * @param classes
    */
   all(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
@@ -472,10 +452,10 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
 
   /**
    * @alias @see {Aspect#all}
-   * @param {CompType} classes
+   * @param classes
    */
   every(...classes: CompType[]): this {
-    return this.all.apply(this, classes);
+    return this.all(...classes);
   }
 
   /**
@@ -483,7 +463,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * Entities have to exclude all types.
    *
-   * @param {CompType[]} classes
+   * @param classes
    */
   exclude(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
@@ -494,10 +474,10 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
 
   /**
    * @alias @see {Aspect#exclude}
-   * @param {CompType[]} classes
+   * @param classes
    */
   without(...classes: CompType[]): this {
-    return this.exclude.apply(this, classes);
+    return this.exclude(...classes);
   }
 
   /**
@@ -505,7 +485,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    *
    * Entities have to match only one type.
    *
-   * @param {CompType[]} classes
+   * @param classes
    */
   one(...classes: CompType[]): this {
     const unique = classes.filter((value, index, self) => self.indexOf(value) === index);
@@ -516,37 +496,41 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
 
   /**
    * @alias @see {Aspect#one}
-   * @param {CompType[]} classes
+   * @param classes
    */
   some(...classes: CompType[]): this {
-    return this.one.apply(this, classes);
+    return this.one(...classes);
   }
 
   /**
    * Collects information about this aspect and returns it.
    *
-   * @returns {AspectDescriptor}
+   *
    */
   getDescriptor(): AspectDescriptor {
     return {
       all: this.allComponents.slice(),
       exclude: this.excludeComponents.slice(),
       one: this.oneComponents.slice(),
-    }
+    };
   }
 
   /**
    * Returns an aspect for the given engine or collection of entities.
    *
-   * @param {Collection<AbstractEntity> | Engine} collOrEngine
-   * @param {CompType[]} [all] Optional component types which should all match.
-   * @param {CompType[]} [exclude] Optional component types which should not match.
-   * @param {CompType[]} [one] Optional component types of which at least one should match.
-   * @returns {Aspect}
+   * @param collOrEngine
+   * @param all Optional component types which should all match.
+   * @param exclude Optional component types which should not match.
+   * @param one Optional component types of which at least one should match.
+   *
    */
-  static for(collOrEngine: EntityCollection | Engine, all?: CompType[], exclude?: CompType[], one?: CompType[]): Aspect {
+  static for(
+    collOrEngine: EntityCollection | Engine,
+    all?: CompType[],
+    exclude?: CompType[],
+    one?: CompType[]
+  ): Aspect {
     const entities = collOrEngine instanceof Engine ? collOrEngine.entities : collOrEngine;
     return new Aspect(entities, all, exclude, one);
   }
-
 }

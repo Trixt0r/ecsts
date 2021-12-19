@@ -15,16 +15,24 @@
   ],
   "types": "build/index.d.ts",
   "scripts": {
-    "test": "jest",
+    "lint": "eslint ./src --ext .js,.ts",
+    "lint.fix": "eslint ./src --ext .js,.ts --fix",
+    "prettier": "prettier --write ./src",
+    "test": "jest -i --coverage",
     "build": "tsc && tsc --declaration --emitDeclarationOnly"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/jest": "^24.0.11",
-    "jest": "^24.8.0",
-    "ts-jest": "^26.4.4",
-    "typescript": "^3.6.3"
+    "@types/jest": "^27.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.7.0",
+    "@typescript-eslint/parser": "^5.7.0",
+    "eslint": "^8.5.0",
+    "eslint-config-prettier": "^8.3.0",
+    "jest": "^27.4.5",
+    "prettier": "2.5.1",
+    "ts-jest": "^27.1.2",
+    "typescript": "^3.9.10"
   },
   "homepage": "https://github.com/Trixt0r/ecsts"
 }

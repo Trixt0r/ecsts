@@ -41,25 +41,26 @@ var dispatcher_1 = require("./dispatcher");
  * On each operation the internal list of elements gets frozen,
  * so a user of the collection will not be able to operate on the real reference,
  * but read the data without the need of copying the data on each read access.
- *
- * @export
- * @class Collection
- * @extends {Dispatcher<CollectionListener<T>>}
- * @template T
  */
 var Collection = /** @class */ (function (_super) {
     __extends(Collection, _super);
     /**
      * Creates an instance of Collection.
      *
-     * @param {T[]} [initial=[]] An optional initial list of elements.
+     * @param initial An optional initial list of elements.
      */
     function Collection(initial) {
         if (initial === void 0) { initial = []; }
         var _this = _super.call(this) || this;
+        /**
+         * The frozen list of elements which is used to expose the element list to the public.
+         */
+        _this._frozenElements = [];
+        /**
+         * The internal iterator pointer.
+         */
         _this.pointer = 0;
         _this._elements = initial.slice();
-        _this._frozenElements = [];
         _this.updatedFrozenObjects();
         return _this;
     }
@@ -70,13 +71,13 @@ var Collection = /** @class */ (function (_super) {
         if (this.pointer < this._elements.length) {
             return {
                 done: false,
-                value: this._elements[this.pointer++]
+                value: this._elements[this.pointer++],
             };
         }
         else {
             return {
                 done: true,
-                value: null
+                value: null,
             };
         }
     };
@@ -90,9 +91,6 @@ var Collection = /** @class */ (function (_super) {
     Object.defineProperty(Collection.prototype, "elements", {
         /**
          * A snapshot of all elements in this collection.
-         *
-         * @readonly
-         * @type {T[]}
          */
         get: function () {
             return this._frozenElements;
@@ -103,9 +101,6 @@ var Collection = /** @class */ (function (_super) {
     Object.defineProperty(Collection.prototype, "length", {
         /**
          * The length, of this collection, i.e. how many elements this collection contains.
-         *
-         * @readonly
-         * @type {number}
          */
         get: function () {
             return this._frozenElements.length;
@@ -115,8 +110,6 @@ var Collection = /** @class */ (function (_super) {
     });
     /**
      * Updates the internal frozen element list.
-     *
-     * @protected
      */
     Collection.prototype.updatedFrozenObjects = function () {
         this._frozenElements = this._elements.slice();
@@ -125,8 +118,8 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Adds the given element to this collection.
      *
-     * @param {T} element
-     * @returns {boolean} Whether the element has been added or not.
+     * @param element
+     * @return Whether the element has been added or not.
      *                    It may not be added, if already present in the element list.
      */
     Collection.prototype.addSingle = function (element) {
@@ -138,8 +131,8 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Adds the given element(s) to this collection.
      *
-     * @param {T[]} elements
-     * @returns {boolean} Whether elements have been added or not.
+     * @param elements
+     * @return Whether elements have been added or not.
      *                    They may not have been added, if they were already present in the element list.
      */
     Collection.prototype.add = function () {
@@ -149,18 +142,17 @@ var Collection = /** @class */ (function (_super) {
             elements[_i] = arguments[_i];
         }
         var added = elements.filter(function (element) { return _this.addSingle(element); });
-        var re = added.length > 0;
-        if (re) {
-            this.updatedFrozenObjects();
-            this.dispatch.apply(this, __spread(['onAdded'], added));
-        }
-        return re;
+        if (added.length <= 0)
+            return false;
+        this.updatedFrozenObjects();
+        this.dispatch.apply(this, __spread(['onAdded'], added));
+        return true;
     };
     /**
      * Removes the given element or the element at the given index.
      *
-     * @param {(T | number)} elementOrIndex
-     * @returns {boolean} Whether the element has been removed or not.
+     * @param elementOrIndex
+     * @return Whether the element has been removed or not.
      *                    It may not have been removed, if it was not in the element list.
      */
     Collection.prototype.removeSingle = function (elementOrIndex) {
@@ -174,8 +166,8 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Removes the given element(s) or the elements at the given indices.
      *
-     * @param {(T | number)[]} elementsOrIndices
-     * @returns {boolean} Whether elements have been removed or not.
+     * @param elementsOrIndices
+     * @return Whether elements have been removed or not.
      *                    They may not have been removed, if every element was not in the element list.
      */
     Collection.prototype.remove = function () {
@@ -184,14 +176,13 @@ var Collection = /** @class */ (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             elementsOrIndices[_i] = arguments[_i];
         }
-        var elements = elementsOrIndices.map(function (o) { return typeof o === 'number' ? _this._elements[o] : o; });
+        var elements = elementsOrIndices.map(function (o) { return (typeof o === 'number' ? _this._elements[o] : o); });
         var removed = elements.filter(function (element) { return _this.removeSingle(element); });
-        var re = removed.length > 0;
-        if (re) {
-            this.updatedFrozenObjects();
-            this.dispatch.apply(this, __spread(['onRemoved'], removed));
-        }
-        return re;
+        if (removed.length <= 0)
+            return false;
+        this.updatedFrozenObjects();
+        this.dispatch.apply(this, __spread(['onRemoved'], removed));
+        return true;
     };
     /**
      * Clears this collection, i.e. removes all elements from the internal list.
@@ -206,8 +197,8 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Returns the index of the given element.
      *
-     * @param {T} element The element.
-     * @returns {number} The index of the given element or id.
+     * @param element The element.
+     * @return The index of the given element or id.
      */
     Collection.prototype.indexOf = function (element) {
         return this._elements.indexOf(element);
@@ -215,8 +206,8 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Sorts this collection.
      *
-     * @param {(a: T, b: T) => number} [compareFn]
-     * @returns {this}
+     * @param [compareFn]
+     *
      */
     Collection.prototype.sort = function (compareFn) {
         if (!this._elements.length)
@@ -229,12 +220,12 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Returns the elements of this collection that meet the condition specified in a callback function.
      *
-     * @param {(value: T, index: number, array: readonly T[]) => unknown} callbackfn
+     * @param callbackfn
      * A function that accepts up to three arguments.
      * The filter method calls the `callbackfn` function one time for each element in the collection.
-     * @param {any} thisArg An object to which the this keyword can refer in the callbackfn function.
+     * @param thisArg An object to which the this keyword can refer in the callbackfn function.
      * If `thisArg` is omitted, undefined is used as the this value.
-     * @returns {T[]} An array with elements which met the condition.
+     * @return An array with elements which met the condition.
      */
     Collection.prototype.filter = function (callbackfn, thisArg) {
         return this._elements.filter(callbackfn, thisArg);
@@ -242,10 +233,10 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Performs the specified action for each element in the collection.
      *
-     * @param {(element: T, index: number, array: T[]) => void} callbackFn
+     * @param callbackFn
      * A function that accepts up to three arguments.
      * forEach calls the callbackfn function one time for each element in the array.
-     * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
+     * @param [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
      */
     Collection.prototype.forEach = function (callbackFn, thisArg) {
@@ -255,13 +246,13 @@ var Collection = /** @class */ (function (_super) {
      * Returns the value of the first element in the collection where predicate is true, and undefined
      * otherwise.
      *
-     * @param {(element: T, index: number, array: readonly T[]) => unknown} predicate
+     * @param predicate
      * Find calls predicate once for each element of the array, in ascending order,
      * until it finds one where predicate returns true. If such an element is found, find
      * immediately returns that element value. Otherwise, find returns undefined.
-     * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
+     * @param [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
-     * @returns {T | undefined}
+     *
      */
     Collection.prototype.find = function (predicate, thisArg) {
         return this._elements.find(predicate, thisArg);
@@ -270,13 +261,13 @@ var Collection = /** @class */ (function (_super) {
      * Returns the index of the first element in the collection where predicate is true, and -1
      * otherwise.
      *
-     * @param {(entity: T, index: number, array: readonly T[]) => unknown} predicate
+     * @param predicate
      * Find calls predicate once for each element of the array, in ascending order,
      * until it finds one where predicate returns true. If such an element is found,
      * findIndex immediately returns that element index. Otherwise, findIndex returns -1.
-     * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
+     * @param [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
-     * @returns {number}
+     *
      */
     Collection.prototype.findIndex = function (predicate, thisArg) {
         return this._elements.findIndex(predicate, thisArg);
@@ -284,12 +275,12 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Calls a defined callback function on each element of an collection, and returns an array that contains the results.
      *
-     * @param {(entity: T, index: number, array: readonly T[]) => U} callbackFn
+     * @param callbackFn
      * A function that accepts up to three arguments.
      * The map method calls the callbackfn function one time for each element in the array.
-     * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
+     * @param [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
-     * @returns {U[]}
+     *
      */
     Collection.prototype.map = function (callbackFn, thisArg) {
         return this._elements.map(callbackFn, thisArg);
@@ -298,13 +289,13 @@ var Collection = /** @class */ (function (_super) {
      *
      * Determines whether all the members of the collection satisfy the specified test.
      *
-     * @param {(entity: T, index: number, array: readonly T[]) => unknown} callbackFn
+     * @param callbackFn
      * A function that accepts up to three arguments.
      * The every method calls the callbackfn function for each element in array1 until the callbackfn
      * returns false, or until the end of the array.
-     * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
+     * @param [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
-     * @returns {boolean}
+     *
      */
     Collection.prototype.every = function (callbackFn, thisArg) {
         return this._elements.every(callbackFn, thisArg);
@@ -312,13 +303,13 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Determines whether the specified callback function returns true for any element of the collection.
      *
-     * @param {(entity: T, index: number, array: readonly T[]) => unknown} callbackFn
+     * @param callbackFn
      * A function that accepts up to three arguments.
      * The some method calls the callbackfn function for each element in the collection until the callbackfn
      * returns true, or until the end of the collection.
-     * @param {any} [thisArg] An object to which the this keyword can refer in the callbackfn function.
+     * @param [thisArg] An object to which the this keyword can refer in the callbackfn function.
      * If thisArg is omitted, undefined is used as the this value.
-     * @returns {boolean}
+     *
      */
     Collection.prototype.some = function (callbackFn, thisArg) {
         return this._elements.some(callbackFn, thisArg);
@@ -328,13 +319,13 @@ var Collection = /** @class */ (function (_super) {
      * The return value of the callback function is the accumulated result,
      * and is provided as an argument in the next call to the callback function.
      *
-     * @param {(previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U} callbackFn
+     * @param callbackFn
      * A function that accepts up to four arguments.
      * The reduce method calls the callbackfn function one time for each element in the array.
-     * @param {U} initialValue If initialValue is specified, it is used as the initial value to start the accumulation.
+     * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation.
      * The first call to the callbackfn function provides this value as an argument instead of
      * an collection value.
-     * @returns {U}
+     *
      */
     Collection.prototype.reduce = function (callbackFn, initialValue) {
         return this._elements.reduce(callbackFn, initialValue);
@@ -344,11 +335,11 @@ var Collection = /** @class */ (function (_super) {
      * The return value of the callback function is the accumulated result,
      * and is provided as an argument in the next call to the callback function.
      *
-     * @param {(previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U} callbackFn
-     * @param {U} initialValue If initialValue is specified, it is used as the initial value to start the accumulation.
+     * @param callbackFn
+     * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation.
      *                         The first call to the callbackfn function provides this value as an argument instead of
      *                         an collection value.
-     * @returns {U}
+     *
      */
     Collection.prototype.reduceRight = function (callbackFn, initialValue) {
         return this._elements.reduceRight(callbackFn, initialValue);

@@ -12,6 +12,26 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -30,9 +50,6 @@ var collection_1 = require("./collection");
  * A collection for components.
  * Supports accessing components by their class.
  *
- * @export
- * @class ComponentCollection
- * @extends {Collection<Component>}
  */
 var ComponentCollection = /** @class */ (function (_super) {
     __extends(ComponentCollection, _super);
@@ -42,13 +59,11 @@ var ComponentCollection = /** @class */ (function (_super) {
         /**
          * Internal map for faster component access, by class or type.
          *
-         * @protected
          */
         _this.cache = new Map();
         /**
          * Internal state for updating the components access memory.
          *
-         * @protected
          */
         _this.dirty = new Map();
         _this.addListener(_this, true);
@@ -63,7 +78,7 @@ var ComponentCollection = /** @class */ (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             elements[_i] = arguments[_i];
         }
-        this.markForCacheUpdate.apply(this, elements);
+        this.markForCacheUpdate.apply(this, __spread(elements));
     };
     /**
      * @inheritdoc
@@ -74,7 +89,7 @@ var ComponentCollection = /** @class */ (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             elements[_i] = arguments[_i];
         }
-        this.markForCacheUpdate.apply(this, elements);
+        this.markForCacheUpdate.apply(this, __spread(elements));
     };
     /**
      * @inheritdoc
@@ -88,8 +103,8 @@ var ComponentCollection = /** @class */ (function (_super) {
      * Searches for the first component matching the given class or type.
      *
      * @todo Use caching, to increase access speed
-     * @param {ComponentClass<T> | string} classOrType The class or type a component has to match.
-     * @returns {T} The found component or `null`.
+     * @param classOrType The class or type a component has to match.
+     * @return The found component or `null`.
      */
     ComponentCollection.prototype.get = function (classOrType) {
         return this.getAll(classOrType)[0];
@@ -98,8 +113,8 @@ var ComponentCollection = /** @class */ (function (_super) {
      * Searches for the all components matching the given class or type.
      *
      * @todo Use caching, to increase access speed
-     * @param {ComponentClass<T> | string} classOrType The class or type components have to match.
-     * @returns {readonly T[]} A list of all components matching the given class.
+     * @param classOrType The class or type components have to match.
+     * @return A list of all components matching the given class.
      */
     ComponentCollection.prototype.getAll = function (classOrType) {
         if (this.dirty.get(classOrType))
@@ -112,8 +127,8 @@ var ComponentCollection = /** @class */ (function (_super) {
     /**
      * Updates the cache for the given class or type.
      *
-     * @param {ComponentClass<Component> | string} classOrType The class or type to update the cache for.
-     * @returns {void}
+     * @param classOrType The class or type to update the cache for.
+     *
      */
     ComponentCollection.prototype.updateCache = function (classOrType) {
         var e_1, _a;
@@ -154,8 +169,8 @@ var ComponentCollection = /** @class */ (function (_super) {
      * Marks the classes and types of the given elements as dirty,
      * so their cache gets updated on the next request.
      *
-     * @param {C[]} elements
-     * @returns {void}
+     * @param elements
+     *
      */
     ComponentCollection.prototype.markForCacheUpdate = function () {
         var _this = this;

@@ -11,9 +11,5 @@
     "lib": ["ES2015"],
     "downlevelIteration": true
   },
-  "exclude": [
-    "**/*.spec.ts",
-    "**/build/*",
-    "**/examples/*"
-  ]
+  "exclude": ["**/*.spec.ts", "**/build/*", "**/examples/*"]
 }

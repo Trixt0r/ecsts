@@ -6,33 +6,27 @@ import { Component } from './component';
 import { Aspect } from './aspect';
 
 class MySyncSystem extends System {
-
   public throw: string;
 
-  process(delta: number): void {
-    if (this.throw)
-      throw new Error(this.throw);
+  process(): void {
+    if (this.throw) throw new Error(this.throw);
   }
 }
 
 class MyAsyncSystem extends System {
-
   public throw: string;
-  public timer: number = 10;
+  public timer = 10;
 
-  async process(delta: number): Promise<any> {
-    if (this.throw)
-      throw new Error(this.throw);
-    else
-      return new Promise(resolve => setTimeout(resolve, this.timer));
+  async process(): Promise<void> {
+    if (this.throw) throw new Error(this.throw);
+    else return new Promise(resolve => setTimeout(resolve, this.timer));
   }
 }
 
 describe('System', () => {
-
   let system: MySyncSystem;
 
-  beforeEach(() => system = new MySyncSystem());
+  beforeEach(() => (system = new MySyncSystem()));
 
   describe('initial', () => {
     it('should be a dispatcher', () => {
@@ -52,10 +46,10 @@ describe('System', () => {
     it('should not notify any listener if the value did not change', () => {
       let called = false;
       system.addListener({
-        onActivated: () => called = true,
-        onDeactivated: () => called = true
+        onActivated: () => (called = true),
+        onDeactivated: () => (called = true),
       });
-      system.active = system.active;
+      system.active = true;
       expect(called).toBe(false);
     });
 
@@ -64,8 +58,8 @@ describe('System', () => {
       let calledActivated = false;
       let calledDectivated = false;
       system.addListener({
-        onActivated: () => calledActivated = true,
-        onDeactivated: () => calledDectivated = true
+        onActivated: () => (calledActivated = true),
+        onDeactivated: () => (calledDectivated = true),
       });
       system.active = true;
       expect(calledDectivated).toBe(false);
@@ -76,8 +70,8 @@ describe('System', () => {
       let calledActivated = false;
       let calledDectivated = false;
       system.addListener({
-        onActivated: () => calledActivated = true,
-        onDeactivated: () => calledDectivated = true
+        onActivated: () => (calledActivated = true),
+        onDeactivated: () => (calledDectivated = true),
       });
       system.active = false;
       expect(calledActivated).toBe(false);
@@ -88,11 +82,12 @@ describe('System', () => {
   describe('engine', () => {
     it('should not notify any listener if the value did not change', () => {
       let called = false;
+      const engine = system.engine;
       system.addListener({
-        onAddedToEngine: () => called = true,
-        onRemovedFromEngine: () => called = true
+        onAddedToEngine: () => (called = true),
+        onRemovedFromEngine: () => (called = true),
       });
-      system.engine = system.engine;
+      system.engine = engine;
       expect(called).toBe(false);
     });
 
@@ -100,8 +95,8 @@ describe('System', () => {
       let calledAdded: Engine = null;
       let calledRemoved: Engine = null;
       system.addListener({
-        onAddedToEngine: engine => calledAdded = engine,
-        onRemovedFromEngine: engine => calledRemoved = engine
+        onAddedToEngine: engine => (calledAdded = engine),
+        onRemovedFromEngine: engine => (calledRemoved = engine),
       });
       system.engine = new Engine();
       expect(calledRemoved).toBeNull();
@@ -111,7 +106,7 @@ describe('System', () => {
     it('should not call onRemovedFromEngine on any listener if there was not engine before assigned"', () => {
       let calledRemoved: Engine = null;
       system.addListener({
-        onRemovedFromEngine: engine => calledRemoved = engine
+        onRemovedFromEngine: engine => (calledRemoved = engine),
       });
       system.engine = new Engine();
       expect(calledRemoved).toBeNull();
@@ -121,7 +116,7 @@ describe('System', () => {
       system.engine = new Engine();
       let calledAdded: Engine = null;
       system.addListener({
-        onAddedToEngine: engine => calledAdded = engine,
+        onAddedToEngine: engine => (calledAdded = engine),
       });
       system.engine = null;
       expect(calledAdded).toBeNull();
@@ -132,7 +127,7 @@ describe('System', () => {
       system.engine = oldEngine;
       let calledRemoved: Engine = null;
       system.addListener({
-        onRemovedFromEngine: engine => calledRemoved = engine
+        onRemovedFromEngine: engine => (calledRemoved = engine),
       });
       system.engine = new Engine();
       expect(calledRemoved).toBe(oldEngine);
@@ -144,8 +139,8 @@ describe('System', () => {
       let calledAdded: Engine = null;
       let calledRemoved: Engine = null;
       system.addListener({
-        onAddedToEngine: engine => calledAdded = engine,
-        onRemovedFromEngine: engine => calledRemoved = engine
+        onAddedToEngine: engine => (calledAdded = engine),
+        onRemovedFromEngine: engine => (calledRemoved = engine),
       });
       system.engine = null;
       expect(calledAdded).toBeNull();
@@ -154,11 +149,13 @@ describe('System', () => {
   });
 
   describe('run (sync)', () => {
-
     it('should call the process method with the correct delta', () => {
       let called = false;
       const dlt = 5;
-      (<any>system).process = function(delta) { called = delta };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (system as any).process = function (delta) {
+        called = delta;
+      };
       system.run(5);
       expect(called).toBe(dlt);
     });
@@ -166,7 +163,7 @@ describe('System', () => {
     it('should notify all listeners if an exception occurred', () => {
       system.throw = 'Error system.spec';
       let called: Error = null;
-      system.addListener({ onError: error => called = error });
+      system.addListener({ onError: error => (called = error) });
       try {
         system.run(0);
       } finally {
@@ -181,8 +178,7 @@ describe('System', () => {
   });
 
   describe('run (async)', () => {
-
-    beforeEach(() => system = new MyAsyncSystem());
+    beforeEach(() => (system = new MyAsyncSystem()));
 
     it('should turn the system into the updating state', async () => {
       const re = system.run(0, SystemMode.ASYNC);
@@ -193,7 +189,10 @@ describe('System', () => {
     it('should call the process method with the correct delta', async () => {
       let called = false;
       const dlt = 5;
-      (<any>system).process = function(delta) { called = delta };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>system).process = function (delta) {
+        called = delta;
+      };
       const re = system.run(5, SystemMode.ASYNC);
       await re;
       expect(called).toBe(dlt);
@@ -216,7 +215,7 @@ describe('System', () => {
     it('should notify all listeners if an exception occurred', async () => {
       system.throw = 'Error system.spec';
       let called: Error = null;
-      system.addListener({ onError: error => called = error });
+      system.addListener({ onError: error => (called = error) });
       try {
         await system.run(0, SystemMode.ASYNC);
       } finally {
@@ -225,17 +224,15 @@ describe('System', () => {
       }
     });
   });
-
 });
 
-class MyEntity extends AbstractEntity { }
-class MyComponent1 implements Component { }
-class MyComponent2 implements Component { }
-class MyComponent3 implements Component { }
-class MyComponent4 implements Component { }
+class MyEntity extends AbstractEntity {}
+class MyComponent1 implements Component {}
+class MyComponent2 implements Component {}
+class MyComponent3 implements Component {}
+class MyComponent4 implements Component {}
 
 class MyEntitySystem extends AbstractEntitySystem<MyEntity> {
-
   entities: MyEntity[] = [];
 
   processEntity(entity: MyEntity): void {
@@ -248,7 +245,6 @@ class MyEntitySystem extends AbstractEntitySystem<MyEntity> {
 }
 
 describe('AbstractEntitySystem', () => {
-
   it('should process each entity in the engine', () => {
     const engine = new Engine();
     engine.entities.add(new MyEntity('1'), new MyEntity('2'), new MyEntity('3'));
@@ -301,16 +297,18 @@ describe('AbstractEntitySystem', () => {
     };
     const keys = Object.keys(methodsAndArgs);
     let calledTimes = 0;
-    keys.forEach((method: any) => {
-      let calledArgs: any[];
+    keys.forEach((method: string) => {
+      let calledArgs: unknown[];
       const methodArgs = methodsAndArgs[method];
-      system[method] = function() { calledArgs = Array.prototype.slice.call(arguments); };
-      system.getAspect().dispatch.apply(system.getAspect(), [method, ...methodArgs]);
+      system[method] = function (...args) {
+        calledArgs = args;
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      system.getAspect().dispatch(method as any, ...methodArgs);
       expect(calledArgs).toBeDefined();
       expect(calledArgs).toEqual(methodArgs);
       calledTimes++;
     });
     expect(calledTimes).toBe(keys.length);
   });
-
 });

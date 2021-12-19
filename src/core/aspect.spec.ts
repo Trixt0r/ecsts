@@ -3,33 +3,56 @@ import { Collection } from './collection';
 import { AbstractEntity } from './entity';
 import { Component } from './component';
 
-class MyEntity extends AbstractEntity { }
-class MySortableEntity extends AbstractEntity { constructor(id: string, public position: number) { super(id); } }
-class MyComponent1 implements Component { }
-class MyComponent2 implements Component { }
-class MyComponent3 implements Component { }
-class MyComponent4 implements Component { }
-class MyComponent5 implements Component { }
-class MyComponent6 implements Component { }
-class MyComponent7 implements Component { }
-class MyComponent8 implements Component { }
-class MyTypedComponent1 implements Component { static readonly type = 'my-comp'; }
-class MyTypedComponent2 implements Component { static readonly type = 'my-comp'; }
-class MyTypedComponent3 implements Component { static readonly type = 'my-other-comp'; }
-class MyTypedComponent4 implements Component { static readonly type = 'my-other-comp'; }
-class MyIdComponent1 implements Component { static readonly id = 'my-comp-1'; }
-class MyIdComponent3 implements Component { static readonly id = 'my-comp-3'; }
-class MyIdComponent4 implements Component { static readonly id = 'my-comp-4'; }
+class MyEntity extends AbstractEntity {}
+class MySortableEntity extends AbstractEntity {
+  constructor(id: string, public position: number) {
+    super(id);
+  }
+}
+class MyComponent1 implements Component {}
+class MyComponent2 implements Component {}
+class MyComponent3 implements Component {}
+class MyComponent4 implements Component {}
+class MyComponent5 implements Component {}
+class MyComponent6 implements Component {}
+class MyComponent7 implements Component {}
+class MyComponent8 implements Component {}
+class MyTypedComponent1 implements Component {
+  static readonly type = 'my-comp';
+}
+class MyTypedComponent2 implements Component {
+  static readonly type = 'my-comp';
+}
+class MyTypedComponent3 implements Component {
+  static readonly type = 'my-other-comp';
+}
+class MyTypedComponent4 implements Component {
+  static readonly type = 'my-other-comp';
+}
+class MyIdComponent1 implements Component {
+  static readonly id = 'my-comp-1';
+}
+class MyIdComponent3 implements Component {
+  static readonly id = 'my-comp-3';
+}
+class MyIdComponent4 implements Component {
+  static readonly id = 'my-comp-4';
+}
 
 describe('Aspect', () => {
-
   let aspectOne: Aspect;
   let collection: Collection<AbstractEntity>;
 
   beforeEach(() => {
     collection = new Collection();
     aspectOne = Aspect.for(collection).one(
-      MyComponent1, MyComponent2, MyComponent3, MyTypedComponent1, MyIdComponent1, { id: 'plain-id' }, { type: 'plain-type' }
+      MyComponent1,
+      MyComponent2,
+      MyComponent3,
+      MyTypedComponent1,
+      MyIdComponent1,
+      { id: 'plain-id' },
+      { type: 'plain-type' }
     );
   });
 
@@ -47,14 +70,18 @@ describe('Aspect', () => {
   describe('sync', () => {
     let entity: MyEntity;
 
-    beforeEach(() => entity = new MyEntity('id'));
+    beforeEach(() => (entity = new MyEntity('id')));
 
     describe('entities', () => {
       describe('add', () => {
         let calledArguments: MyEntity[];
         beforeEach(() => {
           calledArguments = void 0;
-          aspectOne.addListener({ onAddedEntities: function() { calledArguments = Array.prototype.slice.call(arguments); } });
+          aspectOne.addListener({
+            onAddedEntities: function (...args) {
+              calledArguments = args;
+            },
+          });
         });
 
         it('should not match any entities, if the entities have no components', () => {
@@ -229,7 +256,11 @@ describe('Aspect', () => {
         let calledArguments: MyEntity[];
         beforeEach(() => {
           calledArguments = void 0;
-          aspectOne.addListener({ onRemovedEntities: function() { calledArguments = Array.prototype.slice.call(arguments); } });
+          aspectOne.addListener({
+            onRemovedEntities: function (...args) {
+              calledArguments = args;
+            },
+          });
           entity.components.add(new MyComponent1());
           collection.add(entity);
         });
@@ -284,7 +315,11 @@ describe('Aspect', () => {
         let called: boolean;
         beforeEach(() => {
           called = false;
-          aspectOne.addListener({ onClearedEntities: function() { called = true; } });
+          aspectOne.addListener({
+            onClearedEntities: function () {
+              called = true;
+            },
+          });
           entity.components.add(new MyComponent1());
           collection.add(entity);
         });
@@ -300,16 +335,16 @@ describe('Aspect', () => {
         let called: boolean;
         beforeEach(() => {
           called = false;
-          aspectOne.addListener({ onSortedEntities: function() { called = true; } });
+          aspectOne.addListener({
+            onSortedEntities: function () {
+              called = true;
+            },
+          });
         });
         it('should preserve the order', () => {
-          collection.add(
-            new MySortableEntity('1', 3),
-            new MySortableEntity('2', 2),
-            new MySortableEntity('3', 1),
-          );
+          collection.add(new MySortableEntity('1', 3), new MySortableEntity('2', 2), new MySortableEntity('3', 1));
           collection.forEach(entity => entity.components.add(new MyComponent1()));
-          collection.sort((a: any, b: any) => a.position - b.position);
+          collection.sort((a, b) => (a as MySortableEntity).position - (b as MySortableEntity).position);
           expect((<MySortableEntity>aspectOne.entities[0]).position).toBe(1);
           expect((<MySortableEntity>aspectOne.entities[1]).position).toBe(2);
           expect((<MySortableEntity>aspectOne.entities[2]).position).toBe(3);
@@ -333,8 +368,10 @@ describe('Aspect', () => {
       describe('add', () => {
         beforeEach(() => {
           aspectOne.addListener({
-            onAddedEntities: function() { calledEntities = Array.prototype.slice.call(arguments); },
-            onAddedComponents: function(entity, ...components: Component[]) {
+            onAddedEntities: function (...args) {
+              calledEntities = args;
+            },
+            onAddedComponents: function (entity, ...components: Component[]) {
               calledEntity = entity;
               calledComponents = components.slice();
             },
@@ -367,8 +404,10 @@ describe('Aspect', () => {
       describe('remove', () => {
         beforeEach(() => {
           aspectOne.addListener({
-            onRemovedEntities: function() { calledEntities = Array.prototype.slice.call(arguments); },
-            onRemovedComponents: function(entity, ...components: Component[]) {
+            onRemovedEntities: function (...args) {
+              calledEntities = args;
+            },
+            onRemovedComponents: function (entity, ...components: Component[]) {
               calledEntity = entity;
               calledComponents = components.slice();
             },
@@ -422,8 +461,10 @@ describe('Aspect', () => {
           notMatching.components.add(new MyComponent4());
           collection.add(notMatching);
           aspectOne.addListener({
-            onRemovedEntities: function() { calledEntities = Array.prototype.slice.call(arguments); },
-            onClearedComponents: function(entity) {
+            onRemovedEntities: function (...args) {
+              calledEntities = args;
+            },
+            onClearedComponents: function (entity) {
               calledEntity = entity;
             },
           });
@@ -453,7 +494,7 @@ describe('Aspect', () => {
           notMatching.components.add(new MyComponent4());
           collection.add(notMatching);
           aspectOne.addListener({
-            onSortedComponents: function(entity) {
+            onSortedComponents: function (entity) {
               calledEntity = entity;
             },
           });
@@ -477,8 +518,7 @@ describe('Aspect', () => {
     it('should match any entities without any components without any constraints', () => {
       const aspect = Aspect.for(collection);
       const entities = [];
-      for (let i = 0; i < 10; i++)
-        entities.push(new MyEntity(String(i)));
+      for (let i = 0; i < 10; i++) entities.push(new MyEntity(String(i)));
       entities.forEach(entity => expect(aspect.matches(entity)).toBe(true));
     });
 
@@ -514,7 +554,12 @@ describe('Aspect', () => {
     });
 
     it('should match entities with all 3 types of matchers', () => {
-      const aspect = Aspect.for(collection, [MyComponent1, MyComponent2, MyComponent3], [MyComponent4, MyComponent5, MyComponent6], [MyComponent7, MyComponent8]);
+      const aspect = Aspect.for(
+        collection,
+        [MyComponent1, MyComponent2, MyComponent3],
+        [MyComponent4, MyComponent5, MyComponent6],
+        [MyComponent7, MyComponent8]
+      );
 
       // Matching
       const matching = [new MyEntity('firstMatch'), new MyEntity('secondMatch')];
@@ -523,21 +568,39 @@ describe('Aspect', () => {
       matching.forEach(entity => expect(aspect.matches(entity)).toBe(true));
 
       // Not matching by all
-      const notMatchingByAll = [ new MyEntity('all1'), new MyEntity('all2'), new MyEntity('all3') ];
+      const notMatchingByAll = [new MyEntity('all1'), new MyEntity('all2'), new MyEntity('all3')];
       notMatchingByAll[0].components.add(new MyComponent1());
       notMatchingByAll[1].components.add(new MyComponent2());
       notMatchingByAll[2].components.add(new MyComponent3());
       notMatchingByAll.forEach(entity => expect(aspect.matches(entity)).toBe(false));
 
       // Not matching by exclude
-      const notMatchingByExclude = [ new MyEntity('all1'), new MyEntity('all2'), new MyEntity('all3') ];
-      notMatchingByExclude[0].components.add(new MyComponent1(), new MyComponent2(), new MyComponent3(), new MyComponent7(), new MyComponent4());
-      notMatchingByExclude[1].components.add(new MyComponent1(), new MyComponent2(), new MyComponent3(), new MyComponent7(), new MyComponent5());
-      notMatchingByExclude[2].components.add(new MyComponent1(), new MyComponent2(), new MyComponent3(), new MyComponent7(), new MyComponent6());
+      const notMatchingByExclude = [new MyEntity('all1'), new MyEntity('all2'), new MyEntity('all3')];
+      notMatchingByExclude[0].components.add(
+        new MyComponent1(),
+        new MyComponent2(),
+        new MyComponent3(),
+        new MyComponent7(),
+        new MyComponent4()
+      );
+      notMatchingByExclude[1].components.add(
+        new MyComponent1(),
+        new MyComponent2(),
+        new MyComponent3(),
+        new MyComponent7(),
+        new MyComponent5()
+      );
+      notMatchingByExclude[2].components.add(
+        new MyComponent1(),
+        new MyComponent2(),
+        new MyComponent3(),
+        new MyComponent7(),
+        new MyComponent6()
+      );
       notMatchingByExclude.forEach(entity => expect(aspect.matches(entity)).toBe(false));
 
       // Not matching by one
-      const notMatchingByOne = [ new MyEntity('all1'), new MyEntity('all2'), new MyEntity('all3') ];
+      const notMatchingByOne = [new MyEntity('all1'), new MyEntity('all2'), new MyEntity('all3')];
       notMatchingByOne[0].components.add(new MyComponent1(), new MyComponent2(), new MyComponent3());
       notMatchingByExclude.forEach(entity => expect(aspect.matches(entity)).toBe(false));
     });
@@ -548,7 +611,7 @@ describe('Aspect', () => {
       aspectOne.detach();
       let called = false;
       aspectOne.addListener({
-        onDetached: () => called = true
+        onDetached: () => (called = true),
       });
       aspectOne.detach();
       expect(called).toBe(false);
@@ -556,10 +619,11 @@ describe('Aspect', () => {
 
     it('should detach the filter from the source collection if not detached', () => {
       let called = false;
-      aspectOne.addListener({ onDetached: () => called = true });
+      aspectOne.addListener({ onDetached: () => (called = true) });
       aspectOne.detach();
       expect(aspectOne.isAttached).toBe(false);
-      expect(collection.listeners).not.toContain((<any>aspectOne).listener);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(collection.listeners).not.toContain((aspectOne as any).listener);
       expect(called).toBe(true);
     });
 
@@ -576,13 +640,12 @@ describe('Aspect', () => {
       entity.components.add(new MyComponent1());
       expect(aspectOne.entities.length).toBe(0);
     });
-
   });
 
   describe('attach', () => {
     it('should not attach again if already attached', () => {
       let called = false;
-      aspectOne.addListener({ onAttached: () => called = true });
+      aspectOne.addListener({ onAttached: () => (called = true) });
       aspectOne.attach();
       expect(called).toBe(false);
     });
@@ -590,9 +653,10 @@ describe('Aspect', () => {
     it('should attach the filter to the source collection if not attached', () => {
       aspectOne.detach();
       let called = false;
-      aspectOne.addListener({ onAttached: () => called = true });
+      aspectOne.addListener({ onAttached: () => (called = true) });
       aspectOne.attach();
-      expect(collection.listeners).toContain((<any>aspectOne).listener);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(collection.listeners).toContain((aspectOne as any).listener);
       expect(aspectOne.isAttached).toBe(true);
       expect(called).toBe(true);
     });
@@ -615,7 +679,6 @@ describe('Aspect', () => {
   });
 
   describe('all/every', () => {
-
     it('should add an an "all components" matcher to the aspect', () => {
       const aspect = Aspect.for(collection);
       const re = aspect.all(MyComponent1, MyComponent2);
@@ -652,15 +715,16 @@ describe('Aspect', () => {
     it('should call "all" via "every"', () => {
       const aspect = Aspect.for(collection);
       let called = false;
-      (<any>aspect).all = function() { called = true; };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (aspect as any).all = function () {
+        called = true;
+      };
       aspect.every(MyComponent1);
       expect(called).toBe(true);
     });
-
   });
 
   describe('exclude/without', () => {
-
     it('should add an an "exclude components" matcher to the aspect', () => {
       const aspect = Aspect.for(collection);
       const re = aspect.exclude(MyComponent1, MyComponent2);
@@ -697,14 +761,16 @@ describe('Aspect', () => {
     it('should call "exclude" via "without"', () => {
       const aspect = Aspect.for(collection);
       let called = false;
-      (<any>aspect).exclude = function() { called = true; };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (aspect as any).exclude = function () {
+        called = true;
+      };
       aspect.without(MyComponent1);
       expect(called).toBe(true);
     });
   });
 
   describe('one/some', () => {
-
     it('should add an an "one components" matcher to the aspect', () => {
       const aspect = Aspect.for(collection);
       const re = aspect.one(MyComponent1, MyComponent2);
@@ -744,11 +810,13 @@ describe('Aspect', () => {
     it('should call "one" via "some"', () => {
       const aspect = Aspect.for(collection);
       let called = false;
-      (<any>aspect).one = function() { called = true; };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (aspect as any).one = function () {
+        called = true;
+      };
       aspect.some(MyComponent1);
       expect(called).toBe(true);
     });
-
   });
 
   describe('static for', () => {
@@ -787,5 +855,4 @@ describe('Aspect', () => {
       expect(descriptor.one[1]).toBe(MyComponent2);
     });
   });
-
 });

@@ -14,7 +14,7 @@ import { MyEntity } from 'entity';
 export class CollisionSystem extends AbstractEntitySystem<MyEntity> {
   canvas: HTMLCanvasElement;
 
-  constructor(priority: number = 0) {
+  constructor(priority = 0) {
     super(priority, [Position, Velocity, Size]);
   }
 
@@ -43,5 +43,4 @@ export class CollisionSystem extends AbstractEntitySystem<MyEntity> {
     position.x = Math.min(this.canvas.width - size.width, Math.max(0, position.x));
     position.y = Math.min(this.canvas.height - size.height, Math.max(0, position.y));
   }
-
 }
