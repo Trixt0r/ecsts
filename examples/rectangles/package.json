@@ -3,18 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "webpack serve"
+    "dev": "esbuild ./src/index.ts --bundle --outfile=build/main.js --servedir=build"
   },
   "devDependencies": {
-    "@trixt0r/ecs": "^0.4.2",
-    "css-loader": "^2.1.1",
-    "file-loader": "^3.0.1",
-    "pixi.js": "^5.0.3",
-    "style-loader": "^0.23.1",
-    "ts-loader": "^6.0.1",
-    "typescript": "^3.5.1",
-    "webpack": "^5.10.0",
-    "webpack-cli": "^4.2.0",
-    "webpack-dev-server": "^3.11.0"
+    "@trixt0r/ecs": "^0.4.4",
+    "esbuild": "^0.14.8",
+    "pixi.js": "^6.2.1"
   }
 }

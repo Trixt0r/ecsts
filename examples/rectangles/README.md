@@ -19,4 +19,4 @@ npm install
 npm run dev
 ```
 
-This will start a server on [http://localhost:9000](http://localhost:9000/).
+This will start a server on [http://localhost:8000](http://localhost:8000/).

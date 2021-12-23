@@ -1,4 +1,3 @@
-import '../style.css';
 import { Engine } from '@trixt0r/ecs';
 import { RenderingSystem } from './systems/renderer';
 import { MovementSystem } from './systems/movement';
