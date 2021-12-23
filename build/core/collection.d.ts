@@ -89,11 +89,11 @@ export declare class Collection<T> extends Dispatcher<CollectionListener<T>> imp
     /**
      * Removes the given element or the element at the given index.
      *
-     * @param elementOrIndex
+     * @param elOrIndex
      * @return Whether the element has been removed or not.
      *                    It may not have been removed, if it was not in the element list.
      */
-    protected removeSingle(elementOrIndex: T | number): boolean;
+    protected removeSingle(elOrIndex: T | number): boolean;
     /**
      * Removes the given element(s) or the elements at the given indices.
      *

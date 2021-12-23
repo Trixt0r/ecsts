@@ -36,6 +36,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Aspect = void 0;
 var engine_1 = require("./engine");
 var dispatcher_1 = require("./dispatcher");
+function ensureEntityListenerRef(entity) {
+    if (!entity.__ecsEntityListener)
+        entity.__ecsEntityListener = {};
+}
 /**
  * Generates a function for the given list of component types.
  *
@@ -100,15 +104,21 @@ var Aspect = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.source = source;
         /**
+         * The entities which meet the filter conditions.
+         */
+        _this.filteredEntities = [];
+        /**
+         * A frozen copy of the filtered entities for the public access.
+         */
+        _this.frozenEntities = [];
+        /**
          * Whether this filter is currently attached to its collection as a listener or not.
          */
         _this.attached = false;
         _this.id = Aspect.ID++;
-        _this.filteredEntities = [];
-        _this.frozenEntities = [];
-        _this.allComponents = all ? all : [];
-        _this.excludeComponents = exclude ? exclude : [];
-        _this.oneComponents = one ? one : [];
+        _this.allComponents = all !== null && all !== void 0 ? all : [];
+        _this.excludeComponents = exclude !== null && exclude !== void 0 ? exclude : [];
+        _this.oneComponents = one !== null && one !== void 0 ? one : [];
         _this.listener = {
             onAdded: function () {
                 var _a;
@@ -126,7 +136,6 @@ var Aspect = /** @class */ (function (_super) {
                 if (added.length <= 0)
                     return;
                 _this.updateFrozen();
-                _this.updateFrozen;
                 (_a = _this).dispatch.apply(_a, __spread(['onAddedEntities'], added));
             },
             onRemoved: function () {
@@ -215,8 +224,7 @@ var Aspect = /** @class */ (function (_super) {
     Aspect.prototype.setupComponentSync = function (entities) {
         var _this = this;
         entities.forEach(function (entity) {
-            if (!entity.__ecsEntityListener)
-                entity.__ecsEntityListener = {};
+            ensureEntityListenerRef(entity);
             if (entity.__ecsEntityListener[_this.id])
                 return;
             var update = function () {
@@ -279,15 +287,13 @@ var Aspect = /** @class */ (function (_super) {
     Aspect.prototype.removeComponentSync = function (entities) {
         var _this = this;
         entities.forEach(function (entity) {
-            if (!entity.__ecsEntityListener)
-                entity.__ecsEntityListener = {};
+            ensureEntityListenerRef(entity);
             var entityListener = entity.__ecsEntityListener[_this.id];
             if (!entityListener)
                 return;
             var locked = entity._lockedListeners;
             locked.splice(locked.indexOf(entityListener), 1);
             entity.removeListener(entityListener);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete entity.__ecsEntityListener[_this.id];
         });
     };

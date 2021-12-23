@@ -1,4 +1,4 @@
-import { System } from './system';
+import { System, SystemListener } from './system';
 import { AbstractEntity } from './entity';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
@@ -76,7 +76,7 @@ export declare class Engine extends Dispatcher<EngineListener> {
     /**
      * The internal list of all systems in this engine.
      */
-    protected _systems: Collection<System>;
+    protected _systems: Collection<System<SystemListener, any>>;
     /**
      * The frozen list of active systems which is used to iterate during the update.
      */
@@ -84,7 +84,7 @@ export declare class Engine extends Dispatcher<EngineListener> {
     /**
      * The internal list of all entities in this engine.
      */
-    protected _entities: Collection<AbstractEntity>;
+    protected _entities: Collection<AbstractEntity<import("./component").Component, import("./entity").EntityListener<import("./component").Component>>>;
     /**
      * Creates an instance of Engine.
      */

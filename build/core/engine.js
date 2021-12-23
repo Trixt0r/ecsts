@@ -107,9 +107,18 @@ var Engine = /** @class */ (function (_super) {
      */
     function Engine() {
         var _this = _super.call(this) || this;
+        /**
+         * The internal list of all systems in this engine.
+         */
         _this._systems = new collection_1.Collection();
-        _this._entities = new collection_1.Collection();
+        /**
+         * The frozen list of active systems which is used to iterate during the update.
+         */
         _this._activeSystems = [];
+        /**
+         * The internal list of all entities in this engine.
+         */
+        _this._entities = new collection_1.Collection();
         _this._systems.addListener({
             onAdded: function () {
                 var systems = [];
@@ -211,9 +220,8 @@ var Engine = /** @class */ (function (_super) {
      * @param [mode = EngineMode.DEFAULT]
      */
     Engine.prototype.run = function (options, mode) {
-        var _a;
         if (mode === void 0) { mode = EngineMode.DEFAULT; }
-        return (_a = this[mode]) === null || _a === void 0 ? void 0 : _a.call(this, options);
+        return this[mode].call(this, options);
     };
     /**
      * Updates all systems in this engine by the given delta value,

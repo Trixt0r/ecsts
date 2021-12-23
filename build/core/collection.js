@@ -151,17 +151,18 @@ var Collection = /** @class */ (function (_super) {
     /**
      * Removes the given element or the element at the given index.
      *
-     * @param elementOrIndex
+     * @param elOrIndex
      * @return Whether the element has been removed or not.
      *                    It may not have been removed, if it was not in the element list.
      */
-    Collection.prototype.removeSingle = function (elementOrIndex) {
-        var idx = typeof elementOrIndex === 'number' ? elementOrIndex : this._elements.indexOf(elementOrIndex);
-        if (idx >= 0 && idx < this._elements.length) {
-            this._elements.splice(idx, 1);
-            return true;
-        }
-        return false;
+    Collection.prototype.removeSingle = function (elOrIndex) {
+        if (typeof elOrIndex === 'number')
+            elOrIndex = this.elements[elOrIndex];
+        var idx = this._elements.findIndex(function (_) { return _ === elOrIndex; });
+        if (idx < 0 || idx >= this._elements.length)
+            return false;
+        this._elements.splice(idx, 1);
+        return true;
     };
     /**
      * Removes the given element(s) or the elements at the given indices.
@@ -176,12 +177,12 @@ var Collection = /** @class */ (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             elementsOrIndices[_i] = arguments[_i];
         }
-        var elements = elementsOrIndices.map(function (o) { return (typeof o === 'number' ? _this._elements[o] : o); });
-        var removed = elements.filter(function (element) { return _this.removeSingle(element); });
+        var removed = elementsOrIndices.filter(function (element) { return _this.removeSingle(element); });
         if (removed.length <= 0)
             return false;
+        var removedElements = removed.map(function (o) { return (typeof o === 'number' ? _this.elements[o] : o); });
         this.updatedFrozenObjects();
-        this.dispatch.apply(this, __spread(['onRemoved'], removed));
+        this.dispatch.apply(this, __spread(['onRemoved'], removedElements));
         return true;
     };
     /**

@@ -102,7 +102,6 @@ var ComponentCollection = /** @class */ (function (_super) {
     /**
      * Searches for the first component matching the given class or type.
      *
-     * @todo Use caching, to increase access speed
      * @param classOrType The class or type a component has to match.
      * @return The found component or `null`.
      */
@@ -112,7 +111,6 @@ var ComponentCollection = /** @class */ (function (_super) {
     /**
      * Searches for the all components matching the given class or type.
      *
-     * @todo Use caching, to increase access speed
      * @param classOrType The class or type components have to match.
      * @return A list of all components matching the given class.
      */
@@ -186,9 +184,7 @@ var ComponentCollection = /** @class */ (function (_super) {
             var classOrType = (_c = (_b = element.type) !== null && _b !== void 0 ? _b : clazz.type) !== null && _c !== void 0 ? _c : clazz;
             if (_this.dirty.get(classOrType))
                 return;
-            if (typeof classOrType !== 'string' && classOrType.type)
-                _this.dirty.set(classOrType.type, true);
-            else if (typeof classOrType === 'string') {
+            if (typeof classOrType === 'string') {
                 try {
                     for (var keys_2 = __values(keys), keys_2_1 = keys_2.next(); !keys_2_1.done; keys_2_1 = keys_2.next()) {
                         var key = keys_2_1.value;

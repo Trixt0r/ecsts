@@ -19,7 +19,7 @@ export interface SystemListener {
     /**
      * Called as soon as the system got removed from an engine.
      *
-     * @param engine The engine this system got added to.
+     * @param engine The engine this system got removed from.
      */
     onRemovedFromEngine?(engine: Engine): void;
     /**
@@ -189,10 +189,10 @@ export declare abstract class AbstractEntitySystem<T extends AbstractEntity = Ab
     /**
      * Creates an instance of AbstractEntitySystem.
      *
-     * @param [priority=0] The priority of this system. The lower the value the earlier it will process.
-     * @param [all] Optional component types which should all match.
-     * @param [exclude] Optional component types which should not match.
-     * @param [one] Optional component types of which at least one should match.
+     * @param priority The priority of this system. The lower the value the earlier it will process.
+     * @param all Optional component types which should all match.
+     * @param exclude Optional component types which should not match.
+     * @param one Optional component types of which at least one should match.
      */
     constructor(priority?: number, all?: (Component | ComponentClass<Component>)[] | undefined, exclude?: (Component | ComponentClass<Component>)[] | undefined, one?: (Component | ComponentClass<Component>)[] | undefined);
     /** @inheritdoc */

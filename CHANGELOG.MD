@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.4.4
+
+100% code coverage & code cleanup.
+
 ### 0.4.3
 
 Fixed component caching bug, not returning all components for a string type per component instance.

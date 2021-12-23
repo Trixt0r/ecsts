@@ -163,9 +163,8 @@ var System = /** @class */ (function (_super) {
      *
      */
     System.prototype.run = function (options, mode) {
-        var _a;
         if (mode === void 0) { mode = SystemMode.SYNC; }
-        return (_a = this[mode]) === null || _a === void 0 ? void 0 : _a.call(this, options);
+        return this[mode].call(this, options);
     };
     /**
      * Processes data synchronously.
@@ -178,6 +177,7 @@ var System = /** @class */ (function (_super) {
             this.process(options);
         }
         catch (e) {
+            this.onError(e);
             this.dispatch('onError', e);
         }
     };
@@ -203,6 +203,7 @@ var System = /** @class */ (function (_super) {
                         return [3 /*break*/, 5];
                     case 3:
                         e_1 = _a.sent();
+                        this.onError(e_1);
                         this.dispatch('onError', e_1);
                         return [3 /*break*/, 5];
                     case 4:
@@ -278,10 +279,10 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
     /**
      * Creates an instance of AbstractEntitySystem.
      *
-     * @param [priority=0] The priority of this system. The lower the value the earlier it will process.
-     * @param [all] Optional component types which should all match.
-     * @param [exclude] Optional component types which should not match.
-     * @param [one] Optional component types of which at least one should match.
+     * @param priority The priority of this system. The lower the value the earlier it will process.
+     * @param all Optional component types which should all match.
+     * @param exclude Optional component types which should not match.
+     * @param one Optional component types of which at least one should match.
      */
     function AbstractEntitySystem(priority, all, exclude, one) {
         if (priority === void 0) { priority = 0; }
@@ -393,9 +394,10 @@ var AbstractEntitySystem = /** @class */ (function (_super) {
     AbstractEntitySystem.prototype.onSortedComponents = function (entity) { };
     /** @inheritdoc */
     AbstractEntitySystem.prototype.process = function (options) {
-        if (!this._engine)
+        var _a;
+        var entities = this.aspect ? this.aspect.entities : (_a = this._engine) === null || _a === void 0 ? void 0 : _a.entities.elements;
+        if (!(entities === null || entities === void 0 ? void 0 : entities.length))
             return;
-        var entities = this.aspect ? this.aspect.entities : this._engine.entities.elements;
         for (var i = 0, l = entities.length; i < l; i++) {
             this.processEntity(entities[i], i, entities, options);
         }

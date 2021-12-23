@@ -51,7 +51,6 @@ export declare class ComponentCollection<C extends Component = Component> extend
     /**
      * Searches for the first component matching the given class or type.
      *
-     * @todo Use caching, to increase access speed
      * @param classOrType The class or type a component has to match.
      * @return The found component or `null`.
      */
@@ -59,7 +58,6 @@ export declare class ComponentCollection<C extends Component = Component> extend
     /**
      * Searches for the all components matching the given class or type.
      *
-     * @todo Use caching, to increase access speed
      * @param classOrType The class or type components have to match.
      * @return A list of all components matching the given class.
      */
