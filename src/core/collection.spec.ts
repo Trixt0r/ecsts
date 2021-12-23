@@ -250,7 +250,12 @@ describe('Collection', () => {
   });
 
   describe('clear', () => {
-    beforeEach(() => collection.add(new MyType(), new MyType(), new MyType()));
+    let listener;
+    beforeEach(() => {
+      collection.add(new MyType(), new MyType(), new MyType());
+      listener = { onCleared: jest.fn() };
+      collection.addListener(listener);
+    });
 
     it('should remove all elements from the collection', () => {
       collection.clear();
@@ -258,24 +263,25 @@ describe('Collection', () => {
     });
 
     it('should notify all listeners that the collection has been cleared', () => {
-      let called = false;
-      collection.addListener({ onCleared: () => (called = true) });
       collection.add(new MyType());
       collection.clear();
-      expect(called).toBe(true);
+      expect(listener.onCleared).toHaveBeenCalled();
     });
 
     it('should not notify any listener that the collection has been cleared if there were no elements', () => {
-      let called = false;
-      collection.addListener({ onCleared: () => (called = true) });
       collection.remove(0, 1, 2);
       collection.clear();
-      expect(called).toBe(false);
+      expect(listener.onCleared).not.toHaveBeenCalled();
     });
   });
 
   describe('sort', () => {
-    beforeEach(() => collection.add(new MySortableType(3), new MySortableType(2), new MySortableType(1)));
+    let listener;
+    beforeEach(() => {
+      collection.add(new MySortableType(3), new MySortableType(2), new MySortableType(1));
+      listener = { onSorted: jest.fn() };
+      collection.addListener(listener);
+    });
 
     it('should sort the collection', () => {
       collection.sort((a, b) => (a as MySortableType).position - (b as MySortableType).position);
@@ -287,19 +293,15 @@ describe('Collection', () => {
     });
 
     it('should notify all listeners that the collection has been sorted', () => {
-      let called = false;
-      collection.addListener({ onSorted: () => (called = true) });
       collection.add(new MySortableType(1));
       collection.sort();
-      expect(called).toBe(true);
+      expect(listener.onSorted).toHaveBeenCalled();
     });
 
     it('should not notify any listener that the collection has been sorted if there were no elements', () => {
-      let called = false;
-      collection.addListener({ onSorted: () => (called = true) });
       collection.remove(0, 1, 2);
       collection.sort();
-      expect(called).toBe(false);
+      expect(listener.onSorted).not.toHaveBeenCalled();
     });
   });
 
@@ -352,27 +354,24 @@ describe('Collection', () => {
       for (let i = 0; i < amount; i++) collection.add(new MyType());
     });
 
-    it('should delegate the array methods to the actual internal array', () => {
-      const fn = (element: MyType, index: number) => index === 1;
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const ctx = this;
-      const methods = {
-        filter: [fn, ctx],
-        forEach: [fn, ctx],
-        find: [fn, ctx],
-        findIndex: [fn, ctx],
-        map: [(element: MyType, index: number) => index, ctx],
-        every: [fn, ctx],
-        some: [fn, ctx],
-        reduce: [(prev, _elmnt, idx) => prev + idx, 0],
-        reduceRight: [(prev, _elmnt, idx) => prev + idx, 0],
-      };
-      Object.keys(methods).forEach(methodName => {
-        const args = methods[methodName];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const expected = (collection as any)._elements[methodName](...args);
-        expect(collection[methodName](...args)).toEqual(expected);
-      });
+    it.each([
+      { name: 'filter', args: [(_: MyType, index: number) => index === 1, {}] },
+      { name: 'forEach', args: [(_: MyType, index: number) => index === 1, {}] },
+      { name: 'find', args: [(_: MyType, index: number) => index === 1, {}] },
+      { name: 'findIndex', args: [(_: MyType, index: number) => index === 1, {}] },
+      { name: 'indexOf', args: [0] },
+      { name: 'map', args: [(_: MyType, index: number) => index, {}] },
+      { name: 'every', args: [(_: MyType, index: number) => index === 1, {}] },
+      { name: 'some', args: [(_: MyType, index: number) => index === 1, {}] },
+      { name: 'reduce', args: [(prev, _elmnt, idx) => prev + idx, 0] },
+      { name: 'reduceRight', args: [(prev, _elmnt, idx) => prev + idx, 0] },
+    ])('should execute $name with $args', ({ name, args }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const spy = jest.spyOn((collection as any)._elements, name);
+
+      collection[name](...args);
+
+      expect(spy).toHaveBeenCalledWith(...args);
     });
   });
 });

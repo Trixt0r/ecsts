@@ -30,6 +30,10 @@ type SyncedEntity = AbstractEntity & {
   _lockedListeners: EntityListener[];
 };
 
+function ensureEntityListenerRef(entity: SyncedEntity) {
+  if (!entity.__ecsEntityListener) entity.__ecsEntityListener = {};
+}
+
 /**
  * Generates a function for the given list of component types.
  *
@@ -210,12 +214,12 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
   /**
    * The entities which meet the filter conditions.
    */
-  protected filteredEntities: SyncedEntity[];
+  protected filteredEntities: SyncedEntity[] = [];
 
   /**
    * A frozen copy of the filtered entities for the public access.
    */
-  protected frozenEntities: AbstractEntity[];
+  protected frozenEntities: AbstractEntity[] = [];
 
   /**
    * The collection listener for syncing data.
@@ -238,11 +242,9 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
   protected constructor(public source: EntityCollection, all?: CompType[], exclude?: CompType[], one?: CompType[]) {
     super();
     this.id = Aspect.ID++;
-    this.filteredEntities = [];
-    this.frozenEntities = [];
-    this.allComponents = all ? all : [];
-    this.excludeComponents = exclude ? exclude : [];
-    this.oneComponents = one ? one : [];
+    this.allComponents = all ?? [];
+    this.excludeComponents = exclude ?? [];
+    this.oneComponents = one ?? [];
     this.listener = {
       onAdded: (...entities: SyncedEntity[]) => {
         const added = entities.filter(entity => {
@@ -253,7 +255,6 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
         this.setupComponentSync(entities);
         if (added.length <= 0) return;
         this.updateFrozen();
-        this.updateFrozen;
         (<Dispatcher<AspectListener>>this).dispatch('onAddedEntities', ...added);
       },
       onRemoved: (...entities: SyncedEntity[]) => {
@@ -336,7 +337,7 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    */
   protected setupComponentSync(entities: SyncedEntity[]): void {
     entities.forEach(entity => {
-      if (!entity.__ecsEntityListener) entity.__ecsEntityListener = {};
+      ensureEntityListenerRef(entity);
       if (entity.__ecsEntityListener[this.id]) return;
       const update = () => {
         const idx = this.filteredEntities.indexOf(entity);
@@ -385,14 +386,13 @@ export class Aspect<L extends AspectListener = AspectListener> extends Dispatche
    */
   protected removeComponentSync(entities: Readonly<SyncedEntity[]>) {
     entities.forEach(entity => {
-      if (!(entity as SyncedEntity).__ecsEntityListener) (entity as SyncedEntity).__ecsEntityListener = {};
-      const entityListener: EntityListener = entity.__ecsEntityListener[this.id];
+      ensureEntityListenerRef(entity);
+      const entityListener = entity.__ecsEntityListener[this.id];
       if (!entityListener) return;
-      const locked: EntityListener[] = entity._lockedListeners;
+      const locked = entity._lockedListeners;
       locked.splice(locked.indexOf(entityListener), 1);
       entity.removeListener(entityListener);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (entity as any).__ecsEntityListener[this.id];
+      delete entity.__ecsEntityListener[this.id];
     });
   }
 

@@ -74,7 +74,6 @@ export class ComponentCollection<C extends Component = Component>
   /**
    * Searches for the first component matching the given class or type.
    *
-   * @todo Use caching, to increase access speed
    * @param classOrType The class or type a component has to match.
    * @return The found component or `null`.
    */
@@ -85,15 +84,14 @@ export class ComponentCollection<C extends Component = Component>
   /**
    * Searches for the all components matching the given class or type.
    *
-   * @todo Use caching, to increase access speed
    * @param classOrType The class or type components have to match.
    * @return A list of all components matching the given class.
    */
   getAll<T extends C>(classOrType: ComponentClass<T> | string): readonly T[] {
     if (this.dirty.get(classOrType)) this.updateCache(classOrType);
-    if (this.cache.has(classOrType)) return <T[]>this.cache.get(classOrType);
+    if (this.cache.has(classOrType)) return this.cache.get(classOrType) as T[];
     this.updateCache(classOrType);
-    return <T[]>this.cache.get(classOrType);
+    return this.cache.get(classOrType) as T[];
   }
 
   /**
@@ -106,7 +104,7 @@ export class ComponentCollection<C extends Component = Component>
     const keys = this.cache.keys();
     const type = typeof classOrType === 'string' ? classOrType : classOrType.type;
     const filtered = this.filter(element => {
-      const clazz = <ComponentClass<C>>element.constructor;
+      const clazz = element.constructor as ComponentClass<C>;
       const typeVal = element.type ?? clazz.type;
       return type && typeVal ? type === typeVal : clazz === classOrType;
     });
@@ -138,8 +136,7 @@ export class ComponentCollection<C extends Component = Component>
       const clazz = element.constructor as ComponentClass<C>;
       const classOrType = element.type ?? clazz.type ?? clazz;
       if (this.dirty.get(classOrType)) return;
-      if (typeof classOrType !== 'string' && classOrType.type) this.dirty.set(classOrType.type, true);
-      else if (typeof classOrType === 'string') {
+      if (typeof classOrType === 'string') {
         for (const key of keys) {
           if (typeof key !== 'string' && key.type === classOrType) this.dirty.set(key, true);
         }

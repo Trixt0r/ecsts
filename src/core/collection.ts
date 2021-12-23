@@ -141,17 +141,16 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> implements 
   /**
    * Removes the given element or the element at the given index.
    *
-   * @param elementOrIndex
+   * @param elOrIndex
    * @return Whether the element has been removed or not.
    *                    It may not have been removed, if it was not in the element list.
    */
-  protected removeSingle(elementOrIndex: T | number): boolean {
-    const idx = typeof elementOrIndex === 'number' ? elementOrIndex : this._elements.indexOf(elementOrIndex);
-    if (idx >= 0 && idx < this._elements.length) {
-      this._elements.splice(idx, 1);
-      return true;
-    }
-    return false;
+  protected removeSingle(elOrIndex: T | number): boolean {
+    if (typeof elOrIndex === 'number') elOrIndex = this.elements[elOrIndex];
+    const idx = this._elements.findIndex(_ => _ === elOrIndex);
+    if (idx < 0 || idx >= this._elements.length) return false;
+    this._elements.splice(idx, 1);
+    return true;
   }
 
   /**
@@ -162,11 +161,11 @@ export class Collection<T> extends Dispatcher<CollectionListener<T>> implements 
    *                    They may not have been removed, if every element was not in the element list.
    */
   remove(...elementsOrIndices: (T | number)[]): boolean {
-    const elements = <T[]>elementsOrIndices.map(o => (typeof o === 'number' ? this._elements[o] : o));
-    const removed: T[] = elements.filter(element => this.removeSingle(element));
+    const removed = elementsOrIndices.filter(element => this.removeSingle(element));
     if (removed.length <= 0) return false;
+    const removedElements = removed.map(o => (typeof o === 'number' ? this.elements[o] : o));
     this.updatedFrozenObjects();
-    this.dispatch('onRemoved', ...removed);
+    this.dispatch('onRemoved', ...removedElements);
     return true;
   }
 

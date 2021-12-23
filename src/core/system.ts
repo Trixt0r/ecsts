@@ -23,7 +23,7 @@ export interface SystemListener {
   /**
    * Called as soon as the system got removed from an engine.
    *
-   * @param engine The engine this system got added to.
+   * @param engine The engine this system got removed from.
    */
   onRemovedFromEngine?(engine: Engine): void;
 
@@ -159,7 +159,7 @@ export abstract class System<L extends SystemListener = SystemListener, T = any>
    *
    */
   run(options: T, mode: SystemMode = SystemMode.SYNC): void | Promise<void> {
-    return this[mode]?.call(this, options);
+    return this[mode].call(this, options);
   }
 
   /**
@@ -172,6 +172,7 @@ export abstract class System<L extends SystemListener = SystemListener, T = any>
     try {
       this.process(options);
     } catch (e) {
+      this.onError(e as Error);
       (<Dispatcher<SystemListener>>this).dispatch('onError', e as Error);
     }
   }
@@ -187,6 +188,7 @@ export abstract class System<L extends SystemListener = SystemListener, T = any>
     try {
       await this.process(options);
     } catch (e) {
+      this.onError(e as Error);
       (<Dispatcher<SystemListener>>this).dispatch('onError', e as Error);
     } finally {
       this._updating = false;
@@ -280,13 +282,13 @@ export abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEn
   /**
    * Creates an instance of AbstractEntitySystem.
    *
-   * @param [priority=0] The priority of this system. The lower the value the earlier it will process.
-   * @param [all] Optional component types which should all match.
-   * @param [exclude] Optional component types which should not match.
-   * @param [one] Optional component types of which at least one should match.
+   * @param priority The priority of this system. The lower the value the earlier it will process.
+   * @param all Optional component types which should all match.
+   * @param exclude Optional component types which should not match.
+   * @param one Optional component types of which at least one should match.
    */
   constructor(
-    public priority: number = 0,
+    public priority = 0,
     protected all?: CompType[],
     protected exclude?: CompType[],
     protected one?: CompType[]
@@ -379,8 +381,8 @@ export abstract class AbstractEntitySystem<T extends AbstractEntity = AbstractEn
 
   /** @inheritdoc */
   process<U>(options?: U): void {
-    if (!this._engine) return;
-    const entities = this.aspect ? this.aspect.entities : this._engine.entities.elements;
+    const entities = this.aspect ? this.aspect.entities : this._engine?.entities.elements;
+    if (!entities?.length) return;
     for (let i = 0, l = entities.length; i < l; i++) {
       this.processEntity(<T>entities[i], i, <T[]>entities, options);
     }

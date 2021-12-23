@@ -1,4 +1,4 @@
-import { System, SystemMode, AbstractEntitySystem } from './system';
+import { System, SystemMode, AbstractEntitySystem, SystemListener } from './system';
 import { Engine } from './engine';
 import { Dispatcher } from './dispatcher';
 import { AbstractEntity } from './entity';
@@ -25,8 +25,19 @@ class MyAsyncSystem extends System {
 
 describe('System', () => {
   let system: MySyncSystem;
+  let listener: SystemListener;
 
-  beforeEach(() => (system = new MySyncSystem()));
+  beforeEach(() => {
+    system = new MySyncSystem();
+    listener = {
+      onActivated: jest.fn(),
+      onDeactivated: jest.fn(),
+      onAddedToEngine: jest.fn(),
+      onRemovedFromEngine: jest.fn(),
+      onError: jest.fn(),
+    };
+    system.addListener(listener);
+  });
 
   describe('initial', () => {
     it('should be a dispatcher', () => {
@@ -44,108 +55,60 @@ describe('System', () => {
 
   describe('active', () => {
     it('should not notify any listener if the value did not change', () => {
-      let called = false;
-      system.addListener({
-        onActivated: () => (called = true),
-        onDeactivated: () => (called = true),
-      });
       system.active = true;
-      expect(called).toBe(false);
+      expect(listener.onActivated).not.toHaveBeenCalled();
+      expect(listener.onDeactivated).not.toHaveBeenCalled();
     });
 
     it('should call onActivated on each listener if the value changes to "true"', () => {
       system.active = false;
-      let calledActivated = false;
-      let calledDectivated = false;
-      system.addListener({
-        onActivated: () => (calledActivated = true),
-        onDeactivated: () => (calledDectivated = true),
-      });
       system.active = true;
-      expect(calledDectivated).toBe(false);
-      expect(calledActivated).toBe(true);
+      expect(listener.onActivated).toHaveBeenCalled();
+      expect(listener.onDeactivated).toHaveBeenCalledTimes(1);
     });
 
     it('should call onDeactivated on each listener if the value changes to "false"', () => {
-      let calledActivated = false;
-      let calledDectivated = false;
-      system.addListener({
-        onActivated: () => (calledActivated = true),
-        onDeactivated: () => (calledDectivated = true),
-      });
       system.active = false;
-      expect(calledActivated).toBe(false);
-      expect(calledDectivated).toBe(true);
+      expect(listener.onActivated).not.toHaveBeenCalled();
+      expect(listener.onDeactivated).toHaveBeenCalled();
     });
   });
 
   describe('engine', () => {
     it('should not notify any listener if the value did not change', () => {
-      let called = false;
       const engine = system.engine;
-      system.addListener({
-        onAddedToEngine: () => (called = true),
-        onRemovedFromEngine: () => (called = true),
-      });
       system.engine = engine;
-      expect(called).toBe(false);
+      expect(listener.onAddedToEngine).not.toHaveBeenCalled();
+      expect(listener.onRemovedFromEngine).not.toHaveBeenCalled();
     });
 
     it('should call onAddedToEngine on each listener if the value changes', () => {
-      let calledAdded: Engine = null;
-      let calledRemoved: Engine = null;
-      system.addListener({
-        onAddedToEngine: engine => (calledAdded = engine),
-        onRemovedFromEngine: engine => (calledRemoved = engine),
-      });
       system.engine = new Engine();
-      expect(calledRemoved).toBeNull();
-      expect(calledAdded).toBe(system.engine);
+      expect(listener.onAddedToEngine).toHaveBeenCalledWith(system.engine);
+      expect(listener.onRemovedFromEngine).not.toHaveBeenCalled();
     });
 
-    it('should not call onRemovedFromEngine on any listener if there was not engine before assigned"', () => {
-      let calledRemoved: Engine = null;
-      system.addListener({
-        onRemovedFromEngine: engine => (calledRemoved = engine),
-      });
+    it('should not call onRemovedFromEngine on any listener if there was no engine before assigned"', () => {
       system.engine = new Engine();
-      expect(calledRemoved).toBeNull();
+      expect(listener.onRemovedFromEngine).not.toHaveBeenCalled();
     });
 
     it('should not call onAddedToEngine on any listener if there is no new engine assigned"', () => {
-      system.engine = new Engine();
-      let calledAdded: Engine = null;
-      system.addListener({
-        onAddedToEngine: engine => (calledAdded = engine),
-      });
+      const before = new Engine();
+      system.engine = before;
       system.engine = null;
-      expect(calledAdded).toBeNull();
+      expect(listener.onAddedToEngine).toHaveBeenLastCalledWith(before);
     });
 
-    it('should call onRemovedFromEngine on each listener if the value changes and an engine was assigned', () => {
-      const oldEngine = new Engine();
-      system.engine = oldEngine;
-      let calledRemoved: Engine = null;
-      system.addListener({
-        onRemovedFromEngine: engine => (calledRemoved = engine),
-      });
-      system.engine = new Engine();
-      expect(calledRemoved).toBe(oldEngine);
-    });
-
-    it('should call onRemovedFromEngine on each listener if the value changes to null and an engine was assigned', () => {
-      const oldEngine = new Engine();
-      system.engine = oldEngine;
-      let calledAdded: Engine = null;
-      let calledRemoved: Engine = null;
-      system.addListener({
-        onAddedToEngine: engine => (calledAdded = engine),
-        onRemovedFromEngine: engine => (calledRemoved = engine),
-      });
-      system.engine = null;
-      expect(calledAdded).toBeNull();
-      expect(calledRemoved).toBe(oldEngine);
-    });
+    it.each([new Engine(), null])(
+      'should call onRemovedFromEngine on each listener if the value changes to %p and an engine was assigned',
+      newEngine => {
+        const oldEngine = new Engine();
+        system.engine = oldEngine;
+        system.engine = newEngine;
+        expect(listener.onRemovedFromEngine).toHaveBeenCalledWith(oldEngine);
+      }
+    );
   });
 
   describe('run (sync)', () => {
@@ -242,6 +205,10 @@ class MyEntitySystem extends AbstractEntitySystem<MyEntity> {
   getAspect(): Aspect {
     return this.aspect;
   }
+
+  setEngine(engine: Engine): void {
+    this._engine = engine;
+  }
 }
 
 describe('AbstractEntitySystem', () => {
@@ -270,6 +237,11 @@ describe('AbstractEntitySystem', () => {
     expect(system.entities.length).toBe(2);
   });
 
+  it('should not do anything if onRemovedFromEngine is being called without have been added to an engine', () => {
+    const system = new MyEntitySystem(0);
+    expect(() => system.onRemovedFromEngine()).not.toThrow();
+  });
+
   it('should detach the aspect after removing the system from the engine', () => {
     const engine = new Engine();
 
@@ -280,35 +252,39 @@ describe('AbstractEntitySystem', () => {
     expect(system.getAspect().isAttached).toBe(false);
   });
 
-  it('should call all entity and component related methods', () => {
-    const engine = new Engine();
+  it.each([
+    { name: 'onAddedEntities', args: [new MyEntity('1'), new MyEntity('2'), new MyEntity('3')] },
+    { name: 'onRemovedEntities', args: [new MyEntity('1'), new MyEntity('2'), new MyEntity('3')] },
+    { name: 'onClearedEntities', args: [] },
+    { name: 'onSortedEntities', args: [] },
+    { name: 'onAddedComponents', args: [new MyEntity('1'), [new MyComponent1(), new MyComponent2()]] },
+    { name: 'onRemovedComponents', args: [new MyEntity('2'), [new MyComponent1(), new MyComponent2()]] },
+    { name: 'onClearedComponents', args: [new MyEntity('3')] },
+    { name: 'onSortedComponents', args: [new MyEntity('4')] },
+  ])('should call $name with $args when dispatching via the aspect', ({ name, args }) => {
     const system = new MyEntitySystem();
-    engine.systems.add(system);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const spy = jest.spyOn(system, name as any);
+    system.engine = new Engine();
+    const aspect = system.getAspect();
 
-    const methodsAndArgs = {
-      onAddedEntities: [new MyEntity('1'), new MyEntity('2'), new MyEntity('3')],
-      onRemovedEntities: [new MyEntity('1'), new MyEntity('2'), new MyEntity('3')],
-      onClearedEntities: [],
-      onSortedEntities: [],
-      onAddedComponents: [new MyEntity('1'), [new MyComponent1(), new MyComponent2()]],
-      onRemovedComponents: [new MyEntity('2'), [new MyComponent1(), new MyComponent2()]],
-      onClearedComponents: [new MyEntity('3')],
-      onSortedComponents: [new MyEntity('4')],
-    };
-    const keys = Object.keys(methodsAndArgs);
-    let calledTimes = 0;
-    keys.forEach((method: string) => {
-      let calledArgs: unknown[];
-      const methodArgs = methodsAndArgs[method];
-      system[method] = function (...args) {
-        calledArgs = args;
-      };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      system.getAspect().dispatch(method as any, ...methodArgs);
-      expect(calledArgs).toBeDefined();
-      expect(calledArgs).toEqual(methodArgs);
-      calledTimes++;
-    });
-    expect(calledTimes).toBe(keys.length);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    aspect.dispatch(name as any, ...args);
+
+    expect(spy).toHaveBeenCalledWith(...args);
   });
+
+  it.each(['engine', 'engine-no-aspect', 'aspect'])(
+    'should not process entities, if there are no %s entities',
+    type => {
+      const system = new MyEntitySystem(0);
+      if (type === 'aspect') system.engine = new Engine();
+      else if (type === 'engine-no-aspect') system.setEngine(new Engine());
+      const spy = jest.spyOn(system, 'processEntity');
+
+      system.process();
+
+      expect(spy).not.toHaveBeenCalled();
+    }
+  );
 });

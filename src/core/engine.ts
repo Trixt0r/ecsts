@@ -102,26 +102,23 @@ export class Engine extends Dispatcher<EngineListener> {
   /**
    * The internal list of all systems in this engine.
    */
-  protected _systems: Collection<System>;
+  protected _systems = new Collection<System>();
 
   /**
    * The frozen list of active systems which is used to iterate during the update.
    */
-  protected _activeSystems: System[];
+  protected _activeSystems: System[] = [];
 
   /**
    * The internal list of all entities in this engine.
    */
-  protected _entities: Collection<AbstractEntity>;
+  protected _entities = new Collection<AbstractEntity>();
 
   /**
    * Creates an instance of Engine.
    */
   constructor() {
     super();
-    this._systems = new Collection<System>();
-    this._entities = new Collection<AbstractEntity>();
-    this._activeSystems = [];
     this._systems.addListener(
       {
         onAdded: (...systems: SyncedSystem[]) => {
@@ -145,7 +142,7 @@ export class Engine extends Dispatcher<EngineListener> {
             system.engine = null;
             this.updatedActiveSystems();
             const systemListener = system.__ecsEngineListener;
-            const locked: SystemListener[] = system._lockedListeners;
+            const locked = system._lockedListeners;
             locked.splice(locked.indexOf(systemListener), 1);
             system.removeListener(systemListener);
           });
@@ -204,7 +201,7 @@ export class Engine extends Dispatcher<EngineListener> {
    * @param [mode = EngineMode.DEFAULT]
    */
   run<T>(options?: T, mode: EngineMode = EngineMode.DEFAULT): void | Promise<void> {
-    return this[mode]?.call(this, options);
+    return this[mode].call(this, options);
   }
 
   /**

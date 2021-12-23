@@ -1,4 +1,4 @@
-import { Aspect } from './aspect';
+import { Aspect, AspectListener } from './aspect';
 import { Collection } from './collection';
 import { AbstractEntity } from './entity';
 import { Component } from './component';
@@ -312,35 +312,32 @@ describe('Aspect', () => {
       });
 
       describe('clear', () => {
-        let called: boolean;
+        let listener: AspectListener;
         beforeEach(() => {
-          called = false;
-          aspectOne.addListener({
-            onClearedEntities: function () {
-              called = true;
-            },
-          });
-          entity.components.add(new MyComponent1());
-          collection.add(entity);
+          listener = { onClearedEntities: jest.fn() };
+          aspectOne.addListener(listener);
         });
 
-        it('should not match any entities', () => {
-          collection.clear();
-          expect(aspectOne.entities.length).toBe(0);
-          expect(called).toBe(true);
-        });
+        it.each([{ components: [] }, { components: [new MyComponent1()] }])(
+          'should not match any source.length is $entities.length ',
+          ({ components }) => {
+            entity.components.add(...components);
+            collection.add(entity);
+            collection.clear();
+            expect(aspectOne.entities.length).toBe(0);
+            if (components.length > 0) expect(listener.onClearedEntities).toHaveBeenCalled();
+            else expect(listener.onClearedEntities).not.toHaveBeenCalled();
+          }
+        );
       });
 
       describe('sort', () => {
-        let called: boolean;
+        let listener: AspectListener;
         beforeEach(() => {
-          called = false;
-          aspectOne.addListener({
-            onSortedEntities: function () {
-              called = true;
-            },
-          });
+          listener = { onSortedEntities: jest.fn() };
+          aspectOne.addListener(listener);
         });
+
         it('should preserve the order', () => {
           collection.add(new MySortableEntity('1', 3), new MySortableEntity('2', 2), new MySortableEntity('3', 1));
           collection.forEach(entity => entity.components.add(new MyComponent1()));
@@ -348,8 +345,27 @@ describe('Aspect', () => {
           expect((<MySortableEntity>aspectOne.entities[0]).position).toBe(1);
           expect((<MySortableEntity>aspectOne.entities[1]).position).toBe(2);
           expect((<MySortableEntity>aspectOne.entities[2]).position).toBe(3);
-          expect(called).toBe(true);
+          expect(listener.onSortedEntities).toHaveBeenCalled();
         });
+
+        it('should not dispatch anything, if no entities match', () => {
+          collection.add(entity);
+          collection.sort();
+          expect(listener.onSortedEntities).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('__ecsEntityListener', () => {
+        it.each([() => collection.remove(entity), () => collection.clear()])(
+          'should not throw with %p if no entity listener was set before',
+          fn => {
+            entity.components.add(new MyComponent1());
+            collection.add(entity);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (entity as any).__ecsEntityListener[(aspectOne as any).id];
+            expect(fn).not.toThrow();
+          }
+        );
       });
     });
 
