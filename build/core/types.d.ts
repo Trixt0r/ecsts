@@ -6,8 +6,8 @@ export declare type ArgumentTypes<F> = F extends (...args: infer A) => unknown ?
 /**
  * Class definition for type `T`.
  */
-export interface Class<T, U = unknown> extends Function {
-    new (...args: U[]): T;
+export interface Class<T> extends Function {
+    new (...args: never[]): T;
 }
 /**
  * Class definition for a component type `T`.
