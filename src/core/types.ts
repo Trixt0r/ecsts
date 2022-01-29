@@ -8,8 +8,8 @@ export type ArgumentTypes<F> = F extends (...args: infer A) => unknown ? A : nev
 /**
  * Class definition for type `T`.
  */
-export interface Class<T, U = unknown> extends Function {
-  new (...args: U[]): T;
+export interface Class<T> extends Function {
+  new (...args: never[]): T;
 }
 
 /**

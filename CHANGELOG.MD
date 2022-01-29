@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.4.5
+
+Type definition fix for `Class` and `ComponentClass`.
+
 ### 0.4.4
 
 100% code coverage & code cleanup.
