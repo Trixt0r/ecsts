@@ -12,7 +12,7 @@ export interface CollectionListener<T> {
   onAdded?(...elements: T[]): void;
 
   /**
-   * Called as soon as new elements got removed from the collection.
+   * Called as soon as elements got removed from the collection.
    *
    * @param elements
    */

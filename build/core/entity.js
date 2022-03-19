@@ -40,8 +40,6 @@ var dispatcher_1 = require("./dispatcher");
  *
  * An entity holds an id and a list of components attached to it.
  * You can add or remove components from the entity.
- *
- * @implements {CollectionListener<C>}
  */
 var AbstractEntity = /** @class */ (function (_super) {
     __extends(AbstractEntity, _super);

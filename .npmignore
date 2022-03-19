@@ -1,3 +1,4 @@
 .vscode
 examples
+*.spec.ts
 !./build

@@ -24,7 +24,6 @@ export interface Component extends Record<string, any> {
 export declare class ComponentCollection<C extends Component = Component> extends Collection<C> implements CollectionListener<C> {
     /**
      * Internal map for faster component access, by class or type.
-     *
      */
     protected cache: Map<string | ComponentClass<C>, readonly C[]>;
     /**
@@ -66,7 +65,6 @@ export declare class ComponentCollection<C extends Component = Component> extend
      * Updates the cache for the given class or type.
      *
      * @param classOrType The class or type to update the cache for.
-     *
      */
     protected updateCache(classOrType: ComponentClass<C> | string): void;
     /**

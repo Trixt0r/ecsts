@@ -1,5 +1,13 @@
 # Changelog
 
+### 0.5.0
+
+Added `EntityCollection` which enables you to access entities directly by their `id`.
+
+```ts
+engine.entities.get(1);
+```
+
 ### 0.4.6
 
 Type definition fix for `Class` and `ComponentClass`.

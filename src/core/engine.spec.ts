@@ -65,7 +65,7 @@ describe('Engine', () => {
     });
 
     it('should have default listener on the entities collection', () => {
-      expect(engine.entities.listeners.length).toBe(1);
+      expect(engine.entities.listeners.length - 1).toBe(1); // -1 because entity collection adds itself as a listener
     });
 
     it('should throw if someone tries to remove the default entities listeners', () => {
@@ -244,7 +244,7 @@ describe('Engine', () => {
         expect(called).toBe(dlt * max);
       });
 
-      it('should not call run on inatcive systems', () => {
+      it('should not call run on inactive systems', () => {
         let called = 0;
         const dlt = 10;
         engine.systems.elements.forEach(system => {
@@ -313,7 +313,7 @@ describe('Engine', () => {
           expect(called).toBe(dlt * max);
         });
 
-        it('should not call run on inatcive systems', async () => {
+        it('should not call run on inactive systems', async () => {
           let called = 0;
           const dlt = 10;
           engine.systems.elements.forEach(system => {
@@ -382,7 +382,7 @@ describe('Engine', () => {
           expect(called).toBe(dlt * max);
         });
 
-        it('should not call run on inatcive systems', async () => {
+        it('should not call run on inactive systems', async () => {
           let called = 0;
           const dlt = 10;
           engine.systems.elements.forEach(system => {

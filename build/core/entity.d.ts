@@ -30,8 +30,6 @@ export interface EntityListener<C extends Component = Component> {
  *
  * An entity holds an id and a list of components attached to it.
  * You can add or remove components from the entity.
- *
- * @implements {CollectionListener<C>}
  */
 export declare abstract class AbstractEntity<C extends Component = Component, L extends EntityListener = EntityListener<C>> extends Dispatcher<L> implements CollectionListener<C> {
     readonly id: number | string;

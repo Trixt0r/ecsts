@@ -2,10 +2,11 @@ import { System, SystemListener } from './system';
 import { AbstractEntity } from './entity';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
+import { EntityCollection } from './entity.collection';
 /**
  * The listener interface for a listener on an engine.
  */
-export interface EngineListener {
+export interface EngineListener<T extends AbstractEntity = AbstractEntity> {
     /**
      * Called as soon as the given system gets added to the engine.
      *
@@ -34,7 +35,7 @@ export interface EngineListener {
      *
      * @param entities
      */
-    onAddedEntities?(...entities: AbstractEntity[]): void;
+    onAddedEntities?(...entities: T[]): void;
     /**
      * Called as soon as the given entity gets removed from the engine.
      *
@@ -72,7 +73,7 @@ export declare enum EngineMode {
  * The engine takes care of updating only active systems in any point of time.
  *
  */
-export declare class Engine extends Dispatcher<EngineListener> {
+export declare class Engine<T extends AbstractEntity = AbstractEntity> extends Dispatcher<EngineListener> {
     /**
      * The internal list of all systems in this engine.
      */
@@ -84,7 +85,7 @@ export declare class Engine extends Dispatcher<EngineListener> {
     /**
      * The internal list of all entities in this engine.
      */
-    protected _entities: Collection<AbstractEntity<import("./component").Component, import("./entity").EntityListener<import("./component").Component>>>;
+    protected _entities: EntityCollection<T>;
     /**
      * Creates an instance of Engine.
      */
@@ -92,7 +93,7 @@ export declare class Engine extends Dispatcher<EngineListener> {
     /**
      * A snapshot of all entities in this engine.
      */
-    get entities(): Collection<AbstractEntity>;
+    get entities(): EntityCollection<T>;
     /**
      * A snapshot of all systems in this engine.
      */

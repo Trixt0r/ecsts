@@ -31,7 +31,6 @@ export class ComponentCollection<C extends Component = Component>
 {
   /**
    * Internal map for faster component access, by class or type.
-   *
    */
   protected cache = new Map<ComponentClass<C> | string, readonly C[]>();
 
@@ -98,7 +97,6 @@ export class ComponentCollection<C extends Component = Component>
    * Updates the cache for the given class or type.
    *
    * @param classOrType The class or type to update the cache for.
-   *
    */
   protected updateCache(classOrType: ComponentClass<C> | string): void {
     const keys = this.cache.keys();

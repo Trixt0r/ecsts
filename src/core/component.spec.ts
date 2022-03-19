@@ -60,9 +60,9 @@ describe('ComponentCollection', () => {
   });
 
   describe('getAll', () => {
-    it.each([MyComponent1, MyComponentWithType, 'myType'])('should not return any component for %p if empty', _ =>
-      expect(collection.getAll(_).length).toBe(0)
-    );
+    it.each([MyComponent1, MyComponentWithType, 'myType'])('should not return any component for %p if empty', _ => {
+      expect(collection.getAll(_)).toEqual([]);
+    });
 
     it.each([
       { query: MyComponent1, comps: [new MyComponent1(), new MyComponent1(), new MyComponent1()] },

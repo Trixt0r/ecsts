@@ -1,6 +1,6 @@
 {
   "name": "@trixt0r/ecs",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "Entity component system for any JS environment written in TypeScript.",
   "main": "build/index.js",
   "keywords": [
@@ -24,12 +24,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@swc/jest": "^0.2.20",
     "@types/jest": "^27.0.3",
     "@typescript-eslint/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^5.7.0",
     "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.3.0",
-    "jest": "^27.4.5",
+    "jest": "^27.5.1",
     "prettier": "2.5.1",
     "ts-jest": "^27.1.2",
     "typescript": "^3.9.10"

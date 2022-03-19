@@ -73,6 +73,7 @@ exports.Engine = exports.EngineMode = void 0;
 var system_1 = require("./system");
 var dispatcher_1 = require("./dispatcher");
 var collection_1 = require("./collection");
+var entity_collection_1 = require("./entity.collection");
 /**
  * Defines how an engine executes its active systems.
  */
@@ -118,7 +119,7 @@ var Engine = /** @class */ (function (_super) {
         /**
          * The internal list of all entities in this engine.
          */
-        _this._entities = new collection_1.Collection();
+        _this._entities = new entity_collection_1.EntityCollection();
         _this._systems.addListener({
             onAdded: function () {
                 var systems = [];

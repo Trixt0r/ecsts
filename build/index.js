@@ -15,6 +15,7 @@ __exportStar(require("./core/component"), exports);
 __exportStar(require("./core/dispatcher"), exports);
 __exportStar(require("./core/engine"), exports);
 __exportStar(require("./core/entity"), exports);
+__exportStar(require("./core/entity.collection"), exports);
 __exportStar(require("./core/aspect"), exports);
 __exportStar(require("./core/system"), exports);
 __exportStar(require("./core/types"), exports);

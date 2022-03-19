@@ -2,6 +2,7 @@ import { System, SystemListener, SystemMode } from './system';
 import { AbstractEntity } from './entity';
 import { Dispatcher } from './dispatcher';
 import { Collection } from './collection';
+import { EntityCollection } from './entity.collection';
 
 /**
  * System which is synced within an engine.
@@ -21,7 +22,7 @@ type SyncedSystem = System & {
 /**
  * The listener interface for a listener on an engine.
  */
-export interface EngineListener {
+export interface EngineListener<T extends AbstractEntity = AbstractEntity> {
   /**
    * Called as soon as the given system gets added to the engine.
    *
@@ -54,7 +55,7 @@ export interface EngineListener {
    *
    * @param entities
    */
-  onAddedEntities?(...entities: AbstractEntity[]): void;
+  onAddedEntities?(...entities: T[]): void;
 
   /**
    * Called as soon as the given entity gets removed from the engine.
@@ -98,7 +99,7 @@ export enum EngineMode {
  * The engine takes care of updating only active systems in any point of time.
  *
  */
-export class Engine extends Dispatcher<EngineListener> {
+export class Engine<T extends AbstractEntity = AbstractEntity> extends Dispatcher<EngineListener> {
   /**
    * The internal list of all systems in this engine.
    */
@@ -112,7 +113,7 @@ export class Engine extends Dispatcher<EngineListener> {
   /**
    * The internal list of all entities in this engine.
    */
-  protected _entities = new Collection<AbstractEntity>();
+  protected _entities = new EntityCollection<T>();
 
   /**
    * Creates an instance of Engine.
@@ -155,8 +156,8 @@ export class Engine extends Dispatcher<EngineListener> {
 
     this._entities.addListener(
       {
-        onAdded: (...entities: AbstractEntity[]) => this.dispatch('onAddedEntities', ...entities),
-        onRemoved: (...entities: AbstractEntity[]) => this.dispatch('onRemovedEntities', ...entities),
+        onAdded: (...entities: T[]) => this.dispatch('onAddedEntities', ...entities),
+        onRemoved: (...entities: T[]) => this.dispatch('onRemovedEntities', ...entities),
         onCleared: () => this.dispatch('onClearedEntities'),
       },
       true
@@ -168,7 +169,7 @@ export class Engine extends Dispatcher<EngineListener> {
   /**
    * A snapshot of all entities in this engine.
    */
-  get entities(): Collection<AbstractEntity> {
+  get entities(): EntityCollection<T> {
     return this._entities;
   }
 

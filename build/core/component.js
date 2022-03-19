@@ -58,7 +58,6 @@ var ComponentCollection = /** @class */ (function (_super) {
         var _this = _super.call(this, initial) || this;
         /**
          * Internal map for faster component access, by class or type.
-         *
          */
         _this.cache = new Map();
         /**
@@ -126,7 +125,6 @@ var ComponentCollection = /** @class */ (function (_super) {
      * Updates the cache for the given class or type.
      *
      * @param classOrType The class or type to update the cache for.
-     *
      */
     ComponentCollection.prototype.updateCache = function (classOrType) {
         var e_1, _a;

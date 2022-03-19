@@ -6,4 +6,7 @@ module.exports = {
       tsconfig: 'tsconfig.test.json',
     },
   },
+  transform: {
+    '^.+\\.(t|j)sx?$': ['@swc/jest'],
+  },
 };
