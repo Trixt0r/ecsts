@@ -1,4 +1,14 @@
+!./build
+
+.github
 .vscode
 examples
-*.spec.ts
-!./build
+coverage
+src
+.eslintignore
+.eslintrc.js
+.prettierignore
+.prettierrc
+CHANGELOG.MD
+jest.config.js
+tsconfig.*
