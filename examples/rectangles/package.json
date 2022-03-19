@@ -6,7 +6,7 @@
     "dev": "esbuild ./src/index.ts --bundle --outfile=build/main.js --servedir=build"
   },
   "devDependencies": {
-    "@trixt0r/ecs": "^0.5.0",
+    "@trixt0r/ecs": "^0.5.1",
     "esbuild": "^0.14.8",
     "pixi.js": "^6.2.1"
   }
